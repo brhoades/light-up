@@ -11,6 +11,13 @@ if [ $? != 0 ]; then
     exit
 fi
 
+out=$(git diff)
+
+if [[ $out == "" ]]; then
+    echo "No changes."
+    exit
+fi
+
 while true; do
     read -p "Commit? " ynq
     case $ynq in
