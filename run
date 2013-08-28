@@ -2,7 +2,7 @@
 
 #Config
 GIT=$(which -a git)
-PY=$(which -a python)
+PY=$(which -a python3.3)
 
 "$PY" "main.py" "$@"
 
