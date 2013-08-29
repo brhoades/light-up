@@ -3,30 +3,52 @@
 #Class: CS348 Assignment 1A
 
 import const
+import fileinput
 
 #Graph class
 class graph:
-    def __init_( self, x, y )
-        data = []
-        for i in range(x)
-            data[i] = []
-            for j in range(y)
-                data[i][j] = const.UNLIT
+    def __init__( self, x, y ):
+        self.data=[]
+        self.data.blank( x, y )
                 
         #Have we made a bad placement?
-        self.bad = false
+        self.bad=false
         #Is this an invalid graph?
-        self.invalid = false
+        self.invalid=false
         #How many lights have been placed
         self.lights=0
         #How many squares are lit
         self.litsq=0
         #X Size
-        self.x = x
+        self.x=x
         #Y size
-        self.y = y
+        self.y=y
         #Fitness
         self.fit=-1
-        
-        #Array coords
-        self.data = data
+    
+    def __init__( self, filename ):
+        self.data=[]
+        #self.data.blank( x, y )
+                
+        #Have we made a bad placement?
+        self.bad=false
+        #Is this an invalid graph?
+        self.invalid=false
+        #How many lights have been placed
+        self.lights=0
+        #How many squares are lit
+        self.litsq=0
+        #X Size
+        self.x=x
+        #Y size
+        self.y=y
+        #Fitness
+        self.fit=-1
+      
+    def blank(self, x, y):
+        ret=[]
+        for i in range(x):
+            ret[i]=[]
+            for j in range(y):
+                ret[i][j]=const.UNLIT
+        return ret
