@@ -39,20 +39,22 @@ class graph:
                     rawLine = line.split(' ')
                     #1 10 5
                     #(x) (y) (black #)
-                    x = int(rawLine[0])-1             #vvv
-                    y = int(rawLine[1])-1             #Adjust for the sake of arrays
+                    x = int(rawLine[0])-1
+                    y = int(rawLine[1])-1
                     b = int(rawLine[2])
+                    
+                    oldx = x
+                    x = (self.y-1)-y
+                    y = oldx
+                    
                     #Skip this line if it's invalid and complain
                     if x > self.x or y > self.y or x < 0 or y < 0 or b > 5 or b < 0:
-                        print("Line is invalid (", x, ",", y, ") w/ Black of: ", b)
+                        print("Line is invalid (", (x+1), ",", (y+1), ") w/ Black of: ", b)
                         next
-                    self.data[x][y] = b + gt.TRANSFORM
+                    print("Transposed (", (x+1), ",", (y+1), ",", b, ") as (", x, ",", y, ", ", b+gt.TRANSFORM,")" ) 
+                    self.data[x][y] = b+gt.TRANSFORM
                     
             fh.close()
-            
-            #Flip due to weird origin issue
-            for i in range(0, self.x):
-                self.data[i].reverse()
         return
 
     def genGraph( self, conf ):
