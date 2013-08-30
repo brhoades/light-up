@@ -10,6 +10,7 @@ class gt:
     UNLIT = 1                                 # Unlit tile, default state
     LIT = 2                                   # This is a lit tile, lit by a bulb
     BULB = 3                                  # This is a bulb
+    BLACK_THRESHOLD = 10
     TRANSFORM = 10                            # What we add to data graph's black value to get our constant
     BLACK0 = 10                               # A black square that cannot be bordered by a light
     BLACK1 = 11                               # A black square that must be bordered by 1 light
@@ -24,6 +25,7 @@ class lprets:
     LIT = 1
     YALIT = 2
     STOPPED = 3
+    OFFSET = 5
 
 #symbols
 class sym:
@@ -40,5 +42,13 @@ class sym:
     tb[gt.BLACK3] = "3"
     tb[gt.BLACK4] = "4"
     tb[gt.BLACK] = "X"
+
+class solv:
+    DONE = 0
+    NEXTPLACE = 1                           #Scooting our first place forward
+    NOFIN = 2                               #Can't finish due to puzzle issue or bad inital placement
     
-    
+class method:
+    MINBULB = 0
+    MAXBULB = 1
+    ANY = 2

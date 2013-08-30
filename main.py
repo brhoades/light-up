@@ -5,6 +5,7 @@
 import configparser
 import random
 from graph import graph
+from solve import solve
 
 def readConfig():
     config = configparser.ConfigParser()
@@ -16,10 +17,12 @@ def readConfig():
 def main():
     cfg = readConfig()
     random.seed(cfg['graph']['seed'])
+    
     puz = graph(cfg['graph'])
     puz.drawGraph()
-    sol = solve()
-    sol.solveGraph(puz)
+    
+    sol = solve(cfg['solve']['method'])
+    sol.ideal(puz)
     
     return 0
     
