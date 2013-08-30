@@ -2,7 +2,7 @@
 #Author: Billy J Rhoades <bjrq48@mst.edu>
 #Class: CS348 Assignment 1A
 
-from const import (gt, lprets)
+from const import (gt, lprets, sym)
 import fileinput
 
 #Graph class
@@ -46,7 +46,7 @@ class graph:
                     if x > self.x or y > self.y or x < 0 or y < 0 or b > 5 or b < 0:
                         print("Line is invalid (", x, ",", y, ") w/ Black of: ", b)
                         next
-                    self.addLight( x, y, b )
+                    self.data[x][y] = b + gt.TRANSFORM
                     
             fh.close()
         return
@@ -68,7 +68,7 @@ class graph:
     def addLight( self, x, y, b ):
         #Add the light to the data list
         #print( "x:", x, " y:", y, " self.x: ", self.x, " self.y", y )
-        self.data[x][y] = b+gt.TRANSFORM
+        self.data[x][y] = gt.BULB
         self.lights += 1
         
         #Check surrounding spots for validation
@@ -112,3 +112,20 @@ class graph:
         #Black space stopped us
         if self.data[x][y] == gt.BLACK0:
             return lprets.STOPPED
+    
+    def drawGraph( self ):
+        print("┌",end='')
+        for i in range( 0, self.x):
+            print("─",end='')
+        print("┐") #\n
+        
+        for i in range(0, self.x):
+            print("│",end='')
+            for j in range(0, self.y):
+                print(sym.tb[self.data[i][j]],end='')
+            print("│")#nl
+            
+        print("└",end='')
+        for i in range( 0, self.x):
+            print("─",end='')
+        print("┘") #\n

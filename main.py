@@ -13,6 +13,7 @@ def readConfig():
 def main():
     cfg = readConfig()
     puz = graph(cfg['graph'])
+    puz.drawGraph()
     
     return 0
     

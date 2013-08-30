@@ -24,3 +24,21 @@ class lprets:
     LIT = 1
     YALIT = 2
     STOPPED = 3
+
+#symbols
+class sym:
+    tb = []
+    for i in range(0,gt.BLACK+1):
+        tb.append("?")
+    tb[gt.NOTHING] = "?"
+    tb[gt.UNLIT] = " "
+    tb[gt.LIT] = "█"
+    tb[gt.BULB] = "B"
+    tb[gt.BLACK0] = "0"
+    tb[gt.BLACK1] = "1"
+    tb[gt.BLACK2] = "2"
+    tb[gt.BLACK3] = "3"
+    tb[gt.BLACK4] = "4"
+    tb[gt.BLACK] = "X"
+    
+    
