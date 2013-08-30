@@ -49,6 +49,10 @@ class graph:
                     self.data[x][y] = b + gt.TRANSFORM
                     
             fh.close()
+            
+            #Flip due to weird origin issue
+            for i in range(0, self.x):
+                self.data[i].reverse()
         return
 
     def genGraph( self, conf ):
