@@ -23,8 +23,10 @@ class graph:
 
         if conf['gen'] != 'True':
             self.readGraph(conf['gen'])
+            print("Loaded graph from:", conf['gen'])
         else:
             self.genGraph(conf)    
+            print("Generated graph from seed:", conf['seed'])
 
     def readGraph( self, filename ):
         with fileinput.input(files=(filename)) as fh:
@@ -51,7 +53,8 @@ class graph:
                     if x > self.x or y > self.y or x < 0 or y < 0 or b > 5 or b < 0:
                         print("Line is invalid (", (x+1), ",", (y+1), ") w/ Black of: ", b)
                         next
-                    print("Transposed (", (x+1), ",", (y+1), ",", b, ") as (", x, ",", y, ", ", b+gt.TRANSFORM,")" ) 
+                    
+                    #print("Transposed (", (x+1), ",", (y+1), ",", b, ") as (", x, ",", y, ", ", b+gt.TRANSFORM,")" ) 
                     self.data[x][y] = b+gt.TRANSFORM
                     
             fh.close()
