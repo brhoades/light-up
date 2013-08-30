@@ -3,13 +3,13 @@
 #Class: CS348 Assignment 1A
 
 import configparser
-import graph
+from graph import graph
 
 def readConfig():
-    config = configparser.RawConfigParser()
+    config = configparser.ConfigParser()
     config.read('default.cfg')
     return config
-
+    
 def main():
     cfg = readConfig()
     puz = graph(cfg['graph'])
