@@ -63,8 +63,8 @@ class solve:
         nextBool = False
 
         if self.puz == None:
-            self.puz = puz
-            self.cleanPuz = puz
+            self.puz = deepcopy( puz )
+            self.cleanPuz = deepcopy( puz )
             self.data = []
             #initilize arrays on first run
             self.data = [[] for i in range(0,self.puz.x)]
@@ -76,12 +76,10 @@ class solve:
             #print( "precrash: ", x, y, len(self.data) )
             print(self.puz)
             self.data[x].append(y)
-            
         elif self.iter == 1:                            #No point in going back here if it's our first
             self.iter -= 1
-            print( "Bad placement" )
         
-        if self.next( ):
+        if self.nextIdeal( ):
             self.iter += 1
             print( x, y, self.iter )
             ret = self.ideal( )
@@ -101,25 +99,25 @@ class solve:
             self.lights=0
             self.litsq=0
             del self.puz
-            self.puz = self.cleanPuz
+            self.puz = deepcopy( self.cleanPuz )
             return solv.NEXTPLACE
         
         if ret == solv.NEXTPLACE and self.iter != 1:
-            print( "falling: ", self.iter )
             self.iter -= 1
             return ret
         elif ret == solv.NEXTPLACE and self.iter == 1:
             self.x = x
             self.y = y
-            self.next( )
+            self.nextIdeal( )
             print( "restarting: ", self.x, self.y, self.iter )
+            print( self.puz )
             self.ideal( )
         elif ret == solv.DONE:
             return ret
         return 1
 
     #Auto increment the interal x/y tracker
-    def next( self ):
+    def nextIdeal( self ):
         if self.x < (self.puz.x-1):
             self.x += 1
         elif self.y < (self.puz.y-1):
@@ -147,3 +145,7 @@ class solve:
             else:
                 return False #Accepting our first solution here--- generally--- gives us the max lit
 
+    ########################################################
+    #Random solver
+    ########################################################
+    #def solve( 

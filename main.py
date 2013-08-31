@@ -23,6 +23,7 @@ def main():
     
     sol = solve(cfg['solve']['method'])
     sol.ideal(puz)
+    #sol.solve(puz)
     print( sol );
     
     return 0
