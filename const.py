@@ -19,6 +19,10 @@ class gt:
     BLACK4 = 14                               # A black square that must be bordered by 4 lights
     BLACK = 15                                # A black square that just blocks light
     
+    ###
+    OWNER = 0
+    TYPE = 1
+    
 #Light placement return values
 class lprets:
     BAD = 0

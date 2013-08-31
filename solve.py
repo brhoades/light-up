@@ -21,8 +21,6 @@ class solve:
         self.litsq=0
         #Fitness
         self.fit=-1
-        #Number of iterations
-        self.iter=0
         #X tracker
         self.x=0
         #y tracker
@@ -56,78 +54,48 @@ class solve:
         return puz.__str__()
     
     #Solve this graph and find the "best" solution, specified by the cfg file
-    def ideal( self, puz=None ):
-        x = self.x
-        y = self.y
-        ret = -1
-        nextBool = False
+    def ideal( self, puz ):
+        self.puz = deepcopy( puz )
+        self.data = []
+        #initilize arrays on first run
+        self.data = [[] for i in range(0,self.puz.x)]
+        self.bestSol = [[] for i in range(0,self.puz.x)]
+            
+        print( "Finding ideal solution: " )
+        
+        for i in range(0, self.puz.x):
+            for j in range(0, self.puz.y):
+                if not self.puz.badBulbSpot( i, j ):
+                    print( "START: ", i, j )
+                    self.thisIdeal( i, j )
+                    
+        del self.data
+        self.data = []
+        print( "Found! lamps: ", self.bestLights, " lit tiles: ", self.bestLitsq, "/", self.puz.unlitTiles() )
+        return 1
 
-        if self.puz == None:
-            self.puz = deepcopy( puz )
-            self.cleanPuz = deepcopy( puz )
-            self.data = []
-            #initilize arrays on first run
-            self.data = [[] for i in range(0,self.puz.x)]
-            self.bestSol = [[] for i in range(0,self.puz.x)]
-                
-            print( "Finding ideal solution: " )
-        
+    def thisIdeal( self, x, y ):
         if self.puz.addLight( x, y, True ):
-            #print( "precrash: ", x, y, len(self.data) )
-            print(self.puz)
             self.data[x].append(y)
-        elif self.iter == 1:                            #No point in going back here if it's our first
-            self.iter -= 1
-        
-        if self.nextIdeal( ):
-            self.iter += 1
-            print( x, y, self.iter )
-            ret = self.ideal( )
         else:
-            print( "done! ", self.iter, self.lights )
+            return False
+            
+        tri = True
+        for i in range(0, self.puz.x):
+            for j in range(0, self.puz.y):
+                if not self.puz.badBulbSpot( i, j ):
+                    tri = self.thisIdeal( i, j )
+                
+        if tri:
             if self.betterSol( ):
                 self.bestSol = deepcopy( self.data )
                 self.bestLights = self.lights
                 self.bestLitsq = self.litsq
-            self.data = [[] for i in range(0,self.cleanPuz.x)]
-            if self.iter == 1:
-                del self.data
-                self.data = []
-                print( "Found! lamps: ", self.bestLights, " lit tiles: ", self.bestLitsq, "/", self.puz.unlitTiles() )
-                return solv.DONE
-            self.iter -= 1
-            self.lights=0
-            self.litsq=0
-            del self.puz
-            self.puz = deepcopy( self.cleanPuz )
-            return solv.NEXTPLACE
-        
-        if ret == solv.NEXTPLACE and self.iter != 1:
-            self.iter -= 1
-            return ret
-        elif ret == solv.NEXTPLACE and self.iter == 1:
-            self.x = x
-            self.y = y
-            self.nextIdeal( )
-            print( "restarting: ", self.x, self.y, self.iter )
-            print( self.puz )
-            self.ideal( )
-        elif ret == solv.DONE:
-            return ret
-        return 1
+            
+        self.puz.data[x][y].rmLight( self.puz )
+        self.data[x].remove(y)
 
-    #Auto increment the interal x/y tracker
-    def nextIdeal( self ):
-        if self.x < (self.puz.x-1):
-            self.x += 1
-        elif self.y < (self.puz.y-1):
-            self.x = 0
-            self.y += 1
-        elif self.y >= (self.puz.y-1) and self.x >= (self.puz.x-1):
-           return False
-        
-        print( "Next: ", self.iter )
-        return True
+        return False
     
     #Is our current solution (self) better than our best? (self.bestSol)
     def betterSol( self ):

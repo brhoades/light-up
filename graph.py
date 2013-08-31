@@ -5,6 +5,7 @@
 from const import (gt, lprets, sym)
 import fileinput
 from copy import deepcopy
+from sq import sq
 
 #Graph class
 class graph:
@@ -54,7 +55,7 @@ class graph:
         for j in range(0, self.y):
             ret += "│"
             for i in range(0, self.x):
-                ret += sym.tb[self.data[i][j]]
+                ret += self.data[i][j].__str__( )
             ret += "│\n"#\n
             
         ret += "└"
@@ -91,7 +92,7 @@ class graph:
                         next
                     
                     #print("Transposed (", (x+1), ",", (y+1), ",", b, ") as (", x, ",", y, ", ", b+gt.TRANSFORM,")" ) 
-                    self.data[x][y] = b+gt.TRANSFORM
+                    self.data[x][y] = sq( x, y, b+gt.TRANSFORM )
                     
             fh.close()
         return
@@ -107,101 +108,62 @@ class graph:
         for i in range(0,self.x):
             self.data.append([])
             for j in range(0,self.y):
-                self.data[i].append(gt.UNLIT)
+                self.data[i].append( sq( i, j, gt.UNLIT ) )
         return
     
     def addLight( self, x, y, careful=False ):
-        #Add the light to the data list
-        #print( "x:", x, " y:", y, " self.x: ", self.x, " self.y", y )
-        
         #Check surrounding spots for validation
         if self.badBulbSpot( x, y ):
             if careful:
-                return lprets.BAD
+                return False
             self.bad = True
-
-        self.data[x][y] = gt.BULB
-        startLit = self.litsq
+                
+        self.data[x][y].type = gt.BULB
+        
+        self.data[x][y].addNeighbors( self )
         
         self.lights += 1
         #Light up a line vertically and horizontally
-        ret = self.lightUpPlus( x, y )
+        self.lightUpPlus( x, y )
 
-        return not self.bad
-            
+        return True
+        
     def lightUpPlus( self, x, y, ):
         if x > 0:
             for i in range(x-1, -1, -1):
-                ret = self.lightSq( i, y )
+                ret = self.data[i][y].light( x, y )
                 if ret == lprets.STOPPED:
-                    break
+                    if i-x == 1 and self.data[i][y].isBlack():
+                        self.data[i][y].blackN.append([x, y])
+                        break
         if x < self.x-1:
-            for i in range(x+1, self.x):
-                ret = self.lightSq( i, y)
+            for i in range(x+1, self.x ):
+                ret = self.data[i][y].light( x, y )
                 if ret == lprets.STOPPED:
+                    if x-i == 1 and self.data[i][y].isBlack():
+                        self.data[i][y].blackN.append([x, y])
                     break
         if y > 0:
             for i in range(y-1, -1, -1):
-                ret = self.lightSq( x, i )
+                ret = self.data[x][i].light( x, y )
                 if ret == lprets.STOPPED:
+                    if y-i == 1 and self.data[x][i].isBlack():
+                        self.data[x][i].blackN.append([x, y])
                     break
         if y < self.y-1:
             for i in range(y+1, self.y):
-                ret = self.lightSq( x, i )
+                ret = self.data[x][i].light( x, y )
                 if ret == lprets.STOPPED:
+                    if i-y == 1 and self.data[x][i].isBlack():
+                        self.data[x][i].blackN.append([x, y])
                     break
         return lprets.LIT
-
-    def lightSq( self, x, y ):
-        #Unlit, light
-        if self.data[x][y] == gt.UNLIT:
-            self.litsq += 1
-            self.data[x][y] = gt.LIT 
-            return lprets.LIT
-        #Do nothing if lit
-        if self.data[x][y] == gt.LIT:
-            return lprets.YALIT
-        #Bulb == invalid
-        if self.data[x][y] == gt.BULB:
-            #Should never happen
-            self.bad=True
-            return lprets.BAD
-        #Black space stopped us
-        if self.data[x][y] >= gt.BLACK_THRESHOLD:
-            return lprets.STOPPED
     
     def badBulbSpot( self, x, y ):
-        if x > 0:
-            tx = x-1
-            ty = y
-            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
-                if self.blackIsFull( tx, ty ):
-                    return True
-                
-        if y > 0:
-            tx = x
-            ty = y-1
-            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
-                if self.blackIsFull( tx, ty ):
-                    return True
-                
-        if x < (self.x-1):
-            tx = x+1
-            ty = y
-            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
-                if self.blackIsFull( tx, ty ):
-                    return True 
-
-        if y < (self.y-1):
-            tx = x
-            ty = y+1
-            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
-                if self.blackIsFull( tx, ty ):
-                    return True      
-                    
-        if self.willLightBulb( x, y ):
+        if self.data[x][y].type != gt.UNLIT:
             return True
-        return False
+        if not self.checkNeighbors( x, y ):
+            return False
         
     def unlitTiles( self ):
         count = 0
@@ -210,44 +172,11 @@ class graph:
                 if self.data[i][j] == gt.UNLIT:
                     count += 1
         return count
-        
-    def blackIsFull( self, x, y ):
-        maximum = self.data[x][y]-10
-        if maximum == gt.BLACK:
-            return False
-        elif maximum == gt.BLACK0:
-            print( "Black is 0" )
-            return True
-
-        lamps = 0
-        
-        if x > 0:
-            tx = x-1
-            ty = y
-            if self.data[tx][ty] == gt.BULB:
-                lamps += 1
-        if y > 0:
-            tx = x
-            ty = y-1
-            if self.data[tx][ty] == gt.BULB:
-                lamps += 1
-        if x < (self.x-1):
-            tx = x+1
-            ty = y
-            if self.data[tx][ty] == gt.BULB:
-                lamps += 1
-        if y < (self.y-1):
-            tx = x
-            ty = y+1
-            if self.data[tx][ty] == gt.BULB:
-                lamps += 1
-        print( lamps, ">=", maximum )
-        return lamps >= maximum
     
-    def willLightBulb( self, x, y ):
-        print( "BULB CHECK: ", x, y )
+    def checkNeighbors( self, x, y ):
+        if len(self.data[x][y].blackN) == 0:
+            return False
         
-        if self.data[x][y] != gt.UNLIT:
-            print( "LIT" )
-            return True
-        return False
+        for ea in self.data[x][y].blackN:
+            if self.data[ea[0]][ea[1]].lightBorder > self.data[ea[0]][ea[1]].type - gt.TRANSFORM:
+                return True
