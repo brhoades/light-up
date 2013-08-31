@@ -132,6 +132,8 @@ class graph:
         if x > 0:
             for i in range(x-1, -1, -1):
                 ret = self.data[i][y].light( x, y )
+                if ret == lprets.LIT:
+                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if i-x == 1 and self.data[i][y].isBlack():
                         self.data[i][y].blackN.append([x, y])
@@ -139,6 +141,8 @@ class graph:
         if x < self.x-1:
             for i in range(x+1, self.x ):
                 ret = self.data[i][y].light( x, y )
+                if ret == lprets.LIT:
+                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if x-i == 1 and self.data[i][y].isBlack():
                         self.data[i][y].blackN.append([x, y])
@@ -146,6 +150,8 @@ class graph:
         if y > 0:
             for i in range(y-1, -1, -1):
                 ret = self.data[x][i].light( x, y )
+                if ret == lprets.LIT:
+                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if y-i == 1 and self.data[x][i].isBlack():
                         self.data[x][i].blackN.append([x, y])
@@ -153,6 +159,8 @@ class graph:
         if y < self.y-1:
             for i in range(y+1, self.y):
                 ret = self.data[x][i].light( x, y )
+                if ret == lprets.LIT:
+                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if i-y == 1 and self.data[x][i].isBlack():
                         self.data[x][i].blackN.append([x, y])

@@ -31,8 +31,8 @@ class solve:
         self.puz = None
         
         #best
-        self.bestLights=0
-        self.bestLitsq=0
+        self.bestLights=100^10
+        self.bestLitsq=100^10
             
     def __str__(self):
         puz = self.puz
@@ -78,19 +78,23 @@ class solve:
         if self.puz.addLight( x, y, True ):
             self.data[x].append(y)
         else:
-            return False
-            
+            print( "Done!" )
+            return True
+                  
+        if not self.betterSol( ):
+            return
+                    
         tri = True
         for i in range(0, self.puz.x):
             for j in range(0, self.puz.y):
-                if not self.puz.badBulbSpot( i, j ):
-                    tri = self.thisIdeal( i, j )
+                if self.puz.data[i][j].type == gt.UNLIT:
+                    tri &= self.thisIdeal( i, j )
                 
         if tri:
             if self.betterSol( ):
                 self.bestSol = deepcopy( self.data )
-                self.bestLights = self.lights
-                self.bestLitsq = self.litsq
+                self.bestLights = self.puz.lights
+                self.bestLitsq = self.puz.litsq
             
         self.puz.data[x][y].rmLight( self.puz )
         self.data[x].remove(y)
@@ -112,7 +116,7 @@ class solve:
                 return True
             else:
                 return False #Accepting our first solution here--- generally--- gives us the max lit
-
+        return False
     ########################################################
     #Random solver
     ########################################################
