@@ -9,37 +9,37 @@ from sq import sq
 
 #Graph class
 class graph:
-    def __init__( self, conf, cpy=False ):
+    def __init__( self, conf=False, cpy=False ):
         self.data=[]
 
         #Is this an invalid graph?
         self.invalid=False
         #Have we made a bad placement?
         self.bad=False
-        #How many lights have been placed
-        self.lights=0
-        #How many squares are lit
-        self.litsq=0
+        #Satisfied Black Squares
+        self.blackSats = 0
         #Fitness
         self.fit=-1
         #"Ideal" solution
         self.solu=None
 
-        if cpy == True:
-            self.x = puz.x
-            self.y = puz.y
+        self.x = 0
+        self.y = 0
+
+        if conf == True:
+            self.x = cpy.x
+            self.y = cpy.y
             self.blank()
-            self.data=deepcopy(puz.data)
-            self.bad=puz.bad
-            self.invalid=puz.invalid
-            self.lights=puz.lights
-            self.litsq=puz.litsq
-            self.fit=puz.fit
-            self.solu=puz.solu
-            return
+            self.data=deepcopy(cpy.data)
+            self.bad=cpy.bad
+            self.invalid=cpy.invalid
+            self.fit=cpy.fit
+            self.solu=cpy.solu
+            self.blackSats=cpy.blackSats
+            return 
         
         if conf['gen'] != 'True':
-            self.readGraph(conf['gen'])
+            self.blackSats = self.readGraph(conf['gen'])
             print("Loaded graph from:", conf['gen'])
         else:
             self.genGraph(conf)    
@@ -93,14 +93,27 @@ class graph:
                     
                     #print("Transposed (", (x+1), ",", (y+1), ",", b, ") as (", x, ",", y, ", ", b+gt.TRANSFORM,")" ) 
                     self.data[x][y] = sq( x, y, b+gt.TRANSFORM )
-                    
+                    if self.data[x][y].type == gt.BLACK0 or self.data[x][y].type == gt.BLACK:
+                        self.incBlackSats( )
+                    if x > 0:
+                        self.data[x-1][y].blackN.append( [x, y] )
+                    if x < self.x-1:
+                        self.data[x+1][y].blackN.append( [x, y] )
+                    if y > 0:
+                        self.data[x][y-1].blackN.append( [x, y] )
+                    if y < self.y-1:
+                        self.data[x][y+1].blackN.append( [x, y] )
             fh.close()
-        return
+        return self.blackSats
 
     def genGraph( self, conf ):
         self.x = conf['x']
         self.y = conf['y']
         self.blank()
+        return
+        
+    def rmLight( self, x, y ):
+        self.data[x][y].rmLight( self )
         return
     
     def blank( self ):        
@@ -122,7 +135,6 @@ class graph:
         
         self.data[x][y].addNeighbors( self )
         
-        self.lights += 1
         #Light up a line vertically and horizontally
         self.lightUpPlus( x, y )
 
@@ -132,59 +144,87 @@ class graph:
         if x > 0:
             for i in range(x-1, -1, -1):
                 ret = self.data[i][y].light( x, y )
-                if ret == lprets.LIT:
-                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if i-x == 1 and self.data[i][y].isBlack():
-                        self.data[i][y].blackN.append([x, y])
-                        break
+                        self.data[x][y].blackN.append([i, y])
+                    break
         if x < self.x-1:
             for i in range(x+1, self.x ):
                 ret = self.data[i][y].light( x, y )
-                if ret == lprets.LIT:
-                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if x-i == 1 and self.data[i][y].isBlack():
-                        self.data[i][y].blackN.append([x, y])
+                        self.data[x][y].blackN.append([i, y])
                     break
         if y > 0:
             for i in range(y-1, -1, -1):
                 ret = self.data[x][i].light( x, y )
-                if ret == lprets.LIT:
-                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if y-i == 1 and self.data[x][i].isBlack():
-                        self.data[x][i].blackN.append([x, y])
+                        self.data[x][y].blackN.append([x, i])
                     break
         if y < self.y-1:
             for i in range(y+1, self.y):
                 ret = self.data[x][i].light( x, y )
-                if ret == lprets.LIT:
-                    self.litsq += 1
                 if ret == lprets.STOPPED:
                     if i-y == 1 and self.data[x][i].isBlack():
-                        self.data[x][i].blackN.append([x, y])
+                        self.data[x][y].blackN.append([x, i])
                     break
         return lprets.LIT
     
     def badBulbSpot( self, x, y ):
         if self.data[x][y].type != gt.UNLIT:
             return True
-        if not self.checkNeighbors( x, y ):
+        if self.fullNeighbors( x, y ):
+            return True
+    
+    def fullNeighbors( self, x, y ):
+        if len(self.data[x][y].blackN) == 0:
             return False
         
+        for [tx, ty] in self.data[x][y].blackN:
+            if self.data[tx][ty].atCapacity( ):
+                return True
+
     def unlitTiles( self ):
         count = 0
         for i in range( 0, self.x ):
             for j in range( 0, self.y ):
-                if self.data[i][j] == gt.UNLIT:
+                if self.data[i][j].type == gt.UNLIT:
                     count += 1
         return count
-    
-    def checkNeighbors( self, x, y ):
-        if len(self.data[x][y].blackN) == 0:
-            return False
         
-        for ea in self.data[x][y].blackN:
-            if self.data[ea[0]][ea[1]].lightBorder > self.data[ea[0]][ea[1]].type - gt.TRANSFORM:
-                return True
+    def posLit( self ):
+        count = 0
+        for i in range( 0, self.x ):
+            for j in range( 0, self.y ):
+                if self.data[i][j].type == gt.UNLIT or \
+                    self.data[i][j].type == gt.LIT:
+                    count += 1
+        return count        
+        
+    def litsq( self ):
+        count = 0
+        for i in range( 0, self.x ):
+            for j in range( 0, self.y ):
+                if self.data[i][j].type == gt.LIT:
+                    count += 1
+        return count
+        
+    def blacks( self ):
+        count = 0
+        for i in range( 0, self.x ):
+            for j in range( 0, self.y ):
+                if self.data[i][j].type >= gt.BLACK_THRESHOLD:
+                    count += 1
+        return count
+        
+    def lights( self ):
+        count = 0
+        for i in range( 0, self.x ):
+            for j in range( 0, self.y ):
+                if self.data[i][j].type == gt.BULB:
+                    count += 1
+        return count
+
+    def incBlackSats( self ):
+        self.blackSats += 1
