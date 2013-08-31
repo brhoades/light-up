@@ -19,10 +19,11 @@ def main():
     random.seed(cfg['graph']['seed'])
     
     puz = graph(cfg['graph'])
-    puz.drawGraph()
+    print( puz )
     
     sol = solve(cfg['solve']['method'])
     sol.ideal(puz)
+    print( sol );
     
     return 0
     

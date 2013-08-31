@@ -44,6 +44,26 @@ class graph:
             self.genGraph(conf)    
             print("Generated graph from seed:", conf['seed'])
 
+    def __str__(self):
+        ret = ""
+        ret += "┌"
+        for i in range( 0, self.x):
+            ret += "─"
+        ret += "┐\n" #\n
+
+        for j in range(0, self.y):
+            ret += "│"
+            for i in range(0, self.x):
+                ret += sym.tb[self.data[i][j]]
+            ret += "│\n"#\n
+            
+        ret += "└"
+        for i in range( 0, self.x):
+            ret += "─"
+        ret +="┘\n" #\n
+        
+        return ret
+
     def readGraph( self, filename ):
         with fileinput.input(files=(filename)) as fh:
             for line in fh:
@@ -62,9 +82,8 @@ class graph:
                     b = int(rawLine[2])
                     
                     #90 degree ccw rotation about origin
-                    oldx = x
-                    x = (self.y-1)-y
-                    y = oldx
+                    x = x
+                    y = (self.y-1)-y
                     
                     #Skip this line if it's invalid and complain
                     if x > self.x or y > self.y or x < 0 or y < 0 or b > 5 or b < 0:
@@ -91,107 +110,144 @@ class graph:
                 self.data[i].append(gt.UNLIT)
         return
     
-    def addLight( self, x, y, dry=False ):
+    def addLight( self, x, y, careful=False ):
         #Add the light to the data list
         #print( "x:", x, " y:", y, " self.x: ", self.x, " self.y", y )
-        self.data[x][y] = gt.BULB
-        startLit = self.litsq
-        
-        if not dry:
-            self.lights += 1
         
         #Check surrounding spots for validation
         if self.badBulbSpot( x, y ):
-            if dry:
+            if careful:
                 return lprets.BAD
             self.bad = True
+
+        self.data[x][y] = gt.BULB
+        startLit = self.litsq
         
+        self.lights += 1
         #Light up a line vertically and horizontally
-        self.lightUpPlus( x, y, "x", dry )
-        self.lightUpPlus( x, y, "y", dry )
-        
-        if dry:
-            ret = self.litsq
-            self.litsq = startLit
-            return ret+lprets.OFFSET
+        ret = self.lightUpPlus( x, y )
+
         return not self.bad
             
-    def lightUpPlus( self, x, y, axis, dry=False ):
-        if axis == "x":
-            for i in range(x, 0):
-                ret = self.lightSq( i, y, dry )
+    def lightUpPlus( self, x, y, ):
+        if x > 0:
+            for i in range(x-1, -1, -1):
+                ret = self.lightSq( i, y )
                 if ret == lprets.STOPPED:
                     break
-                if ret == lprets.BAD and dry:
-                    return ret
-            for i in range(x, self.x):
-                ret = self.lightSq( i, y, dry )
+        if x < self.x-1:
+            for i in range(x+1, self.x):
+                ret = self.lightSq( i, y)
                 if ret == lprets.STOPPED:
                     break
-                if ret == lprets.BAD and dry:
-                    return ret
-        else:
-            for i in range(y, 0):
-                ret = self.lightSq( x, i, dry )
+        if y > 0:
+            for i in range(y-1, -1, -1):
+                ret = self.lightSq( x, i )
                 if ret == lprets.STOPPED:
                     break
-                if ret == lprets.BAD and dry:
-                    return ret
-            for i in range(y, self.y):
-                ret = self.lightSq( x, i, dry )
+        if y < self.y-1:
+            for i in range(y+1, self.y):
+                ret = self.lightSq( x, i )
                 if ret == lprets.STOPPED:
                     break
-                if ret == lprets.BAD and dry:
-                    return ret
-            
+        return lprets.LIT
 
-    def lightSq( self, x, y, dry=False ):
+    def lightSq( self, x, y ):
         #Unlit, light
         if self.data[x][y] == gt.UNLIT:
             self.litsq += 1
-            if not dry:
-                self.data[x][y] = gt.LIT 
+            self.data[x][y] = gt.LIT 
             return lprets.LIT
         #Do nothing if lit
         if self.data[x][y] == gt.LIT:
             return lprets.YALIT
         #Bulb == invalid
         if self.data[x][y] == gt.BULB:
+            #Should never happen
             self.bad=True
             return lprets.BAD
         #Black space stopped us
-        if self.data[x][y] == gt.BLACK0:
+        if self.data[x][y] >= gt.BLACK_THRESHOLD:
             return lprets.STOPPED
     
     def badBulbSpot( self, x, y ):
         if x > 0:
-            if self.data[(x-1)][y] >= gt.BLACK_THRESHOLD:
-                return True
-        if y > 0:
-            if self.data[x][(y-1)] >= gt.BLACK_THRESHOLD:
-                return True
-        if x < (self.x-1):
-            if self.data[(x+1)][y] >= gt.BLACK_THRESHOLD:
-                return True
-        if y < (self.y-1):
-            if self.data[x][(y+1)] >= gt.BLACK_THRESHOLD:
-                return True
+            tx = x-1
+            ty = y
+            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
+                if self.blackIsFull( tx, ty ):
+                    return True
                 
+        if y > 0:
+            tx = x
+            ty = y-1
+            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
+                if self.blackIsFull( tx, ty ):
+                    return True
+                
+        if x < (self.x-1):
+            tx = x+1
+            ty = y
+            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
+                if self.blackIsFull( tx, ty ):
+                    return True 
+
+        if y < (self.y-1):
+            tx = x
+            ty = y+1
+            if self.data[tx][ty] >= gt.BLACK_THRESHOLD:
+                if self.blackIsFull( tx, ty ):
+                    return True      
+                    
+        if self.willLightBulb( x, y ):
+            return True
         return False
         
-    def drawGraph( self ):
-        print("┌",end='')
-        for i in range( 0, self.x):
-            print("─",end='')
-        print("┐") #\n
+    def unlitTiles( self ):
+        count = 0
+        for i in range( 0, self.x ):
+            for j in range( 0, self.y ):
+                if self.data[i][j] == gt.UNLIT:
+                    count += 1
+        return count
         
-        for i in range(0, self.x):
-            print("│",end='')
-            for j in range(0, self.y):
-                print(sym.tb[self.data[i][j]],end='')
-            print("│")#\n
-            
-        print("└",end='')
-        for i in range( 0, self.x):
-            print("─",end='')
-        print("┘") #\n
+    def blackIsFull( self, x, y ):
+        maximum = self.data[x][y]-10
+        if maximum == gt.BLACK:
+            return False
+        elif maximum == gt.BLACK0:
+            print( "Black is 0" )
+            return True
+
+        lamps = 0
+        
+        if x > 0:
+            tx = x-1
+            ty = y
+            if self.data[tx][ty] == gt.BULB:
+                lamps += 1
+        if y > 0:
+            tx = x
+            ty = y-1
+            if self.data[tx][ty] == gt.BULB:
+                lamps += 1
+        if x < (self.x-1):
+            tx = x+1
+            ty = y
+            if self.data[tx][ty] == gt.BULB:
+                lamps += 1
+        if y < (self.y-1):
+            tx = x
+            ty = y+1
+            if self.data[tx][ty] == gt.BULB:
+                lamps += 1
+        print( lamps, ">=", maximum )
+        return lamps >= maximum
+    
+    def willLightBulb( self, x, y ):
+        print( "BULB CHECK: ", x, y )
+        
+        if self.data[x][y] != gt.UNLIT:
+            print( "LIT" )
+            return True
+        return False
