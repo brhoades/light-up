@@ -46,7 +46,8 @@ class sq:
                 puz.data[self.x][i].rmLit( self.x, self.y )
 
         for [x, y] in self.blackN:
-            puz.decBlackSats( )
+            if puz.data[x][y].atCapacity( ):
+                puz.decBlackSats( )
             puz.data[x][y].lights.remove( [self.x, self.y] )
 
     #Called by outsider to remove us, if we're a lit square

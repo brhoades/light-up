@@ -56,7 +56,7 @@ class graph:
         print( "Seeded RNG off ", self.seed )
         
         if conf['gen'] != 'True':
-            self.blackSats = self.readGraph(conf['gen'])
+            self.readGraph(conf['gen'])
             print("Loaded graph from:", conf['gen'])
         else:
             self.genGraph(conf)    
@@ -139,8 +139,7 @@ class graph:
                     self.addBlack( x, y, b )
 
             fh.close()
-        return self.blackSats
-
+            
     def genGraph( self, conf ):
         made = False
         self.x = int(conf['x'])
@@ -309,12 +308,12 @@ class graph:
         fit = 0
         if self.bad:
             return fit
-        # ( num of satisfied black squares / number of (satisifiable) black squares )
-        fit = self.blackSats / self.blacksSb( )
-        # * ( num of lit tiles / num of possible lit tiles )
-        fit *= self.litsq( )  / self.posLitsq( )
+            
+        # ( num of lit tiles / num of possible lit tiles )
+        fit = self.litsq( )  / self.posLitsq( )
+        # * ( num of satisfied black squares / number of (satisifiable) black squares )
+        fit *= self.blackSats / self.blacksSb( )
         
-        print( "\n", self.blackSats, self.litsq( ), fit )
         return fit
 
     def isValid( self, ignore ):
