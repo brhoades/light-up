@@ -46,8 +46,7 @@ class sq:
                 puz.data[self.x][i].rmLit( self.x, self.y )
 
         for [x, y] in self.blackN:
-            if puz.data[x][y].atCapacity():
-                puz.decBlackSats( )
+            puz.decBlackSats( )
             puz.data[x][y].lights.remove( [self.x, self.y] )
 
     #Called by outsider to remove us, if we're a lit square
@@ -94,7 +93,13 @@ class sq:
         return self.type >= gt.BLACK_THRESHOLD
         
     def atCapacity( self ):
-        if self.isBlack( ) and len(self.lights) >= self.type-gt.TRANSFORM:
+        if not self.isBlack( ):
+            return False
+        
+        if self.type == gt.BLACK or self.type == gt.BLACK0:
+            return True
+        
+        if len(self.lights) >= self.type-gt.TRANSFORM:
             return True
         else:
             return False

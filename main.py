@@ -6,21 +6,59 @@ import configparser
 from graph import graph
 import random
 import solve
+import sys
 
 def readConfig():
     config = configparser.ConfigParser()
     config.read('default.cfg')
     return config
-    
+
 def main():
     cfg = readConfig()
     puz = graph(cfg['graph'])
     print( puz )
-    
-    sol = solve.ideal(puz)
-    print( sol );
-    
+    quit
+    lastline=""
+    count = 0
+    runs = int(cfg['solve']['runs'])
+    chance = float(cfg['solve']['chance'])
+    countBlack = bool(cfg['solve']['ignoreblack'])
+    i = 0
+    while i < runs:
+        sol = graph( True, puz )
+        solve.rng( sol, chance )
+        
+        count += 1
+        if sol.isValid( countBlack ):
+            i += 1
+        
+        if count % 50:
+            for j in range(0, len(lastline)):
+                print('\b', end='')
+                
+            lastline = status(cfg['solve'], i, count)
+            print(lastline, end='')
+    print( "" )
     return 0
-    
+
+def status( cfg, i, count ):
+    #(numgoodruns/totalruns) (%done)
+    line = str(i)
+    line +="/"
+    line += cfg['runs']
+    line += " ("
+    line += str(round(i/int(cfg['runs'])*100, 1))
+    line +="%)"
+    #Spacer
+    line +=" "*4
+    #numoftotalpossibleruns/max (%done)
+    line +=str(count)
+    line +="/"
+    line +=cfg['maxruns']
+    line +=" ("
+    line +=str(round(count/int(cfg['maxruns'])*100, 3))
+    line +="%)"
+    return line
+
 if __name__ == '__main__':
     main()

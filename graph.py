@@ -6,9 +6,13 @@ from const import (gt, lprets, sym)
 from copy import deepcopy
 from sq import sq
 import random, time, datetime, solve, fileinput
+from math import ceil
 
 #Graph class
 class graph:
+    ######################################
+    # Stock Methods
+    ######################################
     def __init__( self, conf=False, cpy=False ):
         self.data=[]
 
@@ -53,7 +57,6 @@ class graph:
             
         random.seed(self.seed)
         print( "Seeded RNG off ", self.seed )
-
         
         if conf['gen'] != 'True':
             self.blackSats = self.readGraph(conf['gen'])
@@ -81,6 +84,32 @@ class graph:
         ret +="┘\n" #\n
         
         return ret
+
+    ######################################
+    # Incrementors or Bool Changers
+    ######################################
+    def incBlackSats( self ):
+        self.blackSats += 1
+        
+    def decBlackSats( self ):
+        self.blackSats -= 1
+    
+    def setBad( self ):
+        self.bad = True
+        
+    def hitTopinc( self, f=False ):
+        if f:
+            self.hitTop = 0
+        else:
+            self.hitTop += 1
+
+    ######################################
+    # Graph Modifiers
+    ######################################
+    
+    ######################################
+    ### Graph Generators
+    ######################################
 
     def readGraph( self, filename ):
         with fileinput.input(files=(filename)) as fh:
@@ -119,7 +148,19 @@ class graph:
         self.x = int(conf['x'])
         self.y = int(conf['y'])
         
-        while made == False or solve.ideal( self, int(conf['timeout']) ) == False:
+        print( "Generating random, solveable graph: " )
+        if max(self.x, self.y) > 10:
+            print( "  Due to large graph size, this may take some time" )
+        
+        timeout = 1
+        if conf['timeout'] == "auto":
+                #long enough to solve a hard graph but
+                #not too short to kill the hard ones
+                timeout = ceil(max(self.x, self.y)/2)
+        else:
+            timeout = int( conf['timeout'] )
+        
+        while made == False or solve.ideal( self, timeout ) == False:
             self.blank()
             for i in range(0, self.x):
                 if self.genCoinFlip( float(conf['noblackx']) ):
@@ -128,33 +169,15 @@ class graph:
                     if self.genCoinFlip( float(conf['placeblack']) ):
                         self.genRandBlack( i, j, float(conf['blackmod']) )
             made = True
-                
-    def genCoinFlip( self, prob ):
-        if prob*100 >= random.randint( 0, 100 ):
-            return True
-        return False
-    
-    def genRandBlack( self, x, y, bprob ):
-        #weighted towards non-requring blacks
-        if self.genCoinFlip( bprob ):
-            self.addBlack( x, y, gt.BLACK-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/1.5 ):
-            self.addBlack( x, y, gt.BLACK1-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/2 ):
-            self.addBlack( x, y, gt.BLACK2-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/2.5 ):
-            self.addBlack( x, y, gt.BLACK3-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/3 ):
-            self.addBlack( x, y, gt.BLACK4-gt.TRANSFORM )
-        else:
-            self.addBlack( x, y, gt.BLACK0-gt.TRANSFORM )
-        
-    def rmLight( self, x, y ):
-        self.data[x][y].rmLight( self )
-        return
-    
+
     def blank( self ):        
-        #Initilize "blank" graph
+        self.invalid=False
+        self.bad=False
+        self.blackSats = 0
+        self.fit=-1
+        self.solu=None
+        self.bbsq = []
+
         if len(self.data) != 0:
             del self.data
             self.data = []
@@ -163,59 +186,10 @@ class graph:
             for j in range(0,self.y):
                 self.data[i].append( sq( i, j, gt.UNLIT ) )
         return
-    
-    def addLight( self, x, y, careful=False ):
-        #Check surrounding spots for validation
-        if self.badBulbSpot( x, y ):
-            if careful:
-                return False
-            self.bad = True
-                
-        self.data[x][y].type = gt.BULB
-        
-        self.data[x][y].addNeighbors( self )
-        
-        #Light up a line vertically and horizontally
-        self.lightUpPlus( x, y )
 
-        return True
-        
-    def lightUpPlus( self, x, y ):
-        if x > 0:
-            for i in range(x-1, -1, -1):
-                ret = self.data[i][y].light( x, y )
-                if ret == lprets.STOPPED:
-                    break
-        if x < self.x-1:
-            for i in range(x+1, self.x ):
-                ret = self.data[i][y].light( x, y )
-                if ret == lprets.STOPPED:
-                    break
-        if y > 0:
-            for i in range(y-1, -1, -1):
-                ret = self.data[x][i].light( x, y )
-                if ret == lprets.STOPPED:
-                    break
-        if y < self.y-1:
-            for i in range(y+1, self.y):
-                ret = self.data[x][i].light( x, y )
-                if ret == lprets.STOPPED:
-                    break
-        return lprets.LIT
-    
-    def badBulbSpot( self, x, y ):
-        if self.data[x][y].type != gt.UNLIT:
-            return True
-        if self.fullNeighbors( x, y ):
-            return True
-    
-    def fullNeighbors( self, x, y ):
-        if len(self.data[x][y].blackN) == 0:
-            return False
-        
-        for [tx, ty] in self.data[x][y].blackN:
-            if self.data[tx][ty].atCapacity( ):
-                return True
+    ######################################
+    ### Graph Generator Sub Functions
+    ######################################
     
     def addBlack( self, x, y, b ):
         self.data[x][y] = sq( x, y, b+gt.TRANSFORM )
@@ -249,6 +223,129 @@ class graph:
             if ourType == gt.BLACK0:
                 self.data[x][y+1].bad = True
 
+    def addLight( self, x, y, careful=False ):
+        #Check surrounding spots for validation
+        if self.badBulbSpot( x, y ):
+            if careful:
+                return False
+            self.setBad( )
+                
+        self.data[x][y].type = gt.BULB
+        
+        self.data[x][y].addNeighbors( self )
+        
+        #Light up a line vertically and horizontally
+        self.lightUpPlus( x, y )
+
+        return True
+        
+    def lightUpPlus( self, x, y ):
+        if x > 0:
+            for i in range(x-1, -1, -1):
+                ret = self.data[i][y].light( x, y )
+                if ret == lprets.STOPPED:
+                    break
+        if x < self.x-1:
+            for i in range(x+1, self.x ):
+                ret = self.data[i][y].light( x, y )
+                if ret == lprets.STOPPED:
+                    break
+        if y > 0:
+            for i in range(y-1, -1, -1):
+                ret = self.data[x][i].light( x, y )
+                if ret == lprets.STOPPED:
+                    break
+        if y < self.y-1:
+            for i in range(y+1, self.y):
+                ret = self.data[x][i].light( x, y )
+                if ret == lprets.STOPPED:
+                    break
+        return lprets.LIT
+
+    
+    def genRandBlack( self, x, y, bprob ):
+        if self.hasNeighbor( x, y, gt.BLACK4 ):
+            return
+            
+        #weighted towards non-requring blacks
+        if self.genCoinFlip( bprob/1.5 ):
+            self.addBlack( x, y, gt.BLACK-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/1.75 ):
+            self.addBlack( x, y, gt.BLACK1-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/2 ):
+            self.addBlack( x, y, gt.BLACK2-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/2.25 ):
+            if ( x == 0 or y == 0 ) and ( x == self.x-1 or y == self.y-1 ):
+                self.genRandBlack( x, y, bprob )
+            self.addBlack( x, y, gt.BLACK3-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/2 ):   #Hard to place, higher,chance
+            if x == self.x-1 or x == 0 or y == self.y-1 or y == 0 or \
+                ( x > 0 and self.data[x-1][y].type != gt.UNLIT ) or \
+                ( y > 0 and self.data[x][y-1].type != gt.UNLIT ) or \
+                ( y < self.y and self.data[x][y+1].type != gt.UNLIT ) or \
+                ( x < self.x and self.data[x+1][y].type != gt.UNLIT ):
+                self.genRandBlack( x, y, bprob )
+                return
+                
+            self.addBlack( x, y, gt.BLACK4-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/2.75 ):
+            if( x > 0 and self.data[x-1][y].type == gt.BLACK4 ) or \
+                ( y > 0 and self.data[x][y-1].type == gt.BLACK4 ):
+                self.genRandBlack( x, y, bprob )
+                return
+            
+            self.addBlack( x, y, gt.BLACK0-gt.TRANSFORM )
+        else:
+            self.genRandBlack( x, y, bprob )
+
+    def genCoinFlip( self, prob ):
+        if prob*100 >= random.randint( 0, 100 ):
+            return True
+        return False
+
+    ######################################
+    # Checkers or Reporters
+    ######################################
+
+    def isValid( self, ignore ):
+        if not ignore and self.blackSats < self.blacksSb( ):
+            return False
+        return not self.bad #Auto flipped when placing a bulb
+            
+    def hitTopLim( self ):
+        return ( self.hitTop > (self.x*self.y) )
+    
+    def hasNeighbor( self, x, y, type=gt.NOTHING ):
+        n = []
+        if x < self.x-1 and self.data[x+1][y].type != gt.UNLIT:
+            n.append( self.data[x+1][y].type )
+        if x > 0 and self.data[x-1][y].type != gt.UNLIT:
+            n.append( self.data[x-1][y].type )
+        if y < self.y-1 and self.data[x][y+1].type != gt.UNLIT:
+            n.append( self.data[x][y+1].type )
+        if y > 0 and self.data[x][y-1].type != gt.UNLIT:
+            n.append( self.data[x][y-1].type )
+        
+        for t in n:
+            if t == type or type == gt.NOTHING:
+                return True
+        return False
+        
+    
+    def badBulbSpot( self, x, y ):
+        if self.data[x][y].type != gt.UNLIT:
+            return True
+        if self.fullNeighbors( x, y ):
+            return True
+    
+    def fullNeighbors( self, x, y ):
+        if len(self.data[x][y].blackN) == 0:
+            return False
+        
+        for [tx, ty] in self.data[x][y].blackN:
+            if self.data[tx][ty].atCapacity( ):
+                return True
+                
     def unLitsq( self ):
         count = 0
         for i in range( 0, self.x ):
@@ -293,12 +390,6 @@ class graph:
                     count += 1
         return count
 
-    def incBlackSats( self ):
-        self.blackSats += 1
-        
-    def decBlackSats( self ):
-        self.blackSats -= 1
-
     #Bordered by a black cell that isn't full
     def bbRange( self ):
         ret = []
@@ -309,18 +400,10 @@ class graph:
                     ret.append( [i, j] )
         return ret
 
-    def isValid( self ):
-        for i in self.data:
-            for j in self.data[i]:
-                if self.data[i][j].isBlack( ) and \
-                    self.data[i][j].lightBorder > self.data[i][j].type-gt.TRANSFORM:
-                    return False
-    
-    def hitTopinc( self, f=False ):
-        if f:
-            self.hitTop = 0
-        else:
-            self.hitTop += 1
-            
-    def hitTopLim( self ):
-        return ( self.hitTop > (self.x*self.y) )
+    ######################################
+    # Wrapper Functions
+    ######################################
+        
+    def rmLight( self, x, y ):
+        self.data[x][y].rmLight( self )
+        return

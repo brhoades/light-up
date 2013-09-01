@@ -8,14 +8,19 @@ from copy import deepcopy
 from math import (ceil,floor)
 import time
 import signal
+import random
 
+########################################################
+#Ideal Solver
+#Returns true if a problem is solveable
+#returns false if it's -really- hard / unsolveable
+#  used to check randomly generated boards
+########################################################
+#def solve( 
 def handler(signum, frame):
     raise OSError()
     return False
     
-def handlerc(signum, frame):
-    quit
-
 def ideal( puz, timeout=1 ):        
     back = 0
     
@@ -23,13 +28,12 @@ def ideal( puz, timeout=1 ):
     clean = graph.graph( True, puz )
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(timeout)
+    signal.alarm(ceil(timeout/5))
     try:
         back = 0
         if len(puz.bbRange( ) ) <= 0:
             for i in range(0,self.x):
                 for j in range(0,self.y):
-                    print( "blank: ", i, j )
                     back = puz.lfIdeal( puz, best, i, j )
                     if back == 3:
                         break
@@ -150,18 +154,28 @@ def betterSol( puz, best, chk="a" ):
 def bestSol( puz, chk="a" ):
     ret = 0
     if chk == "b" or chk == "a":
-        #print( puz.blackSats, "<", puz.blacksSb() )
         if puz.blackSats < puz.blacksSb( ):
             return False
     if chk == "l" or chk == "a":
-        #print( puz.litsq( ), "<", puz.posLitsq( ) )
         if puz.litsq( ) < puz.posLitsq( ):
             return False
 
     return True
             
+        
+########################################################
+#Random solver
+########################################################
+def rng( puz, prob ):
+    for i in range(0, puz.x):
+        for j in range(0, puz.y):
+            if puz.data[i][j].type == gt.UNLIT and flip(prob):
+                puz.addLight( i, j )
+    return puz
             
-    ########################################################
-    #Random solver
-    ########################################################
-    #def solve( 
+
+def flip( chance ):
+    ran = random.uniform(0, 100)
+    if( ran <= chance*100 ):
+        return True
+    return False
