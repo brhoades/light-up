@@ -188,7 +188,7 @@ def manSeq( puz, cfg, plh, run ):
     
     i = 0
     lastline=""
-    count = run*cfg['runs']['fitevals']
+    count = run*int(cfg['solve']['fitevals'])
     
     logSeperate( rlh, run )
     print( "Run #", run+1, "/", cfg['solve']['runs'] )
@@ -198,14 +198,13 @@ def manSeq( puz, cfg, plh, run ):
         sol = graph.graph( True, puz )
         rng( sol, chance )
         
-        count += 1
         if sol.isValid( countBlack ):
             i += 1
             if sol.fit > best.fit:
                 best = graph.graph( True, sol )
                 sol.logResult( i, rlh )
         
-        if count % 50:
+        if i % 10:
             for j in range(0, len(lastline)):
                 print('\b', end='')
                 
@@ -221,9 +220,9 @@ def status( cfg, i, count ):
     #Spacer
     line +=" "*4
     #numoftotalpossibleruns/max (%done)
-    line += str(count)
+    line += str(count+i)
     maxn = int(cfg['runs'])*int(cfg['fitevals'])
-    line += ''.join( ["/", maxn, " (", str(round(count/maxn)*100, 3)), "%)" ] )
+    line += ''.join( ["/", str(maxn), " (", str(round((count+i)/maxn*100, 3)), "%)" ] )
     return line
     
 def logSeperate( rlf, run ):
