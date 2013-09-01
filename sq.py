@@ -10,9 +10,10 @@ class sq:
         self.x = x
         self.y = y
         self.type = type
-        self.lightBorder = 0
+        self.lights = []
         self.blackN = []
         self.owner = deepcopy( owner )
+        self.bad = False
         
     def __str__( self ):
         return sym.tb[self.type]
@@ -46,8 +47,8 @@ class sq:
 
         for [x, y] in self.blackN:
             if puz.data[x][y].atCapacity():
-                puz.blackSats -= 1
-            puz.data[x][y].lightBorder -= 1
+                puz.decBlackSats( )
+            puz.data[x][y].lights.remove( [self.x, self.y] )
 
     #Called by outsider to remove us, if we're a lit square
     def rmLit( self, x, y ):
@@ -93,8 +94,8 @@ class sq:
         return self.type >= gt.BLACK_THRESHOLD
         
     def atCapacity( self ):
-        if self.isBlack( ):
-            return( self.lightBorder >= self.type-gt.TRANSFORM )
+        if self.isBlack( ) and len(self.lights) >= self.type-gt.TRANSFORM:
+            return True
         else:
             return False
     
@@ -106,30 +107,30 @@ class sq:
             tx = x-1
             ty = y
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lightBorder =+ 1
+                puz.data[tx][ty].lights.append( [x, y] )
                 if puz.data[tx][ty].atCapacity( ):
-                    puz.blackSats += 1
+                    puz.incBlackSats( )
                 
         if y > 0:
             tx = x
             ty = y-1
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lightBorder =+ 1
+                puz.data[tx][ty].lights.append( [x, y] )
                 if puz.data[tx][ty].atCapacity( ):
-                    puz.blackSats += 1
+                    puz.incBlackSats( )
                     
         if x < (puz.x-1):
             tx = x+1
             ty = y
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lightBorder =+ 1
+                puz.data[tx][ty].lights.append( [x, y] )
                 if puz.data[tx][ty].atCapacity( ):
-                    puz.blackSats += 1
+                    puz.incBlackSats( )
         
         if y < (puz.y-1):
             tx = x
             ty = y+1
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lightBorder =+ 1
+                puz.data[tx][ty].lights.append( [x, y] )
                 if puz.data[tx][ty].atCapacity( ):
-                    puz.blackSats += 1
+                    puz.incBlackSats( )
