@@ -3,8 +3,8 @@
 #Class: CS348 Assignment 1A
 
 import configparser
-import random
 from graph import graph
+import random
 import solve
 
 def readConfig():
@@ -16,13 +16,11 @@ def readConfig():
     
 def main():
     cfg = readConfig()
-    random.seed(cfg['graph']['seed'])
     
     puz = graph(cfg['graph'])
     print( puz )
     
-    sol = solve.ideal(puz, cfg['solve']['accuracy'])
-    #sol.solve(puz)
+    sol = solve.ideal(puz)
     print( sol );
     
     return 0

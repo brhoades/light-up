@@ -6,7 +6,9 @@ from const import (gt, lprets, sym)
 import fileinput
 from copy import deepcopy
 from sq import sq
+import solve
 import random
+import signal
 
 #Graph class
 class graph:
@@ -48,6 +50,7 @@ class graph:
             self.blackSats = self.readGraph(conf['gen'])
             print("Loaded graph from:", conf['gen'])
         else:
+            random.seed(conf['seed'])
             self.genGraph(conf)    
             print("Generated graph from seed:", conf['seed'])
 
@@ -104,11 +107,39 @@ class graph:
         return self.blackSats
 
     def genGraph( self, conf ):
-        self.x = conf['x']
-        self.y = conf['y']
-        self.blank()
+        made = False
+        self.x = int(conf['x'])
+        self.y = int(conf['y'])
         
-        
+        while made == False or solve.ideal( self ) == False:
+            self.blank()
+            for i in range(0, self.x):
+                if self.genCoinFlip( float(conf['noblackx']) ):
+                    next
+                for j in range(0, self.y):
+                    if self.genCoinFlip( float(conf['placeblack']) ):
+                        self.genRandBlack( i, j, float(conf['blackmod']) )
+            made = True
+                
+    def genCoinFlip( self, prob ):
+        if prob*100 >= random.randint( 0, 100 ):
+            return True
+        return False
+    
+    def genRandBlack( self, x, y, bprob ):
+        #weighted towards non-requring blacks
+        if self.genCoinFlip( bprob ):
+            self.addBlack( x, y, gt.BLACK-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/1.5 ):
+            self.addBlack( x, y, gt.BLACK1-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/2 ):
+            self.addBlack( x, y, gt.BLACK2-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/2.5 ):
+            self.addBlack( x, y, gt.BLACK3-gt.TRANSFORM )
+        elif self.genCoinFlip( bprob/3 ):
+            self.addBlack( x, y, gt.BLACK4-gt.TRANSFORM )
+        else:
+            self.addBlack( x, y, gt.BLACK0-gt.TRANSFORM )
         
     def rmLight( self, x, y ):
         self.data[x][y].rmLight( self )
@@ -116,6 +147,9 @@ class graph:
     
     def blank( self ):        
         #Initilize "blank" graph
+        if len(self.data) != 0:
+            del self.data
+            self.data = []
         for i in range(0,self.x):
             self.data.append([])
             for j in range(0,self.y):
@@ -273,4 +307,12 @@ class graph:
                 if self.data[i][j].isBlack( ) and \
                     self.data[i][j].lightBorder > self.data[i][j].type-gt.TRANSFORM:
                     return False
-                
+    
+    def hitTopinc( self, f=False ):
+        if f:
+            self.hitTop = 0
+        else:
+            self.hitTop += 1
+            
+    def hitTopLim( self ):
+        return ( self.hitTop > (self.x*self.y) )
