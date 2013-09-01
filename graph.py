@@ -24,8 +24,6 @@ class graph:
         self.blackSats = 0
         #Fitness
         self.fit=-1
-        #"Ideal" solution
-        self.solu=None
         
         #cache of sqares bordering black boxes
         self.bbsq = []
@@ -44,7 +42,6 @@ class graph:
             self.bad=cpy.bad
             self.invalid=cpy.invalid
             self.fit=cpy.fit
-            self.solu=cpy.solu
             self.blackSats=cpy.blackSats
             self.seed=cpy.seed
             return 
@@ -308,6 +305,17 @@ class graph:
     # Checkers or Reporters
     ######################################
 
+    def fitness( self ):
+        fit = 0
+        if self.bad:
+            return fit
+        # ( num of satisfied black squares / number of (satisifiable) black squares )
+        fit = self.blackSats / self.blacksSb( )
+        # * ( num of lit tiles / num of possible lit tiles )
+        fit *= self.litsq( )  / self.posLitsq( )
+        
+        return fit
+
     def isValid( self, ignore ):
         if not ignore and self.blackSats < self.blacksSb( ):
             return False
@@ -401,6 +409,14 @@ class graph:
                     ret.append( [i, j] )
         return ret
 
+    def logResult( self, i, fh ):
+        fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4))] ) )
+        
+    def logSolution( self, fh ):
+        fh.write( self.__str__( ) )
+        fh.write( ''.join( [ '\n', "fitness: ", str(round(self.fit, 4)), "/1.0" ] ) )
+        
+
     ######################################
     # Wrapper Functions
     ######################################
@@ -408,3 +424,6 @@ class graph:
     def rmLight( self, x, y ):
         self.data[x][y].rmLight( self )
         return
+        
+    def setFitness( self ):
+        self.fit = self.fitness( )

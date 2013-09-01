@@ -3,7 +3,7 @@
 #Class: CS348 Assignment 1A
 
 import graph
-from const import (gt, lprets, solv, method)
+from const import (gt, lprets, solv, method, lh)
 from copy import deepcopy
 from math import (ceil,floor)
 import time
@@ -171,6 +171,7 @@ def rng( puz, prob ):
         for j in range(0, puz.y):
             if puz.data[i][j].type == gt.UNLIT and flip(prob):
                 puz.addLight( i, j )
+    puz.setFitness( )
     return puz
             
 
@@ -179,3 +180,50 @@ def flip( chance ):
     if( ran <= chance*100 ):
         return True
     return False
+    
+def manSeq( puz, cfg, plh, run ):
+    runs = int(cfg['solve']['fitevals'])
+    chance = float(cfg['solve']['chance'])
+    countBlack = bool(cfg['solve']['ignoreblack'])
+    
+    slh = plh[lh.SOL]
+    rlh = plh[lh.RES]
+    
+    i = 0
+    lastline=""
+    count = 0
+    
+    logSeperate( rlh, run )
+    print( "Run #", run )
+    best = graph.graph( True, puz )
+    while i < runs:
+        sol = graph.graph( True, puz )
+        rng( sol, chance )
+        
+        count += 1
+        if sol.isValid( countBlack ):
+            i += 1
+            if sol.fit > best.fit:
+                best = graph.graph( True, sol )
+                sol.logResult( i, rlh )
+        
+        if count % 50:
+            for j in range(0, len(lastline)):
+                print('\b', end='')
+                
+            lastline = status(cfg['solve'], i, count)
+            print(lastline, end='')
+    print( "" )
+    return best
+
+def status( cfg, i, count ):
+    #(numgoodruns/totalruns) (%done)
+    line = str(i).join( ["/", cfg['fitevals'], " (", str(round(i/int(cfg['fitevals'])*100, 1)), "%)"] )
+    #Spacer
+    line +=" "*4
+    #numoftotalpossibleruns/max (%done)
+    line += str(count).join( ["/", cfg['maxfitevals'], " (", str(round(count/int(cfg['maxfitevals'])*100, 3)), "%)" ] )
+    return line
+    
+def logSeperate( rlf, run ):
+    rlf.write( ''.join( [ "\n", "Run #", str(run), "\n" ] ) )

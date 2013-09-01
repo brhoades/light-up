@@ -8,6 +8,7 @@ import random
 import solve
 import sys
 import argparse
+from subprocess import call
 
 def readConfig( fn ):
     config = configparser.ConfigParser()
@@ -16,59 +17,42 @@ def readConfig( fn ):
 
 def main():
     cfg = readConfig(gcfg( ))
+    plh = initLogs( cfg['log'] )
     puz = graph(cfg['graph'])
     print( puz )
-    quit
-    lastline=""
-    count = 0
-    runs = int(cfg['solve']['runs'])
-    chance = float(cfg['solve']['chance'])
-    countBlack = bool(cfg['solve']['ignoreblack'])
-    i = 0
-    while i < runs:
-        sol = graph( True, puz )
-        solve.rng( sol, chance )
-        
-        count += 1
-        if sol.isValid( countBlack ):
-            i += 1
-        
-        if count % 50:
-            for j in range(0, len(lastline)):
-                print('\b', end='')
-                
-            lastline = status(cfg['solve'], i, count)
-            print(lastline, end='')
-    print( "" )
+    
+    best = graph( True, puz )
+    for i in range( 0, int(cfg['solve']['runs']) ):
+        npuz = solve.manSeq( puz, cfg, plh, i )
+        if npuz.fit > best.fit:
+            best = graph( True, npuz )
+    
+    best.logSolution( plh[lh.SOL] )
+    
+    for lh in plh:
+        lh.close( )
     return 0
 
-def status( cfg, i, count ):
-    #(numgoodruns/totalruns) (%done)
-    line = str(i)
-    line +="/"
-    line += cfg['runs']
-    line += " ("
-    line += str(round(i/int(cfg['runs'])*100, 1))
-    line +="%)"
-    #Spacer
-    line +=" "*4
-    #numoftotalpossibleruns/max (%done)
-    line +=str(count)
-    line +="/"
-    line +=cfg['maxruns']
-    line +=" ("
-    line +=str(round(count/int(cfg['maxruns'])*100, 3))
-    line +="%)"
-    return line
-
 def gcfg( ):
-    parser = argparse.ArgumentParser(description='CS348 AS1-1')
+    parser = argparse.ArgumentParser(description='S348 FS2013 Assignment 1a')
     parser.add_argument('-c', type=str,
                        help='Specifies a configuration file (default: default.cfg)',
                        default="default.cfg")
 
     args = parser.parse_args()
     return args.c
+    
+def initLogs( cfg ):
+    resLogh = open( cfg['result'], 'w' )
+    solLogh = open( cfg['solution'], 'w' )
+    
+    resLogh.write( "Result Log" )
+    #if cfg['logh']:
+    #    resLogh.write( 
+    solLogh.write( "Solution Log" )
+    
+    handles = [resLogh, solLogh]
+    return handles
 
 if __name__ == '__main__':
     main()

@@ -56,3 +56,8 @@ class method:
     MINBULB = 0
     MAXBULB = 1
     ANY = 2
+
+#Log handle indecies
+class lh:
+    RES = 0
+    SOL = 1
