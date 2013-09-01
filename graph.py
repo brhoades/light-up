@@ -319,7 +319,7 @@ class graph:
     def isValid( self, ignore ):
         if not ignore and self.blackSats < self.blacksSb( ):
             return False
-        return not self.bad #Auto flipped when placing a bulb
+        return True
             
     def hitTopLim( self ):
         return ( self.hitTop > self.hitTopLimit )

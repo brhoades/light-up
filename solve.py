@@ -187,6 +187,7 @@ def manSeq( puz, cfg, plh, run ):
     rlh = plh[lh.RES]
     
     i = 0
+    area = puz.x*puz.y
     lastline=""
     count = run*int(cfg['solve']['fitevals'])
     
@@ -204,12 +205,12 @@ def manSeq( puz, cfg, plh, run ):
                 best = graph.graph( True, sol )
                 sol.logResult( i, rlh )
         
-        if i % 10:
-            for j in range(0, len(lastline)):
-                print('\b', end='')
-                
-            lastline = status(cfg['solve'], i, count)
-            print(lastline, end='')
+            if ( area < 100 and i % sol.x ) or area >= 100:
+                for j in range(0, len(lastline)):
+                    print('\b', end='')
+                    
+                lastline = status(cfg['solve'], i, count)
+                print(lastline, end='')
     print( "" )
     return best
 
