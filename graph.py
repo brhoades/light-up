@@ -99,6 +99,7 @@ class graph:
         
     def hitTopinc( self, f=False ):
         if f:
+            self.hitTopLimit = (self.x*self.y)*2 #cache
             self.hitTop = 0
         else:
             self.hitTop += 1
@@ -313,7 +314,7 @@ class graph:
         return not self.bad #Auto flipped when placing a bulb
             
     def hitTopLim( self ):
-        return ( self.hitTop > (self.x*self.y) )
+        return ( self.hitTop > (self.hitTopLimit )
     
     def hasNeighbor( self, x, y, type=gt.NOTHING ):
         n = []
