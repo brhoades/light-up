@@ -9,6 +9,7 @@ import solve
 import sys
 import argparse
 from subprocess import call
+from const import lh
 
 def readConfig( fn ):
     config = configparser.ConfigParser()
@@ -29,8 +30,8 @@ def main():
     
     best.logSolution( plh[lh.SOL] )
     
-    for lh in plh:
-        lh.close( )
+    for elh in plh:
+        elh.close( )
     return 0
 
 def gcfg( ):
@@ -46,10 +47,10 @@ def initLogs( cfg ):
     resLogh = open( cfg['result'], 'w' )
     solLogh = open( cfg['solution'], 'w' )
     
-    resLogh.write( "Result Log" )
+    resLogh.write( ''.join(["Result Log", '\n']) )
     #if cfg['logh']:
     #    resLogh.write( 
-    solLogh.write( "Solution Log" )
+    solLogh.write( ''.join(["Solution Log", '\n']) )
     
     handles = [resLogh, solLogh]
     return handles

@@ -171,9 +171,7 @@ def rng( puz, prob ):
         for j in range(0, puz.y):
             if puz.data[i][j].type == gt.UNLIT and flip(prob):
                 puz.addLight( i, j )
-    puz.setFitness( )
-    return puz
-            
+    puz.setFitness( )            
 
 def flip( chance ):
     ran = random.uniform(0, 100)
@@ -218,12 +216,14 @@ def manSeq( puz, cfg, plh, run ):
 
 def status( cfg, i, count ):
     #(numgoodruns/totalruns) (%done)
-    line = str(i).join( ["/", cfg['fitevals'], " (", str(round(i/int(cfg['fitevals'])*100, 1)), "%)"] )
+    line = str(i)
+    line += ''.join( ["/", cfg['fitevals'], " (", str(round(i/int(cfg['fitevals'])*100, 1)), "%)"] )
     #Spacer
     line +=" "*4
     #numoftotalpossibleruns/max (%done)
-    line += str(count).join( ["/", cfg['maxfitevals'], " (", str(round(count/int(cfg['maxfitevals'])*100, 3)), "%)" ] )
+    line += str(count)
+    line += ''.join( ["/", cfg['maxfitevals'], " (", str(round(count/int(cfg['maxfitevals'])*100, 3)), "%)" ] )
     return line
     
 def logSeperate( rlf, run ):
-    rlf.write( ''.join( [ "\n", "Run #", str(run), "\n" ] ) )
+    rlf.write( ''.join( [ "\n", "Run ", str(run), "\n" ] ) )

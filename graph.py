@@ -314,6 +314,7 @@ class graph:
         # * ( num of lit tiles / num of possible lit tiles )
         fit *= self.litsq( )  / self.posLitsq( )
         
+        print( "\n", self.blackSats, self.litsq( ), fit )
         return fit
 
     def isValid( self, ignore ):
@@ -410,11 +411,11 @@ class graph:
         return ret
 
     def logResult( self, i, fh ):
-        fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4))] ) )
+        fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4)), '\n'] ) )
         
     def logSolution( self, fh ):
         fh.write( self.__str__( ) )
-        fh.write( ''.join( [ '\n', "fitness: ", str(round(self.fit, 4)), "/1.0" ] ) )
+        fh.write( ''.join( [ '\n', "fitness: ", str(round(self.fit, 4)), "/1.0", '\n' ] ) )
         
 
     ######################################
