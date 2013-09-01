@@ -1,0 +1,26 @@
+Billy Rhoades (12352623) <bjrq48@mst.edu>
+Evolutionary Computation
+CS348 FS2013 Assignment 1a
+
+This program has been throughly tested on Linux on both Python 3.2 and Python 3.3.
+
+****It is known not to work on Python 2.6 and Python 2.7.****
+
+Depending on your installation,you may need to install the configparser module for 
+python. In Debian and Ubuntu, this package is named "python-configparser". 
+Windows users may need to select this module during the installation of Python.
+
+You may load any of the preconfigured problem sets with the -c command line option.
+They can be found in the cfgs directory. The ones provided are the following:
+
+default.cfg:
+    Simple, easy to run and test configration file. Solves a random 6x6
+    30 times. This is loaded when -c isn't specified.
+    
+reqnum2.cfg:
+    This satisifes the requirements of #2 of the second list in the assingment PDF.
+    The results will not be the same since this is random.
+
+reqnum3.cfg
+    This duplicates the requirements by #3 of the second list in the assignment PDf.
+    The results will be the same.

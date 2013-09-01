@@ -5,8 +5,8 @@
 from const import (gt, lprets, sym)
 from copy import deepcopy
 from sq import sq
-import random, time, datetime, solve, fileinput
 from math import ceil
+import random, time, datetime, solve, fileinput
 
 #Graph class
 class graph:

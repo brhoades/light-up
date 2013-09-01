@@ -3,12 +3,11 @@
 #Class: CS348 Assignment 1A
 
 import graph
-from const import (gt, lprets, solv, method, lh)
+from const import gt, lprets, solv, method, lh
+
+import time, signal, random
 from copy import deepcopy
-from math import (ceil,floor)
-import time
-import signal
-import random
+from math import ceil, floor
 
 ########################################################
 #Ideal Solver
@@ -107,7 +106,7 @@ def bbIdeal( puz, best, x, y ):
 def lfIdeal( puz, best, x, y ):
     if not puz.addLight( x, y, True ):
         return 0
-    
+
     ran = 0
 
     if puz.hitTopLim( ):
@@ -189,11 +188,12 @@ def manSeq( puz, cfg, plh, run ):
     
     i = 0
     lastline=""
-    count = 0
+    count = run*cfg['runs']['fitevals']
     
     logSeperate( rlh, run )
-    print( "Run #", run )
+    print( "Run #", run+1, "/", cfg['solve']['runs'] )
     best = graph.graph( True, puz )
+
     while i < runs:
         sol = graph.graph( True, puz )
         rng( sol, chance )
@@ -222,8 +222,10 @@ def status( cfg, i, count ):
     line +=" "*4
     #numoftotalpossibleruns/max (%done)
     line += str(count)
-    line += ''.join( ["/", cfg['maxfitevals'], " (", str(round(count/int(cfg['maxfitevals'])*100, 3)), "%)" ] )
+    maxn = int(cfg['runs'])*int(cfg['fitevals'])
+    line += ''.join( ["/", maxn, " (", str(round(count/maxn)*100, 3)), "%)" ] )
     return line
     
 def logSeperate( rlf, run ):
-    rlf.write( ''.join( [ "\n", "Run ", str(run), "\n" ] ) )
+    rlf.flush( )
+    rlf.write( ''.join( [ "\n", "Run ", str(run+1), "\n" ] ) )

@@ -2,14 +2,12 @@
 #Author: Billy J Rhoades <bjrq48@mst.edu>
 #Class: CS348 Assignment 1A
 
-import configparser
-from graph import graph
-import random
-import solve
-import sys
-import argparse
-from subprocess import call
 from const import lh
+from graph import graph
+import solve
+
+import random, sys, argparse, configparser
+from subprocess import call
 
 def readConfig( fn ):
     config = configparser.ConfigParser()
@@ -18,9 +16,9 @@ def readConfig( fn ):
 
 def main():
     cfg = readConfig(gcfg( ))
-    plh = initLogs( cfg['log'] )
     puz = graph(cfg['graph'])
     print( puz )
+    plh = initLogs( cfg['log'], puz )
     
     best = graph( True, puz )
     for i in range( 0, int(cfg['solve']['runs']) ):
@@ -35,22 +33,22 @@ def main():
     return 0
 
 def gcfg( ):
-    parser = argparse.ArgumentParser(description='S348 FS2013 Assignment 1a')
+    parser = argparse.ArgumentParser(description='CS348 FS2013 Assignment 1a')
     parser.add_argument('-c', type=str,
-                       help='Specifies a configuration file (default: default.cfg)',
-                       default="default.cfg")
+                       help='Specifies a configuration file (default: cfgs/default.cfg)',
+                       default="cfgs/default.cfg")
 
     args = parser.parse_args()
     return args.c
     
-def initLogs( cfg ):
+def initLogs( cfg, puz ):
     resLogh = open( cfg['result'], 'w' )
     solLogh = open( cfg['solution'], 'w' )
     
-    resLogh.write( ''.join(["Result Log", '\n']) )
+    resLogh.write( ''.join(["Result Log", '\n', 'Seed: ', str(puz.seed), '\n']) )
     #if cfg['logh']:
     #    resLogh.write( 
-    solLogh.write( ''.join(["Solution Log", '\n']) )
+    solLogh.write( ''.join(["Solution Log", '\n', 'Seed: ', str(puz.seed), '\n']) )
     
     handles = [resLogh, solLogh]
     return handles
