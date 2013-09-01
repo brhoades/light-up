@@ -7,14 +7,15 @@ from graph import graph
 import random
 import solve
 import sys
+import argparse
 
-def readConfig():
+def readConfig( fn ):
     config = configparser.ConfigParser()
-    config.read('default.cfg')
+    config.read(fn)
     return config
 
 def main():
-    cfg = readConfig()
+    cfg = readConfig(gcfg( ))
     puz = graph(cfg['graph'])
     print( puz )
     quit
@@ -59,6 +60,15 @@ def status( cfg, i, count ):
     line +=str(round(count/int(cfg['maxruns'])*100, 3))
     line +="%)"
     return line
+
+def gcfg( ):
+    parser = argparse.ArgumentParser(description='CS348 AS1-1')
+    parser.add_argument('-c', type=str,
+                       help='Specifies a configuration file (default: default.cfg)',
+                       default="default.cfg")
+
+    args = parser.parse_args()
+    return args.c
 
 if __name__ == '__main__':
     main()
