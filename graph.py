@@ -3,12 +3,9 @@
 #Class: CS348 Assignment 1A
 
 from const import (gt, lprets, sym)
-import fileinput
 from copy import deepcopy
 from sq import sq
-import solve
-import random
-import signal
+import random, time, datetime, solve, fileinput
 
 #Graph class
 class graph:
@@ -29,10 +26,11 @@ class graph:
         #cache of sqares bordering black boxes
         self.bbsq = []
         
-        self.deep=0
-
         self.x = 0
         self.y = 0
+        
+        #our rng seed
+        self.seed=0
 
         if conf == True:
             self.x = cpy.x
@@ -44,15 +42,25 @@ class graph:
             self.fit=cpy.fit
             self.solu=cpy.solu
             self.blackSats=cpy.blackSats
+            self.seed=cpy.seed
             return 
+        
+        if conf['seed'] == 'random':
+            dt = datetime.datetime.now( )
+            self.seed = time.mktime(dt.timetuple())+float("0.%s"%dt.microsecond)
+        else:
+            self.seed = float(conf['seed'])
+            
+        random.seed(self.seed)
+        print( "Seeded RNG off ", self.seed )
+
         
         if conf['gen'] != 'True':
             self.blackSats = self.readGraph(conf['gen'])
             print("Loaded graph from:", conf['gen'])
         else:
-            random.seed(conf['seed'])
             self.genGraph(conf)    
-            print("Generated graph from seed:", conf['seed'])
+            print("Randomly generated graph")
 
     def __str__(self):
         ret = ""
@@ -111,7 +119,7 @@ class graph:
         self.x = int(conf['x'])
         self.y = int(conf['y'])
         
-        while made == False or solve.ideal( self ) == False:
+        while made == False or solve.ideal( self, int(conf['timeout']) ) == False:
             self.blank()
             for i in range(0, self.x):
                 if self.genCoinFlip( float(conf['noblackx']) ):

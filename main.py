@@ -10,13 +10,10 @@ import solve
 def readConfig():
     config = configparser.ConfigParser()
     config.read('default.cfg')
-    if config['graph']['seed'] == 'random':
-        config['graph']['seed'] = str(random.SystemRandom())
     return config
     
 def main():
     cfg = readConfig()
-    
     puz = graph(cfg['graph'])
     print( puz )
     

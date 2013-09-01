@@ -16,14 +16,14 @@ def handler(signum, frame):
 def handlerc(signum, frame):
     quit
 
-def ideal( puz ):        
+def ideal( puz, timeout=1 ):        
     back = 0
     
     best = None
     clean = graph.graph( True, puz )
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(1)
+    signal.alarm(timeout)
     try:
         back = 0
         if len(puz.bbRange( ) ) <= 0:
