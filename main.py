@@ -21,7 +21,8 @@ def main():
     
     best = graph( True, puz )
     for i in range( 0, int(cfg['solve']['runs']) ):
-        npuz = solve.manSeq( puz, cfg, plh, i )
+        tester = graph( True, puz )
+        npuz = solve.manSeq( tester, cfg, plh, i )
         if npuz.fit > best.fit:
             best = graph( True, npuz )
     
