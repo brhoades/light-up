@@ -24,3 +24,6 @@ reqnum2.cfg:
 reqnum3.cfg
     This duplicates the requirements by #3 of the second list in the assignment PDf.
     The results will be the same.
+
+Example:
+    python3.3 main.py -c cfgs/default.cfg
