@@ -192,16 +192,16 @@ def manSeq( puz, cfg, plh, run ):
     
     logSeperate( rlh, run )
     print( "Run #", run+1, "/", cfg['solve']['runs'] )
-    best = graph.graph( True, puz )
+    best = graph.graph(copy=puz)
 
     while i < runs:
-        sol = graph.graph( True, puz )
+        sol = graph.graph(copy=puz)
         rng( sol, chance )
         
         if sol.isValid( ):
             i += 1
             if sol.fit > best.fit:
-                best = graph.graph( True, sol )
+                best = graph.graph(copy=sol)
                 sol.logResult( i, rlh )
         
             if ( area < 100 and i % sol.x ) or area >= 100:

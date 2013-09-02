@@ -13,7 +13,7 @@ class graph:
     ######################################
     # Stock Methods
     ######################################
-    def __init__( self, conf=False, cpy=False ):
+    def __init__( self, **args ):
         self.data=[]
 
         #Is this an invalid graph?
@@ -36,34 +36,39 @@ class graph:
         #our rng seed
         self.seed=0
 
-        if conf == True:
-            self.x = cpy.x
-            self.y = cpy.y
+        if 'copy' in args:
+            self.x = args['copy'].x
+            self.y = args['copy'].y
             self.blank()
-            self.data=deepcopy(cpy.data)
-            self.bad=cpy.bad
-            self.invalid=cpy.invalid
-            self.fit=cpy.fit
-            self.blackSats=cpy.blackSats
-            self.seed=cpy.seed
-            self.ignoreBlacks=cpy.ignoreBlacks
-            return 
-        
-        if conf['seed'] == 'random':
-            dt = datetime.datetime.now( )
-            self.seed = time.mktime(dt.timetuple())+float("0.%s"%dt.microsecond)
-        else:
-            self.seed = float(conf['seed'])
+            self.data=deepcopy(args['copy'].data)
+            self.bad=args['copy'].bad
+            self.invalid=args['copy'].invalid
+            self.fit=args['copy'].fit
+            self.blackSats=args['copy'].blackSats
+            self.seed=args['copy'].seed
+            self.ignoreBlacks=args['copy'].ignoreBlacks
+        elif 'conf' in args:
+            conf=args['conf']
+            if 'x' in args:
+                conf['x'] = args['x']
+            if 'y' in args:
+                conf['y'] = args['y']
+            if conf['seed'] == 'random':
+                dt = datetime.datetime.now( )
+                self.seed = time.mktime(dt.timetuple())+float("0.%s"%dt.microsecond)
+            else:
+                self.seed = float(conf['seed'])
+                
+            random.seed(self.seed)
+            print( "Seeded RNG off ", self.seed )
             
-        random.seed(self.seed)
-        print( "Seeded RNG off ", self.seed )
-        
-        if conf['gen'] != 'True':
-            self.readGraph(conf['gen'])
-            print("Loaded graph from:", conf['gen'])
-        else:
-            self.genGraph(conf)    
-            print("Randomly generated graph")
+            if conf['gen'] != 'True':
+                self.readGraph(conf['gen'])
+                print("Loaded graph from:", conf['gen'])
+            else:
+                self.genGraph(conf)    
+                print("Randomly generated graph")
+                
 
     def __str__(self):
         ret = ""
