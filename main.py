@@ -57,7 +57,7 @@ def initLogs( fcfg, puz, fname ):
         
     resLogh.write( ''.join(['Seed: ', str(puz.seed), '\n' ]) )
     
-    if cfg['logh']:
+    if cfg['logh'] != '0':
         output = subprocess.check_output("git log -n1 --pretty=\"Git Hash: %H\n  Commit Date: %ad (%ar)\n  Author: %an <%ae>\n  Change Message: %s\"", shell=True)
         output = str( output )
         output = re.sub( r'\\n', '\n', output )
