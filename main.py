@@ -18,6 +18,7 @@ def main():
     puz = graph(cfg['graph'])
     print( puz )
     plh = initLogs( cfg, puz, gcfg( ) )
+    puz.ignoreBlacks = bool(cfg['solve']['ignoreblack'])
     
     best = graph( True, puz )
     for i in range( 0, int(cfg['solve']['runs']) ):

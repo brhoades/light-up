@@ -181,7 +181,6 @@ def flip( chance ):
 def manSeq( puz, cfg, plh, run ):
     runs = int(cfg['solve']['fitevals'])
     chance = float(cfg['solve']['chance'])
-    countBlack = bool(cfg['solve']['ignoreblack'])
     
     slh = plh[lh.SOL]
     rlh = plh[lh.RES]
@@ -199,7 +198,7 @@ def manSeq( puz, cfg, plh, run ):
         sol = graph.graph( True, puz )
         rng( sol, chance )
         
-        if sol.isValid( countBlack ):
+        if sol.isValid( ):
             i += 1
             if sol.fit > best.fit:
                 best = graph.graph( True, sol )

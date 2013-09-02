@@ -31,6 +31,8 @@ class graph:
         self.x = 0
         self.y = 0
         
+        self.ignoreBlacks = False
+        
         #our rng seed
         self.seed=0
 
@@ -44,6 +46,7 @@ class graph:
             self.fit=cpy.fit
             self.blackSats=cpy.blackSats
             self.seed=cpy.seed
+            self.ignoreBlacks=cpy.ignoreBlacks
             return 
         
         if conf['seed'] == 'random':
@@ -312,12 +315,13 @@ class graph:
         # ( num of lit tiles / num of possible lit tiles )
         fit = self.litsq( )  / self.posLitsq( )
         # * ( num of satisfied black squares / number of (satisifiable) black squares )
-        fit *= self.blackSats / self.blacksSb( )
+        if not self.ignoreBlacks:
+            fit *= self.blackSats / self.blacksSb( )
         
         return fit
 
-    def isValid( self, ignore ):
-        if not ignore and self.blackSats < self.blacksSb( ):
+    def isValid( self ):
+        if not self.ignoreBlacks and self.blackSats < self.blacksSb( ):
             return False
         return True
             
@@ -344,7 +348,7 @@ class graph:
     def badBulbSpot( self, x, y ):
         if self.data[x][y].type != gt.UNLIT:
             return True
-        if self.fullNeighbors( x, y ):
+        if self.fullNeighbors( x, y ) and not self.ignoreBlacks:
             return True
     
     def fullNeighbors( self, x, y ):
