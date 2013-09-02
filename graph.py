@@ -413,9 +413,18 @@ class graph:
         fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4)), '\n'] ) )
         
     def logSolution( self, fh ):
-        fh.write( self.__str__( ) )
-        fh.write( ''.join( [ '\n', "fitness: ", str(round(self.fit, 4)), "/1.0", '\n' ] ) )
-        
+        fh.write( ''.join( [ str(self.litsq( )), '\n', self.serialize( ) ] ) )
+    
+    def serialize( self ):
+        ret = ""
+        for i in range(0,self.x):
+            for j in range(0,self.y):
+                if self.data[i][j].type == gt.BULB:
+                    #90 degree cw rotation about origin
+                    ni = i
+                    nj = (self.y-1)-j                
+                    ret += ''.join([str(ni+1), " ", str(nj+1), '\n'])
+        return ret
 
     ######################################
     # Wrapper Functions
