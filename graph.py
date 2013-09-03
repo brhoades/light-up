@@ -6,7 +6,7 @@ from const import (gt, lprets, sym)
 from copy import deepcopy
 from sq import sq
 from math import ceil
-import random, time, datetime, solve, fileinput
+import random, time, datetime, solve, fileinput, configparser
 
 #Graph class
 class graph:
@@ -36,37 +36,36 @@ class graph:
         #our rng seed
         self.seed=0
 
-        if 'copy' in args:
-            self.x = args['copy'].x
-            self.y = args['copy'].y
-            self.blank()
-            self.data=deepcopy(args['copy'].data)
-            self.bad=args['copy'].bad
-            self.invalid=args['copy'].invalid
-            self.fit=args['copy'].fit
-            self.blackSats=args['copy'].blackSats
-            self.seed=args['copy'].seed
-            self.ignoreBlacks=args['copy'].ignoreBlacks
-        elif 'conf' in args:
-            conf=args['conf']
+        conf=None
+
+        if 'file' in args:
+            config = configparser.ConfigParser()
+            config.read(args['file'])
+            conf=config
+        
+        if 'conf' in args or conf != None:
+            if conf == None:
+                conf=args['conf']
             if 'x' in args:
-                conf['x'] = args['x']
+                conf['graph']['x'] = str(args['x'])
             if 'y' in args:
-                conf['y'] = args['y']
-            if conf['seed'] == 'random':
+                conf['graph']['y'] = str(args['y'])
+            if conf['graph']['seed'] == 'random':
                 dt = datetime.datetime.now( )
                 self.seed = time.mktime(dt.timetuple())+float("0.%s"%dt.microsecond)
             else:
-                self.seed = float(conf['seed'])
-                
+                self.seed = float(conf['graph']['seed'])
+           
+            self.ignoreBlacks = conf['solve']['ignoreblack'] == 'True'
+
             random.seed(self.seed)
             print( "Seeded RNG off ", self.seed )
             
-            if conf['gen'] != 'True':
-                self.readGraph(conf['gen'])
-                print("Loaded graph from:", conf['gen'])
+            if conf['graph']['gen'] != 'True':
+                self.readGraph(conf['graph']['gen'])
+                print("Loaded graph from:", conf['graph']['gen'])
             else:
-                self.genGraph(conf)    
+                self.genGraph(conf['graph'])    
                 print("Randomly generated graph")
                 
 
@@ -89,6 +88,27 @@ class graph:
         ret +="┘\n" #\n
         
         return ret
+
+    def copy(self, other, same=False):
+        if not same:
+            self.x = other.x
+            self.y = other.y
+            self.seed=other.seed
+            self.ignoreBlacks=other.ignoreBlacks
+            self.bbsq = []
+            self.data = []
+            self.blank( )
+            for [x,y] in other.bbsq:
+                self.bbsq.append([x,y])
+
+        for i in range(0,other.x):
+            for j in range(0,other.y):
+                self.data[i][j].copy(other.data[i][j], same)
+
+        self.bad=other.bad
+        self.invalid=other.invalid
+        self.fit=other.fit
+        self.blackSats=other.blackSats
 
     ######################################
     # Incrementors or Bool Changers
@@ -179,8 +199,9 @@ class graph:
         self.invalid=False
         self.bad=False
         self.blackSats = 0
-        self.fit=-1
+        self.fit=0
         self.solu=None
+        del self.bbsq
         self.bbsq = []
 
         if len(self.data) != 0:

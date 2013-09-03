@@ -12,11 +12,27 @@ class sq:
         self.type = type
         self.lights = []
         self.blackN = []
-        self.owner = deepcopy( owner )
+        self.owner = []
+        for [x,y] in owner:
+            self.owner.append([x,y])
         self.bad = False
         
     def __str__( self ):
         return sym.tb[self.type]
+    
+    def copy( self, other, sameBoard=False ):
+        self.type=other.type
+        self.lights = []
+        for [x,y] in other.lights:
+            self.lights.append([x,y])
+        if not sameBoard:
+            self.blackN = []
+            for [x,y] in other.blackN:
+                self.blackN.append([x,y])
+            self.bad=other.bad
+        self.owner = []
+        for [x,y] in other.owner:
+            self.owner.append([x,y])
         
     def rmLight( self, puz ):
         self.type = gt.UNLIT

@@ -17,133 +17,107 @@ from math import ceil, floor
 ########################################################
 #def solve( 
 def handler(signum, frame):
-    raise OSError()
     return False
     
 def ideal( puz, timeout=1 ):        
     back = 0
     
-    best = None
-    clean = graph.graph( True, puz )
+    best = graph.graph( )
+    best.copy( puz )
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(ceil(timeout/5))
+    signal.alarm(1)
     try:
-        back = 0
         if len(puz.bbRange( ) ) <= 0:
             for i in range(0,self.x):
                 for j in range(0,self.y):
                     back = puz.lfIdeal( puz, best, i, j )
-                    if back == 3:
+                    if back == solv.BEST:
                         break
-                if back == 3:
+                if back == solv.BEST:
                     break
-            
-        for [i,j] in puz.bbRange( ):
-            if puz.data[i][j].type == gt.UNLIT:
-                back = 0
-                puz.hitTopinc( True )
-                best = graph.graph( True, puz )
-                back = bbIdeal( puz, best, i, j )
-                if back == 3:
-                    break
-
+        else:
+            for [i,j] in puz.bbRange( ):
+                if puz.data[i][j].type == gt.UNLIT:
+                    back = bbIdeal( puz, best, i, j )
+                    if back == solv.BEST:
+                        break
+                        
         signal.alarm(0)
         #print( "Found! lamps: ", best.lights(), " lit tiles: ", best.litsq(), "/", best.posLitsq(), "black tiles: ", best.blackSats, "/", best.blacksSb( ), "(", best.blacks( ), ")" )
-        if back == 3:
+        print( best )
+        if back == solv.BEST:
             return True
         else:
             return False
-    except KeyboardInterrupt:
-        quit
-    except:
+    except Exception as e:
+        raise e
+    except: 
         return False
 
 def bbIdeal( puz, best, x, y ):
     if not puz.addLight( x, y, True ):
-        return 0
+        return solv.DONE
     
-    ran = 0
+    ran = solv.DONE
         
     for [i, j] in puz.bbRange( ):
         if puz.data[i][j].type == gt.UNLIT:
             ran=bbIdeal( puz, best, i, j )
-        if ran > 0:
+        if ran > solv.DONE:
             break
     
-    if ran == 0:
+    if ran == solv.DONE:
         if betterSol( puz, best, "b" ):
-            for i in range(0, puz.x):
-                for j in range( 0, puz.y):
-                    if best.data[i][j].type == gt.BULB:
-                        best.rmLight( i, j )
-            for i in range(0, puz.x):
-                for j in range( 0, puz.y):
-                    if puz.data[i][j].type == gt.BULB:
-                        best.addLight( i, j )
-
+            best.copy( puz, True )
             if bestSol( best, "b" ):
-                clean = graph.graph( True, best )
+                if bestSol( best, "l" ):
+                    ran = solv.BEST
+                clean = graph.graph( )
+                clean.copy( best )
                 for i in range(0, puz.x):
                     for j in range( 0, puz.y):
                         if puz.data[i][j].type == gt.UNLIT:
-                            del best
-                            best = graph.graph( True, clean )
-                            puz.hitTopinc( True )
-                            ran = lfIdeal( puz, best, i, j )
-                            if ran > 1:
+                            if ran > solv.DONE:
                                 break
-                    if ran > 1:
+                            best.copy( clean, True )
+                            ran = lfIdeal( puz, best, i, j )
+                    if ran > solv.DONE:
                         break
-                if ran != 3:
-                    ran = 2
             else:
-                ran = 2
+                ran = solv.DONE
             
     puz.rmLight( x, y )
     return ran
 
 def lfIdeal( puz, best, x, y ):
     if not puz.addLight( x, y, True ):
-        return 0
+        return solv.DONE
 
-    ran = 0
+    ran = solv.DONE
 
-    if puz.hitTopLim( ):
-        ran = 1
-
-    if ran == 0:
-        for i in range(0, puz.x):
-            for j in range( 0, puz.y):
-                if puz.data[i][j].type == gt.UNLIT:
-                    ran=lfIdeal( puz, best, i, j )
-                    if ran > 0:
-                        break
-            if ran > 0:
-                break
-                
-    if ran == 0:
+    for i in range(0, puz.x):
+        for j in range( 0, puz.y):
+            if puz.data[i][j].type == gt.UNLIT:
+                ran=lfIdeal( puz, best, i, j )
+                if ran > solv.DONE:
+                    break
+        if ran > solv.DONE:
+            break
+    
+    if ran == solv.DONE:
         if betterSol( puz, best, "l" ):
-            for i in range(0, puz.x):
-                for j in range( 0, puz.y):
-                    if best.data[i][j].type == gt.BULB:
-                        best.rmLight( i, j )
-            for i in range(0, puz.x):
-                for j in range( 0, puz.y):
-                    if puz.data[i][j].type == gt.BULB:
-                        best.addLight( i, j )
+            best.copy( puz, True )
 
-        if bestSol( best, "l" ):
-            ran = 3
-        else:
-            puz.hitTopinc( )
+            if bestSol( puz, "l" ):
+                ran = solv.BEST
 
     puz.rmLight( x, y )
     return ran    
 
 def betterSol( puz, best, chk="a" ):
     if chk == "b" or chk=="a":
-        if puz.blackSats > best.blackSats:
+        if puz.blackSats > best.blackSats or puz.ignoreBlacks:
             return True
     if chk == "l" or chk=="a":
         if puz.litsq( ) > best.litsq( ):
@@ -151,15 +125,14 @@ def betterSol( puz, best, chk="a" ):
     return False
 
 def bestSol( puz, chk="a" ):
-    ret = 0
     if chk == "b" or chk == "a":
-        if puz.blackSats < puz.blacksSb( ):
-            return False
+        if puz.blackSats == puz.blacksSb( ) or puz.ignoreBlacks:
+            return True
     if chk == "l" or chk == "a":
-        if puz.litsq( ) < puz.posLitsq( ):
-            return False
+        if puz.litsq( ) == puz.posLitsq( ):
+            return True
 
-    return True
+    return False
             
         
 ########################################################
@@ -192,26 +165,26 @@ def manSeq( puz, cfg, plh, run ):
     
     logSeperate( rlh, run )
     print( "Run #", run+1, "/", cfg['solve']['runs'] )
-    best = graph.graph(copy=puz)
-
+    best = graph.graph( )
+    best.copy( puz )
     while i < runs:
-        sol = graph.graph(copy=puz)
+        sol = graph.graph( )
+        sol.copy(puz)
         rng( sol, chance )
         
         if sol.isValid( ):
             i += 1
             if sol.fit > best.fit:
-                best = graph.graph(copy=sol)
+                best.copy(sol, True)
                 sol.logResult( i, rlh )
         
             if ( area < 100 and i % sol.x ) or area >= 100:
-                for j in range(0, len(lastline)):
-                    print('\b', end='')
+                print('\b'*len(lastline), end='')
                     
                 lastline = status(cfg['solve'], i, count)
                 print(lastline, end='')
     print( "" )
-    return best
+    puz.copy( best )
 
 def status( cfg, i, count ):
     #(numgoodruns/totalruns) (%done)

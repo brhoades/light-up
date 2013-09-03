@@ -48,9 +48,9 @@ class sym:
     tb[gt.BLACK] = "X"
 
 class solv:
-    DONE = 0
-    NEXTPLACE = 1                           #Scooting our first place forward
-    NOFIN = 2                               #Can't finish due to puzzle issue or bad inital placement
+    DONE = 1
+    BEST = 2                     
+    NOFIN = 3
     
 class method:
     MINBULB = 0

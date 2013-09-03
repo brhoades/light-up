@@ -15,17 +15,17 @@ def readConfig( fn ):
 
 def main():
     cfg = readConfig(gcfg( ))
-    puz = graph(conf=cfg['graph'])
+    puz = graph(conf=cfg)
     print( puz )
     plh = initLogs( cfg, puz, gcfg( ) )
-    puz.ignoreBlacks = bool(cfg['solve']['ignoreblack'])
-    
-    best = graph(copy=puz )
+    best = graph()
+    best.copy(puz)
     for i in range( 0, int(cfg['solve']['runs']) ):
-        tester = graph(copy=puz)
-        npuz = solve.manSeq( tester, cfg, plh, i )
-        if npuz.fit > best.fit:
-            best = graph(copy=npuz)
+        tester = graph( )
+        tester.copy(puz)
+        solve.manSeq( tester, cfg, plh, i )
+        if tester.fit > best.fit:
+            best.copy(tester, True)
     
     best.logSolution( plh[lh.SOL] )
     print( "Best found: " )
