@@ -7,6 +7,7 @@ from copy import deepcopy
 from sq import sq
 from math import ceil
 import random, time, datetime, solve, fileinput, configparser
+import util
 
 #Graph class
 class graph:
@@ -35,7 +36,10 @@ class graph:
         
         #our rng seed
         self.seed=0
-
+        
+        #our unique id
+        self.id=util.id( )
+ 
         conf=None
 
         if 'file' in args:
@@ -89,11 +93,13 @@ class graph:
         
         return ret
 
-    def copy(self, other, same=False):
+    def copy(self, other):
+        same = (self.id == other.id)
         if not same:
             self.x = other.x
             self.y = other.y
             self.seed=other.seed
+            self.id=other.id
             self.ignoreBlacks=other.ignoreBlacks
             self.bbsq = []
             self.data = []

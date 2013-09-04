@@ -25,7 +25,7 @@ def main():
         tester.copy(puz)
         solve.manSeq( tester, cfg, plh, i )
         if tester.fit > best.fit:
-            best.copy(tester, True)
+            best.copy(tester)
     
     best.logSolution( plh[lh.SOL] )
     print( "Best found: " )

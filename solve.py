@@ -69,7 +69,7 @@ def bbIdeal( puz, best, x, y ):
     
     if ran == solv.DONE:
         if betterSol( puz, best, "b" ):
-            best.copy( puz, True )
+            best.copy( puz )
             if bestSol( best, "b" ):
                 if bestSol( best, "l" ):
                     ran = solv.BEST
@@ -80,7 +80,7 @@ def bbIdeal( puz, best, x, y ):
                         if puz.data[i][j].type == gt.UNLIT:
                             if ran > solv.DONE:
                                 break
-                            best.copy( clean, True )
+                            best.copy( clean )
                             ran = lfIdeal( puz, best, i, j )
                     if ran > solv.DONE:
                         break
@@ -107,7 +107,7 @@ def lfIdeal( puz, best, x, y ):
     
     if ran == solv.DONE:
         if betterSol( puz, best, "l" ):
-            best.copy( puz, True )
+            best.copy( puz )
 
             if bestSol( puz, "l" ):
                 ran = solv.BEST
@@ -175,7 +175,7 @@ def manSeq( puz, cfg, plh, run ):
         if sol.isValid( ):
             i += 1
             if sol.fit > best.fit:
-                best.copy(sol, True)
+                best.copy(sol)
                 sol.logResult( i, rlh )
         
             if ( area < 100 and i % sol.x ) or area >= 100:
