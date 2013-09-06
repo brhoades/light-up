@@ -12,7 +12,7 @@ class TestSequenceFunctions(unittest.TestCase):
 
     def test_randomGen(self):
         times = []
-        count = 250
+        count = 50
         size = 10
         
         print( ''.join(["Square board generation tests (", str(count)," ea), ignoring black tiles: "]), file=rstd)
@@ -41,7 +41,7 @@ class TestSequenceFunctions(unittest.TestCase):
               
             for i in range(0,count):
                 st = datetime.datetime.now()
-                graph.graph( file="cfgs/test-2.cfg", x=size, y=size )
+                #graph.graph( file="cfgs/test-2.cfg", x=size, y=size )
                 t = datetime.datetime.now( ) - st            
                 times.append(t.microseconds)
             
@@ -55,3 +55,6 @@ class TestSequenceFunctions(unittest.TestCase):
          
 if __name__ == '__main__':
     unittest.main(buffer=True)
+    
+#profile("graph.graph( file=\"cfgs/test-2.cfg\", x=8, y=8 )")
+

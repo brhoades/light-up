@@ -3,18 +3,18 @@
 #Class: CS348 Assignment 1A
 
 from const import (sym, gt, lprets)
-from copy import deepcopy
 
 class sq:
-    def __init__( self, x, y, type, owner=[] ):
+    def __init__( self, puz, x, y, type, owner=[] ):
         self.x = x
         self.y = y
         self.type = type
-        self.lights = []
-        self.blackN = []
-        self.owner = []
-        for [x,y] in owner:
-            self.owner.append([x,y])
+        self.lights = set()
+        self.blackN = set()
+        self.owner = set()
+        self.parent = puz
+        for sq in owner:
+            self.owner.append(sq)
         self.bad = False
         
     def __str__( self ):
@@ -22,55 +22,57 @@ class sq:
     
     def copy( self, other, sameBoard=False ):
         self.type=other.type
-        self.lights = []
-        for [x,y] in other.lights:
-            self.lights.append([x,y])
+        self.lights = set( )
+        for lits in other.lights:
+            self.lights.add(lits)
         if not sameBoard:
-            self.blackN = []
-            for [x,y] in other.blackN:
-                self.blackN.append([x,y])
+            self.parent = other.parent
+            self.blackN = set( )
+            for bln in other.blackN:
+                self.blackN.add(bln)
             self.bad=other.bad
-        self.owner = []
-        for [x,y] in other.owner:
-            self.owner.append([x,y])
+        self.owner = set( )
+        for own in other.owner:
+            self.owner.add(own)
         
-    def rmLight( self, puz ):
+    def rmLight( self ):
+        puz = self.parent
         self.type = gt.UNLIT
         if self.x > 0:
             for i in range(self.x-1, -1, -1):
                 if puz.data[i][self.y].isBlack():
                     break
-                puz.data[i][self.y].rmLit( self.x, self.y )
+                puz.data[i][self.y].rmLit( self )
                 
         if self.x < puz.x-1:
             for i in range(self.x+1, puz.x):
                 if puz.data[i][self.y].isBlack():
                     break
-                puz.data[i][self.y].rmLit( self.x, self.y )
+                puz.data[i][self.y].rmLit( self )
 
         ##################
         if self.y > 0:
             for i in range(self.y-1, -1, -1):
                 if puz.data[self.x][i].isBlack():
                     break
-                puz.data[self.x][i].rmLit( self.x, self.y )
+                puz.data[i][self.y].rmLit( self )
                     
         if self.y < puz.y-1:
             for i in range(self.y+1, puz.y):
                 if puz.data[self.x][i].isBlack():
                     break
-                puz.data[self.x][i].rmLit( self.x, self.y )
+                puz.data[i][self.y].rmLit( self )
 
-        for [x, y] in self.blackN:
-            if puz.data[x][y].atCapacity( ):
+        for sqr in self.blackN:
+            if sqr.atCapacity( ):
                 puz.decBlackSats( )
-            puz.data[x][y].lights.remove( [self.x, self.y] )
+            sqr.lights.discard( self )
 
     #Called by outsider to remove us, if we're a lit square
-    def rmLit( self, x, y ):
+    def rmLit( self, other ):
         if self.type != gt.LIT:
             return False
-        if not self.isOwner( x, y ):
+        if not self.isOwner( other ):
             return False
         ret = False
         
@@ -78,20 +80,20 @@ class sq:
             ret = True
             self.type = gt.UNLIT
 
-        self.owner.remove( [x, y] )
+        self.owner.discard( other )
         return ret
     
     #called by outsider light us up
-    def light( self, px, py ):
+    def light( self, other ):
         #Unlit, light
         if self.type == gt.UNLIT:
             #FIXME: Light squares up... inc counter
             self.type= gt.LIT
-            self.owner.append( [px, py] )
+            self.owner.add( other )
             return lprets.LIT
         #Add owner if lit
         if self.type == gt.LIT:
-            self.owner.append( [px, py] )
+            self.owner.add( other )
             return lprets.YALIT
         #Bulb == invalid
         if self.type == gt.BULB:
@@ -100,8 +102,8 @@ class sq:
         if self.isBlack():
             return lprets.STOPPED
             
-    def isOwner( self, x, y ):
-        if [x, y] in self.owner:
+    def isOwner( self, other ):
+        if other in self.owner:
             return True
         else:
             return False
@@ -129,7 +131,7 @@ class sq:
             tx = x-1
             ty = y
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.append( [x, y] )
+                puz.data[tx][ty].lights.add( self )
                 if puz.data[tx][ty].atCapacity( ):
                     puz.incBlackSats( )
                 
@@ -137,7 +139,7 @@ class sq:
             tx = x
             ty = y-1
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.append( [x, y] )
+                puz.data[tx][ty].lights.add( self )
                 if puz.data[tx][ty].atCapacity( ):
                     puz.incBlackSats( )
                     
@@ -145,7 +147,7 @@ class sq:
             tx = x+1
             ty = y
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.append( [x, y] )
+                puz.data[tx][ty].lights.add( self )
                 if puz.data[tx][ty].atCapacity( ):
                     puz.incBlackSats( )
         
@@ -153,6 +155,6 @@ class sq:
             tx = x
             ty = y+1
             if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.append( [x, y] )
+                puz.data[tx][ty].lights.add( self )
                 if puz.data[tx][ty].atCapacity( ):
                     puz.incBlackSats( )

@@ -36,7 +36,7 @@ class graph:
         
         #our rng seed
         self.seed=0
-        
+                
         #our unique id
         self.id=util.id( )
  
@@ -216,7 +216,7 @@ class graph:
         for i in range(0,self.x):
             self.data.append([])
             for j in range(0,self.y):
-                self.data[i].append( sq( i, j, gt.UNLIT ) )
+                self.data[i].append( sq( self, i, j, gt.UNLIT ) )
         return
 
     ######################################
@@ -224,31 +224,31 @@ class graph:
     ######################################
     
     def addBlack( self, x, y, b ):
-        self.data[x][y] = sq( x, y, b+gt.TRANSFORM )
+        self.data[x][y] = sq( self, x, y, b+gt.TRANSFORM )
         ourType = b+gt.TRANSFORM
         if x > 0:
-            self.data[x-1][y].blackN.append( [x, y] )
+            self.data[x-1][y].blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
                 and not( [x-1, y] in self.bbsq ):
                 self.bbsq.append( [x-1, y] )
             if ourType == gt.BLACK0:
                 self.data[x-1][y].bad = True
         if x < self.x-1:
-            self.data[x+1][y].blackN.append( [x, y] )
+            self.data[x+1][y].blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
                 and not( [x+1, y] in self.bbsq ):
                 self.bbsq.append( [x+1, y] )
             if ourType == gt.BLACK0:
                 self.data[x+1][y].bad = True                    
         if y > 0:
-            self.data[x][y-1].blackN.append( [x, y] )
+            self.data[x][y-1].blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
                 and not( [x, y-1] in self.bbsq ):
                 self.bbsq.append( [x, y-1] )
             if ourType == gt.BLACK0:
                 self.data[x][y-1].bad = True
         if y < self.y-1:
-            self.data[x][y+1].blackN.append( [x, y] )
+            self.data[x][y+1].blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
                 and not( [x, y+1] in self.bbsq ):
                 self.bbsq.append( [x, y+1] )
@@ -274,22 +274,22 @@ class graph:
     def lightUpPlus( self, x, y ):
         if x > 0:
             for i in range(x-1, -1, -1):
-                ret = self.data[i][y].light( x, y )
+                ret = self.data[i][y].light( self.data[x][y] )
                 if ret == lprets.STOPPED:
                     break
         if x < self.x-1:
             for i in range(x+1, self.x ):
-                ret = self.data[i][y].light( x, y )
+                ret = self.data[i][y].light( self.data[x][y] )
                 if ret == lprets.STOPPED:
                     break
         if y > 0:
             for i in range(y-1, -1, -1):
-                ret = self.data[x][i].light( x, y )
+                ret = self.data[x][i].light( self.data[x][y] )
                 if ret == lprets.STOPPED:
                     break
         if y < self.y-1:
             for i in range(y+1, self.y):
-                ret = self.data[x][i].light( x, y )
+                ret = self.data[x][i].light( self.data[x][y] )
                 if ret == lprets.STOPPED:
                     break
         return lprets.LIT
@@ -387,8 +387,8 @@ class graph:
         if len(self.data[x][y].blackN) == 0:
             return False
         
-        for [tx, ty] in self.data[x][y].blackN:
-            if self.data[tx][ty].atCapacity( ):
+        for sqr in self.data[x][y].blackN:
+            if sqr.atCapacity( ):
                 return True
                 
     def unLitsq( self ):
@@ -439,8 +439,8 @@ class graph:
     def bbRange( self ):
         ret = []
         for [i, j] in self.bbsq:
-            for [x, y] in self.data[i][j].blackN:
-                if not self.data[x][y].atCapacity( ) and \
+            for sqr in self.data[i][j].blackN:
+                if not sqr.atCapacity( ) and \
                     not( [i, j] in ret ):
                     ret.append( [i, j] )
         return ret
@@ -467,7 +467,7 @@ class graph:
     ######################################
         
     def rmLight( self, x, y ):
-        self.data[x][y].rmLight( self )
+        self.data[x][y].rmLight( )
         return
         
     def setFitness( self ):
