@@ -43,18 +43,20 @@ class sq:
     
     def copy( self, other, sameBoard=False ):
         self.type=other.type
+        # We don't copy parent over here as our parent puzzle doesn't
+        #   change.
         self.lights = set( )
         for lits in other.lights:
-            self.lights.add(lits)
+            self.lights.add(self.parent.data[lits.x][lits.y])
         if not sameBoard:
             self.parent = other.parent
             self.blackN = set( )
             for bln in other.blackN:
-                self.blackN.add(bln)
+                self.blackN.add(self.parent.data[bln.x][bln.y])
             self.bad=other.bad
         self.owner = set( )
         for own in other.owner:
-            self.owner.add(own)
+            self.owner.add(self.parent.data[own.x][own.y])
         
     def rmLight( self ):
         puz = self.parent
