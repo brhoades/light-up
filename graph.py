@@ -54,7 +54,9 @@ class graph:
                 conf['graph']['x'] = str(args['x'])
             if 'y' in args:
                 conf['graph']['y'] = str(args['y'])
-            if conf['graph']['seed'] == 'random':
+            if 'seed' in args:
+                self.seed = args['seed']
+            elif conf['graph']['seed'] == 'random':
                 dt = datetime.datetime.now( )
                 self.seed = time.mktime(dt.timetuple())+float("0.%s"%dt.microsecond)
             else:
