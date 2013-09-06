@@ -112,16 +112,19 @@ class graph:
             self.seed=other.seed
             self.id=other.id
             self.ignoreBlacks=other.ignoreBlacks
-            self.bbsq = []
-            self.data = []
             self.blank( )
-            for [x,y] in other.bbsq:
-                self.bbsq.append([x,y])
 
         for i in range(0,other.x):
             for j in range(0,other.y):
                 self.data[i][j].copy(other.data[i][j], same)
 
+        for typ in range(0, gt.lookup[len(gt.lookup)-1]+1):
+            for sq in other.sqgt[typ]:
+                self.sqgt[typ].add( self.data[sq.x][sq.y] )
+            
+        for sq in other.bbsq:
+            self.bbsq.add( self.data[sq.x][sq.y] )
+                            
         self.bad=other.bad
         self.invalid=other.invalid
         self.fit=other.fit
@@ -216,14 +219,9 @@ class graph:
         self.invalid=False
         self.bad=False
         self.blackSats = 0
-        self.fit=0
-        self.solu=None
-        del self.bbsq
-        self.bbsq = []
+        self.fit=-1
+        self.data = []
 
-        if len(self.data) != 0:
-            del self.data
-            self.data = []
         for i in range(0,self.x):
             self.data.append([])
             for j in range(0,self.y):
@@ -238,33 +236,37 @@ class graph:
         self.data[x][y] = sq( self, x, y, b+gt.TRANSFORM )
         ourType = b+gt.TRANSFORM
         if x > 0:
-            self.data[x-1][y].blackN.add( self.data[x][y] )
+            sqr = self.data[x-1][y]
+            sqr.blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( [x-1, y] in self.bbsq ):
-                self.bbsq.append( [x-1, y] )
+                and not( sqr in self.bbsq ):
+                self.bbsq.add( sqr )
             if ourType == gt.BLACK0:
-                self.data[x-1][y].bad = True
+                sqr.bad = True
         if x < self.x-1:
-            self.data[x+1][y].blackN.add( self.data[x][y] )
+            sqr = self.data[x+1][y]
+            sqr.blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( [x+1, y] in self.bbsq ):
-                self.bbsq.append( [x+1, y] )
+                and not( sqr in self.bbsq ):
+                self.bbsq.add( sqr )
             if ourType == gt.BLACK0:
-                self.data[x+1][y].bad = True                    
+                sqr.bad = True               
         if y > 0:
-            self.data[x][y-1].blackN.add( self.data[x][y] )
+            sqr = self.data[x][y-1]
+            sqr.blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( [x, y-1] in self.bbsq ):
-                self.bbsq.append( [x, y-1] )
+                and not( sqr in self.bbsq ):
+                self.bbsq.add( sqr )
             if ourType == gt.BLACK0:
-                self.data[x][y-1].bad = True
+                sqr.bad = True
         if y < self.y-1:
-            self.data[x][y+1].blackN.add( self.data[x][y] )
+            sqr = self.data[x][y+1]
+            sqr.blackN.add( self.data[x][y] )
             if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( [x, y+1] in self.bbsq ):
-                self.bbsq.append( [x, y+1] )
+                and not( sqr in self.bbsq ):
+                self.bbsq.add( sqr )
             if ourType == gt.BLACK0:
-                self.data[x][y+1].bad = True
+                sqr.bad = True
 
     def addLight( self, x, y, careful=False ):
         #Check surrounding spots for validation
@@ -449,11 +451,11 @@ class graph:
     #Bordered by a black cell that isn't full
     def bbRange( self ):
         ret = []
-        for [i, j] in self.bbsq:
-            for sqr in self.data[i][j].blackN:
+        for bsqr in self.bbsq:
+            for sqr in self.data[bsqr.x][bsqr.y].blackN:
                 if not sqr.atCapacity( ) and \
-                    not( [i, j] in ret ):
-                    ret.append( [i, j] )
+                    not( [bsqr.x, bsqr.y] in ret ):
+                    ret.append( [bsqr.x, bsqr.y] )
         return ret
 
     def logResult( self, i, fh ):
