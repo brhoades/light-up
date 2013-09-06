@@ -10,7 +10,7 @@ class gt:
     UNLIT = 1                                 # Unlit tile, default state
     LIT = 2                                   # This is a lit tile, lit by a bulb
     BULB = 3                                  # This is a bulb
-    BLACK_THRESHOLD = 10
+    BLACK_THRESHOLD = 9                       # Threshold for where all black squares begin afterwards
     TRANSFORM = 10                            # What we add to data graph's black value to get our constant
     BLACK0 = 10                               # A black square that cannot be bordered by a light
     BLACK1 = 11                               # A black square that must be bordered by 1 light
@@ -18,6 +18,9 @@ class gt:
     BLACK3 = 13                               # A black square that must be bordered by 3 lights
     BLACK4 = 14                               # A black square that must be bordered by 4 lights
     BLACK = 15                                # A black square that just blocks light
+    
+    lookup = [NOTHING, UNLIT, LIT, BULB, TRANSFORM, BLACK0, BLACK1, \
+                BLACK2, BLACK3, BLACK4, BLACK]
     
     ###
     OWNER = 0

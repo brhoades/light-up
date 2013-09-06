@@ -6,15 +6,36 @@ from const import (sym, gt, lprets)
 
 class sq:
     def __init__( self, puz, x, y, type, owner=[] ):
+        # Our coordinates
         self.x = x
         self.y = y
+        
+        # Our type
         self.type = type
-        self.lights = set()
-        self.blackN = set()
-        self.owner = set()
+
+        # The puzzle this square belongs to. Reference.
         self.parent = puz
+
+        ######################## Caches ###############################
+        # Used for black tiles. The lights that are currently bordering 
+        #    us.
+        self.lights = set()
+        # "Black neighbors" used for bulbs. Any black tiles currently bordering
+        #   us. References to other squares.
+        self.blackN = set()
+        # Owner squares--- used for lit tiles so we can decide
+        #   whether to remove it or not. References to other squares.
+        self.owner = set()
         for sq in owner:
-            self.owner.append(sq)
+            self.owner.add(sq)
+        # Where this square shines when it's a bulb. References to other
+        #   squares on the board. Initilized on graph generation. Not filled
+        #   for black tiles or squares that are black on startup.
+        self.shine = set()
+        ###############################################################
+        
+        # Whether a bulb can place here or not. Flipped when this tile
+        #   is bordered by a "0" black tile or full black tile.
         self.bad = False
         
     def __str__( self ):
@@ -109,7 +130,7 @@ class sq:
             return False
     
     def isBlack( self ):
-        return self.type >= gt.BLACK_THRESHOLD
+        return self.type > gt.BLACK_THRESHOLD
         
     def atCapacity( self ):
         if not self.isBlack( ):

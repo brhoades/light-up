@@ -44,7 +44,7 @@ def ideal( puz, timeout=1 ):
                         break
                         
         signal.alarm(0)
-        #print( "Found! lamps: ", best.lights(), " lit tiles: ", best.litsq(), "/", best.posLitsq(), "black tiles: ", best.blackSats, "/", best.blacksSb( ), "(", best.blacks( ), ")" )
+        #( "Found! lamps: ", best.lights(), " lit tiles: ", best.litsq(), "/", best.posLitsq(), "black tiles: ", best.blackSats, "/", best.blacksSb( ), "(", best.blacks( ), ")" )
         print( best )
         if back == solv.BEST:
             return True

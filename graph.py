@@ -26,18 +26,27 @@ class graph:
         #Fitness
         self.fit=-1
         
-        #cache of sqares bordering black boxes
-        self.bbsq = []
+        ######################## Caches ###############################
+        # Dyanmic references to all open squares bordering black tiles
+        self.bbsq = set( )
+        # Dynamic list of sets of references to squares of that type
+        self.sqgt = []
+        for typ in range(0, gt.lookup[len(gt.lookup)-1]+1):
+            self.sqgt.append([])
+            self.sqgt[typ] = set( )
+        ###############################################################
         
+        # Dimensions of the graph
         self.x = 0
         self.y = 0
         
+        # Set during configuration--- do we ignore black squares?
         self.ignoreBlacks = False
         
-        #our rng seed
+        # Our seed, generated at initilization
         self.seed=0
                 
-        #our unique id
+        # Our unique id, used for comparisons between two graphs
         self.id=util.id( )
  
         conf=None
@@ -416,7 +425,7 @@ class graph:
         count = 0
         for i in range( 0, self.x ):
             for j in range( 0, self.y ):
-                if self.data[i][j].type >= gt.BLACK_THRESHOLD:
+                if self.data[i][j].type > gt.BLACK_THRESHOLD:
                     count += 1
         return count
         

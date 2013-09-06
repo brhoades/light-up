@@ -41,7 +41,7 @@ class TestSequenceFunctions(unittest.TestCase):
               
             for i in range(0,count):
                 st = datetime.datetime.now()
-                #graph.graph( file="cfgs/test-2.cfg", x=size, y=size )
+                graph.graph( file="cfgs/test-2.cfg", x=size, y=size )
                 t = datetime.datetime.now( ) - st            
                 times.append(t.microseconds)
             
@@ -56,5 +56,4 @@ class TestSequenceFunctions(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main(buffer=True)
     
-#profile("graph.graph( file=\"cfgs/test-2.cfg\", x=8, y=8 )")
-
+#profile.run("main.main( )" )
