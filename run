@@ -4,7 +4,7 @@
 GIT=$(which -a git)
 PY=$(which -a python3.3)
 
-"$PY" "main.py" "$@"
+"$PY" "test.py" "$@"
 
 if [ $? != 0 ]; then
     echo "Not committing, got bad return code."

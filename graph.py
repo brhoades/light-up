@@ -67,7 +67,7 @@ class graph:
                 self.seed = args['seed']
             elif conf['graph']['seed'] == 'random':
                 dt = datetime.datetime.now( )
-                self.seed = time.mktime(dt.timetuple())+float("0.%s"%dt.microsecond)
+                self.seed = util.seed( )
             else:
                 self.seed = float(conf['graph']['seed'])
            

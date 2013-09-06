@@ -17,7 +17,7 @@ from math import ceil, floor
 ########################################################
 
 def handler(signum, frame):
-    raise OSError("Couldn't open device!")
+    raise OSError("Timeout!")
     
 def ideal( puz, timeout=1 ):        
     back = 0
