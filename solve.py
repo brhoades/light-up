@@ -29,9 +29,9 @@ def ideal( puz, timeout=1 ):
     signal.alarm(1)
     try:
         if len(puz.bbRange( ) ) <= 0:
-            for i in range(0,self.x):
-                for j in range(0,self.y):
-                    back = puz.lfIdeal( puz, best, i, j )
+            for i in range(0,puz.x):
+                for j in range(0,puz.y):
+                    back = lfIdeal( puz, best, i, j )
                     if back == solv.BEST:
                         break
                 if back == solv.BEST:
