@@ -54,6 +54,6 @@ class TestSequenceFunctions(unittest.TestCase):
             print( avg, " µs", file=rstd )
          
 if __name__ == '__main__':
-    unittest.main(buffer=True)
+    unittest.main(buffer=False)
     
 #profile.run("main.main( )" )

@@ -133,10 +133,10 @@ class sq:
         return self.type > gt.BLACK_THRESHOLD
         
     def atCapacity( self ):
-        if not self.isBlack( ):
+        if not self.isBlack( ) or self.type == gt.BLACK:
             return False
         
-        if self.type == gt.BLACK or self.type == gt.BLACK0:
+        if self.type == gt.BLACK0:
             return True
         
         if len(self.lights) >= self.type-gt.TRANSFORM:

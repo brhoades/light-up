@@ -15,9 +15,9 @@ from math import ceil, floor
 #returns false if it's -really- hard / unsolveable
 #  used to check randomly generated boards
 ########################################################
-#def solve( 
+
 def handler(signum, frame):
-    return False
+    raise OSError("Couldn't open device!")
     
 def ideal( puz, timeout=1 ):        
     back = 0
@@ -26,7 +26,7 @@ def ideal( puz, timeout=1 ):
     best.copy( puz )
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(1)
+    signal.alarm(timeout)
     try:
         if len(puz.bbRange( ) ) <= 0:
             for i in range(0,puz.x):
@@ -50,10 +50,10 @@ def ideal( puz, timeout=1 ):
             return True
         else:
             return False
-    except Exception as e:
-        raise e
-    except: 
-        return False
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt
+    except:
+        pass
 
 def bbIdeal( puz, best, x, y ):
     if not puz.addLight( x, y, True ):
