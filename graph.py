@@ -112,11 +112,7 @@ class graph:
             self.blank( )
             for i in range(0,self.x):
                 for j in range(0,self.y):
-                    #change owner if ==? idk
                     self.data[i][j].copy( other.data[i][j] )
-            #other.bbsq = set( )
-            #for sq in other.bbsq:
-            #    self.bbsq.add( self.data[sq.x][sq.y] )
         else:
             self.clear( )
             for i in range(0,other.x):
@@ -146,10 +142,6 @@ class graph:
             self.hitTop = 0
         else:
             self.hitTop += 1
-
-    ######################################
-    # Graph Modifiers
-    ######################################
     
     ######################################
     ### Graph Generators
@@ -181,8 +173,7 @@ class graph:
                         print("Line is invalid (", (x+1), ",", (y+1), ") w/ Black of: ", b)
                         next
                     
-                    #print("Transposed (", (x+1), ",", (y+1), ",", b, ") as (", x, ",", y, ", ", b+gt.TRANSFORM,")" ) 
-                    self.addBlack( self.data[x][y], b )
+                    self.addBlack( self.data[x][y], b+gt.TRANSFORM )
 
             fh.close()
         self.optimize( )
@@ -191,29 +182,18 @@ class graph:
         made = False
         self.x = int(conf['x'])
         self.y = int(conf['y'])
+        bprobs = self.readBlacks( conf )
         
         print( "Generating random, solveable graph: " )
         if max(self.x, self.y) > 10:
             print( "  Due to large graph size, this may take some time" )
         
-        timeout = 1
-        if conf['timeout'] == "auto":
-                #long enough to solve a hard graph but
-                #not too short to kill the hard ones
-                timeout = ceil(max(self.x, self.y)/2)
-        else:
-            timeout = int( conf['timeout'] )
-        
-        while made == False or solve.ideal( self, timeout ) == False:
-            self.blank()
-            for i in range(0, self.x):
-                if self.genCoinFlip( float(conf['noblackx']) ):
-                    next
-                for j in range(0, self.y):
-                    if self.genCoinFlip( float(conf['placeblack']) ):
-                        self.genRandBlack( self.data[i][j], float(conf['blackmod']) )
-            made = True
-            self.optimize( )
+        self.blank()
+        for i in range(0, self.x):
+            for j in range(0, self.y):
+                self.genRandBlack( self.data[i][j], bprobs )
+        made = True
+        self.optimize( )
 
     def blank( self ):        
         self.invalid=False
@@ -231,6 +211,8 @@ class graph:
             self.data.append([])
             for j in range(0,self.y):
                 self.data[i].insert( j, sq( self, i, j, gt.UNLIT ) )
+        
+        self.procNeighbors( )
         
     def clear( self ):
         self.bad=False
@@ -251,19 +233,38 @@ class graph:
     ### Graph Generator Sub Functions
     ######################################
     
-    def addBlack( self, sqr, b ):
+    def addBlack( self, sqr, b, check=False ):
         x = sqr.x
         y = sqr.y
-        sqr.newType(b+gt.TRANSFORM)
+        canLight = 0
+        
+        if check:
+            if len(sqr.neighbors) < b-gt.TRANSFORM and b != gt.BLACK:
+                return False
+            for n in sqr.neighbors:
+                if n.isBlack( ):
+                    #If he's black0 or black he won't care
+                    if n.type == gt.BLACK0 or n.type == gt.BLACK:
+                        continue
+                    #Check to see if we're going to make an invalid board by blocking this square
+                    hisLight = 0
+                    for hn in n.neighbors:
+                        if hn.x != x and hn.y != y and not hn.isBlack( ):
+                            hisLight += 1
+                    if hisLight < n.type-gt.TRANSFORM:
+                        return False
+                else:
+                    canLight += 1
+            
+            if canLight < b-gt.TRANSFORM and b != gt.BLACK and b != gt.BLACK0:
+                return False                
+        
+        sqr.newType(b)
+        if sqr.type == gt.BLACK0:
+            for n in sqr.neighbors:
+                if not sqr.isBlack( ):
+                    n.bad.add( sqr )
         sqr.black = True
-        if x > 0:
-            self.data[x-1][y].addNeighbor( sqr )
-        if x < self.x-1:
-            self.data[x+1][y].addNeighbor( sqr )
-        if y > 0:
-            self.data[x][y-1].addNeighbor( sqr )
-        if y < self.y-1:
-            self.data[x][y+1].addNeighbor( sqr )
  
     def addLight( self, sqr, careful=False ):
         #Check surrounding spots for validation
@@ -274,48 +275,42 @@ class graph:
                 
         return sqr.addLight( )
     
-    def genRandBlack( self, sqr, bprob ):
-        if self.hasNeighbor( sqr, gt.BLACK4 ):
-            return
+    def genRandBlack( self, sqr, bprobs ):
+        prob = util.chance( )
         
-        x = sqr.x
-        y = sqr.y
-        #weighted towards non-requring blacks
-        if self.genCoinFlip( bprob/1.5 ):
-            self.addBlack( sqr, gt.BLACK-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/1.75 ):
-            self.addBlack( sqr, gt.BLACK1-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/2 ):
-            self.addBlack( sqr, gt.BLACK2-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/2.25 ):
-            if ( x == 0 or y == 0 ) and ( x == self.x-1 or y == self.y-1 ):
-                self.genRandBlack( sqr, bprob )
-            self.addBlack( sqr, gt.BLACK3-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/2 ):   #Hard to place, higher,chance
-            if x == self.x-1 or x == 0 or y == self.y-1 or y == 0 or \
-                ( x > 0 and self.data[x-1][y].type != gt.UNLIT ) or \
-                ( y > 0 and self.data[x][y-1].type != gt.UNLIT ) or \
-                ( y < self.y and self.data[x][y+1].type != gt.UNLIT ) or \
-                ( x < self.x and self.data[x+1][y].type != gt.UNLIT ):
-                self.genRandBlack( sqr, bprob )
-                return
-                
-            self.addBlack( sqr, gt.BLACK4-gt.TRANSFORM )
-        elif self.genCoinFlip( bprob/2.75 ):
-            if( x > 0 and self.data[x-1][y].type == gt.BLACK4 ) or \
-                ( y > 0 and self.data[x][y-1].type == gt.BLACK4 ):
-                self.genRandBlack( sqr, bprob )
-                return
-            
-            self.addBlack( sqr, gt.BLACK0-gt.TRANSFORM )
-        else:
-            self.genRandBlack( sqr, bprob )
-
-    def genCoinFlip( self, prob ):
-        if prob*100 >= random.randint( 0, 100 ):
-            return True
-        return False
-
+        random.shuffle(bprobs)
+        for probs in bprobs:
+            typ = probs[0]
+            tprob = probs[1] 
+            if prob % tprob == 0:
+                if self.addBlack( sqr, typ, True ):
+                    return
+        
+    def readBlacks( self, conf ):
+        bprobs = []
+        bprobs.append([gt.BLACK, int(conf['black'])])
+        bprobs.append([gt.BLACK1, int(conf['black1'])])
+        bprobs.append([gt.BLACK2, int(conf['black2'])])
+        bprobs.append([gt.BLACK3, int(conf['black3'])])
+        bprobs.append([gt.BLACK4, int(conf['black4'])])
+        bprobs.append([gt.BLACK0, int(conf['black0'])])
+        return bprobs
+        
+    def procNeighbors( self ):
+        for i in range( 0, self.x ):
+            for j in range( 0, self.y ):
+                sqr = self.data[i][j]
+                x = sqr.x
+                y = sqr.y
+                if x > 0:
+                    sqr.addNeighbor( self.data[x-1][y] )
+                if x < self.x-1:
+                    sqr.addNeighbor( self.data[x+1][y] )
+                if y > 0:
+                    sqr.addNeighbor( self.data[x][y-1] )
+                if y < self.y-1:
+                    sqr.addNeighbor( self.data[x][y+1] )
+                    
     def optimize( self ):
         for i in range( 0, self.x ):
             for j in range( 0, self.y ):
@@ -333,28 +328,24 @@ class graph:
                     # Run lines down y=sqr.x, y=-sqr.x, x=sqr.y, x=-sqr.y from our location and add these.
                     #   If a bulb is placed, it'll light these squares.
                     if x > 0:
-                        sqr.addNeighbor( self.data[x-1][y] )
                         for k in range(x-1, -1, -1):
                             tsqr = self.data[k][y]
                             if tsqr.isBlack( ):
                                 break
                             sqr.shine.add( tsqr )
                     if x < self.x-1:
-                        sqr.addNeighbor( self.data[x+1][y] )
                         for k in range(x+1, self.x ):
                             tsqr = self.data[k][y]
                             if tsqr.isBlack( ):
                                 break
                             sqr.shine.add( tsqr )
                     if y > 0:
-                        sqr.addNeighbor( self.data[x][y-1] )
                         for k in range(y-1, -1, -1):
                             tsqr = self.data[x][k]
                             if tsqr.isBlack( ):
                                 break
                             sqr.shine.add( tsqr )
                     if y < self.y-1:
-                        sqr.addNeighbor( self.data[x][y+1] )
                         for k in range(y+1, self.y):
                             tsqr = self.data[x][k]
                             if tsqr.isBlack( ):
@@ -363,15 +354,6 @@ class graph:
                     for tsqr in sqr.neighbors:
                         if tsqr.type == gt.BLACK0:
                             sqr.bad.add( tsqr ) 
-                elif sqr.black:
-                    if x > 0:
-                        sqr.addNeighbor( self.data[x-1][y] )
-                    if x < self.x-1:
-                        sqr.addNeighbor( self.data[x+1][y] )
-                    if y > 0:
-                        sqr.addNeighbor( self.data[x][y-1] )
-                    if y < self.y-1:
-                        sqr.addNeighbor( self.data[x][y+1] )
                     
     ######################################
     # Checkers or Reporters
@@ -393,10 +375,7 @@ class graph:
         if not self.ignoreBlacks and self.blackSats < self.blacksSb( ):
             return False
         return True
-            
-    def hitTopLim( self ):
-        return ( self.hitTop > self.hitTopLimit )
-    
+
     def hasNeighbor( self, sqr, type=gt.NOTHING ):
         n = []
         x = sqr.x

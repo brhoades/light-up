@@ -22,6 +22,7 @@ class gt:
     
     lookup = [NOTHING, UNLIT, LIT, BULB, BLACK_THRESHOLD, BLACK0, BLACK1, \
                 BLACK2, BLACK3, BLACK4, BLACK]
+    placeable = [BLACK0, BLACK1, BLACK2, BLACK3, BLACK4, BLACK]
                     
     ###
     OWNER = 0

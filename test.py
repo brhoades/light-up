@@ -11,7 +11,6 @@ class TestSequenceFunctions(unittest.TestCase):
         self.times=[]
 
     def test_randomGen(self):
-        times = []
         count = 50
         size = 10
         
@@ -19,7 +18,8 @@ class TestSequenceFunctions(unittest.TestCase):
         
         for size in range(2,size+1):
             print( ''.join(["  ", str(size), "x", str(size), ": "]), file=rstd, end='')
-              
+            times = []
+
             for i in range(0,count):
                 st = datetime.datetime.now()
                 graph.graph( file="cfgs/test-1.cfg", x=size, y=size )
@@ -38,10 +38,11 @@ class TestSequenceFunctions(unittest.TestCase):
         
         for size in range(2,size+1):
             print( ''.join(["  ", str(size), "x", str(size), ": "]), file=rstd, end='')
-              
+            times = []
+            
             for i in range(0,count):
                 st = datetime.datetime.now()
-                graph.graph( file="cfgs/test-2.cfg", x=size, y=size )
+                test = graph.graph( file="cfgs/test-2.cfg", x=size, y=size )
                 t = datetime.datetime.now( ) - st            
                 times.append(t.microseconds)
             

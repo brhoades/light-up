@@ -66,14 +66,14 @@ def initLogs( fcfg, puz, fname ):
 
     if fcfg['graph']['gen'] == 'True':
         #graph parameters
-        resLogh.write( ''.join(["Map generation parameters:\n", 
-            "  noblackx: ", fcfg['graph']['noblackx'], 
-            "\n  seed: ", fcfg['graph']['placeblack'], 
-            "\n  placeblack: ", fcfg['graph']['placeblack'], 
-            "\n  blackmod: ", fcfg['graph']['blackmod'], 
-            "\n  x: ", fcfg['graph']['x'], 
-            "\n  y: ", fcfg['graph']['y'],
-            "\n  timeout: ", fcfg['graph']['timeout'], "\n" ] ) )
+        params = ''
+        params += "Map generation parameters:"
+        for param in fcfg['graph']:
+            if param == 'gen':
+                next
+            params += ''.join(["\n  ", param, ": ", fcfg['graph'][param]])
+        params += '\n'
+        resLogh.write( params )
         
     #rng parameters
     resLogh.write( ''.join(["RNG solution parameters:\n", 
