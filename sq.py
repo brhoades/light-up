@@ -137,6 +137,7 @@ class sq:
         
         for sqr in self.shine:
             sqr.light( self )
+        return True
 
     def addNeighbor( self, other ):
         if other.isBlack( ):
@@ -149,17 +150,17 @@ class sq:
         self.neighbors.add( other )
 
     def chkCapacity( self ):
+        if self.type == gt.BLACK or self.type == gt.BLACK0:
+            return
         if self.atCapacity( ):
+            self.parent.incBlackSats( )
             for sqr in self.neighbors:
                 sqr.bad.add( self )
-                if sqr.type == gt.UNLIT:
-                    self.parent.bbsq.discard( sqr )
         else:
+            self.parent.decBlackSats( )
             for sqr in self.neighbors:
                 sqr.bad.discard( self )
-                if sqr.type == gt.UNLIT:
-                    self.parent.bbsq.add( sqr )
-                
+        
     def isBad( self ):
         if not self.parent.ignoreBlacks and len(self.bad) > 0:
             return True

@@ -26,7 +26,7 @@ def ideal( puz, timeout=1 ):
     best.copy( puz )
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(timeout)
+    signal.alarm(1)
     try:
         if len(puz.bbsq) <= 0:
             for i in range(0,puz.x):
@@ -38,8 +38,7 @@ def ideal( puz, timeout=1 ):
                 if back == solv.BEST:
                     break
         else:
-            bbsqc = puz.bbsq.copy( )
-            for sqr in bbsqc:
+            for sqr in puz.bbsq:
                 if sqr.type == gt.UNLIT:
                     back = bbIdeal( puz, best, sqr.x, sqr.y )
                     if back == solv.BEST:
@@ -47,13 +46,11 @@ def ideal( puz, timeout=1 ):
                         
         signal.alarm(0)
         #( "Found! lamps: ", best.lights(), " lit tiles: ", best.litsq(), "/", best.posLitsq(), "black tiles: ", best.blackSats, "/", best.blacksSb( ), "(", best.blacks( ), ")" )
-        #print( best )
         if back == solv.BEST:
+            #print( best )
             return True
         else:
             return False
-   # except KeyboardInterrupt:
-     #   raise KeyboardInterrupt
     except OSError:
         return False
     except:
@@ -96,9 +93,8 @@ def bbIdeal( puz, best, x, y ):
 def lfIdeal( puz, best, x, y ):
     if not puz.addLight( puz.data[x][y], True ):
         return solv.DONE
-
     ran = solv.DONE
-
+    
     for i in range(0, puz.x):
         for j in range( 0, puz.y):
             if puz.data[i][j].type == gt.UNLIT and not puz.data[i][j].isBad( ):
@@ -132,7 +128,6 @@ def bestSol( puz, chk="a" ):
         if puz.blackSats == puz.blacksSb( ) or puz.ignoreBlacks:
             return True
     if chk == "l" or chk == "a":
-        print(puz.litsq( ), "==?", puz.posLitsq( ))
         if puz.litsq( ) == puz.posLitsq( ):
             return True
 

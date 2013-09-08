@@ -254,6 +254,8 @@ class graph:
     def addBlack( self, sqr, b ):
         x = sqr.x
         y = sqr.y
+        sqr.newType(b+gt.TRANSFORM)
+        sqr.black = True
         if x > 0:
             self.data[x-1][y].addNeighbor( sqr )
         if x < self.x-1:
@@ -262,17 +264,15 @@ class graph:
             self.data[x][y-1].addNeighbor( sqr )
         if y < self.y-1:
             self.data[x][y+1].addNeighbor( sqr )
-        sqr.newType(b+gt.TRANSFORM)
-        sqr.black = True
  
-    def addLight( self, sq, careful=False ):
+    def addLight( self, sqr, careful=False ):
         #Check surrounding spots for validation
-        if sq.isBad( ) and not self.ignoreBlacks:
+        if not self.ignoreBlacks and sqr.isBad( ):
             if careful:
                 return False
             self.setBad( )
                 
-        return sq.addLight( )
+        return sqr.addLight( )
     
     def genRandBlack( self, sqr, bprob ):
         if self.hasNeighbor( sqr, gt.BLACK4 ):
@@ -320,6 +320,8 @@ class graph:
         for i in range( 0, self.x ):
             for j in range( 0, self.y ):
                 sqr = self.data[i][j]
+                x = sqr.x
+                y = sqr.y
                 
                 # Add us to the appropriate counter
                 self.sqgt[sqr.type].add( sqr )
@@ -328,8 +330,6 @@ class graph:
                 # For unlit squares we are going to store where they would "shine" instead of doing this
                 #   on the fly. We are also going to store references to neighbors here of any type.
                 if sqr.type == gt.UNLIT:
-                    x = sqr.x
-                    y = sqr.y
                     # Run lines down y=sqr.x, y=-sqr.x, x=sqr.y, x=-sqr.y from our location and add these.
                     #   If a bulb is placed, it'll light these squares.
                     if x > 0:
@@ -364,10 +364,14 @@ class graph:
                         if tsqr.type == gt.BLACK0:
                             sqr.bad.add( tsqr ) 
                 elif sqr.black:
-                    sqr.chkCapacity( )
-                    for ni in sqr.neighbors:
-                        if not ni.isBad( ):
-                            self.bbsq.add( ni )
+                    if x > 0:
+                        sqr.addNeighbor( self.data[x-1][y] )
+                    if x < self.x-1:
+                        sqr.addNeighbor( self.data[x+1][y] )
+                    if y > 0:
+                        sqr.addNeighbor( self.data[x][y-1] )
+                    if y < self.y-1:
+                        sqr.addNeighbor( self.data[x][y+1] )
                     
     ######################################
     # Checkers or Reporters
