@@ -28,42 +28,45 @@ def ideal( puz, timeout=1 ):
     signal.signal(signal.SIGALRM, handler)
     signal.alarm(timeout)
     try:
-        if len(puz.bbRange( ) ) <= 0:
+        if len(puz.bbsq) <= 0:
             for i in range(0,puz.x):
                 for j in range(0,puz.y):
-                    back = lfIdeal( puz, best, i, j )
-                    if back == solv.BEST:
-                        break
+                    if puz.data[i][j].type == gt.UNLIT:
+                        back = lfIdeal( puz, best, i, j )
+                        if back == solv.BEST:
+                            break
                 if back == solv.BEST:
                     break
         else:
-            for [i,j] in puz.bbRange( ):
-                if puz.data[i][j].type == gt.UNLIT:
-                    back = bbIdeal( puz, best, i, j )
+            bbsqc = puz.bbsq.copy( )
+            for sqr in bbsqc:
+                if sqr.type == gt.UNLIT:
+                    back = bbIdeal( puz, best, sqr.x, sqr.y )
                     if back == solv.BEST:
                         break
                         
         signal.alarm(0)
         #( "Found! lamps: ", best.lights(), " lit tiles: ", best.litsq(), "/", best.posLitsq(), "black tiles: ", best.blackSats, "/", best.blacksSb( ), "(", best.blacks( ), ")" )
-        print( best )
+        #print( best )
         if back == solv.BEST:
             return True
         else:
             return False
-    except KeyboardInterrupt:
-        raise KeyboardInterrupt
+   # except KeyboardInterrupt:
+     #   raise KeyboardInterrupt
+    except OSError:
+        return False
     except:
-        pass
+        raise
 
 def bbIdeal( puz, best, x, y ):
-    if not puz.addLight( x, y, True ):
+    if not puz.addLight( puz.data[x][y], True ):
         return solv.DONE
-    
     ran = solv.DONE
-        
-    for [i, j] in puz.bbRange( ):
-        if puz.data[i][j].type == gt.UNLIT:
-            ran=bbIdeal( puz, best, i, j )
+    
+    for sqr in puz.bbsq:
+        if sqr.type == gt.UNLIT:
+            ran=bbIdeal( puz, best, sqr.x, sqr.y )
         if ran > solv.DONE:
             break
     
@@ -77,7 +80,7 @@ def bbIdeal( puz, best, x, y ):
                 clean.copy( best )
                 for i in range(0, puz.x):
                     for j in range( 0, puz.y):
-                        if puz.data[i][j].type == gt.UNLIT:
+                        if puz.data[i][j].type == gt.UNLIT and not puz.data[i][j].isBad( ):
                             if ran > solv.DONE:
                                 break
                             best.copy( clean )
@@ -91,14 +94,14 @@ def bbIdeal( puz, best, x, y ):
     return ran
 
 def lfIdeal( puz, best, x, y ):
-    if not puz.addLight( x, y, True ):
+    if not puz.addLight( puz.data[x][y], True ):
         return solv.DONE
 
     ran = solv.DONE
 
     for i in range(0, puz.x):
         for j in range( 0, puz.y):
-            if puz.data[i][j].type == gt.UNLIT:
+            if puz.data[i][j].type == gt.UNLIT and not puz.data[i][j].isBad( ):
                 ran=lfIdeal( puz, best, i, j )
                 if ran > solv.DONE:
                     break
@@ -129,6 +132,7 @@ def bestSol( puz, chk="a" ):
         if puz.blackSats == puz.blacksSb( ) or puz.ignoreBlacks:
             return True
     if chk == "l" or chk == "a":
+        print(puz.litsq( ), "==?", puz.posLitsq( ))
         if puz.litsq( ) == puz.posLitsq( ):
             return True
 
@@ -139,15 +143,15 @@ def bestSol( puz, chk="a" ):
 #Random solver
 ########################################################
 def rng( puz, prob ):
-    for i in range(0, puz.x):
-        for j in range(0, puz.y):
-            if puz.data[i][j].type == gt.UNLIT and flip(prob):
-                puz.addLight( i, j )
+    for i in range(0,puz.x):
+        for j in range(0,puz.y):
+            sqr = puz.data[i][j]
+            if sqr.type == gt.UNLIT and not sqr.isBad( ) and flip(prob):
+                sqr.addLight( )
     puz.setFitness( )            
 
 def flip( chance ):
-    ran = random.uniform(0, 100)
-    if( ran <= chance*100 ):
+    if( random.uniform(0, 100) <= chance*100 ):
         return True
     return False
     
@@ -167,9 +171,10 @@ def manSeq( puz, cfg, plh, run ):
     print( "Run #", run+1, "/", cfg['solve']['runs'] )
     best = graph.graph( )
     best.copy( puz )
+    sol = graph.graph( )
+    sol.copy( puz )
     while i < runs:
-        sol = graph.graph( )
-        sol.copy(puz)
+        sol.clear( )
         rng( sol, chance )
         
         if sol.isValid( ):
@@ -177,8 +182,8 @@ def manSeq( puz, cfg, plh, run ):
             if sol.fit > best.fit:
                 best.copy(sol)
                 sol.logResult( i, rlh )
-        
-            if ( area < 100 and i % sol.x ) or area >= 100:
+            
+            if i % 3 > 0:
                 print('\b'*len(lastline), end='')
                     
                 lastline = status(cfg['solve'], i, count)

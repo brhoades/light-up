@@ -1,4 +1,4 @@
-import os, unittest, profile, timeit, time, datetime
+import os, unittest, pstats, io, cProfile, timeit, time, datetime
 import sys
 import main
 import graph
@@ -54,6 +54,13 @@ class TestSequenceFunctions(unittest.TestCase):
             print( avg, " µs", file=rstd )
          
 if __name__ == '__main__':
-    unittest.main(buffer=False)
-    
-#profile.run("main.main( )" )
+    unittest.main(buffer=True)
+#pr = cProfile.Profile()
+#pr.enable()
+#main.main( )
+#pr.disable()
+#s = io.StringIO()
+#sortby = 'cumulative'
+#ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+#ps.print_stats()
+#print(s.getvalue())

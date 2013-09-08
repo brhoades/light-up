@@ -18,10 +18,11 @@ class gt:
     BLACK3 = 13                               # A black square that must be bordered by 3 lights
     BLACK4 = 14                               # A black square that must be bordered by 4 lights
     BLACK = 15                                # A black square that just blocks light
+    MAX = 16
     
-    lookup = [NOTHING, UNLIT, LIT, BULB, TRANSFORM, BLACK0, BLACK1, \
+    lookup = [NOTHING, UNLIT, LIT, BULB, BLACK_THRESHOLD, BLACK0, BLACK1, \
                 BLACK2, BLACK3, BLACK4, BLACK]
-    
+                    
     ###
     OWNER = 0
     TYPE = 1

@@ -31,9 +31,6 @@ class graph:
         self.bbsq = set( )
         # Dynamic list of sets of references to squares of that type
         self.sqgt = []
-        for typ in range(0, gt.lookup[len(gt.lookup)-1]+1):
-            self.sqgt.append([])
-            self.sqgt[typ] = set( )
         ###############################################################
         
         # Dimensions of the graph
@@ -48,7 +45,7 @@ class graph:
                 
         # Our unique id, used for comparisons between two graphs
         self.id=util.id( )
- 
+         
         conf=None
 
         if 'file' in args:
@@ -113,18 +110,19 @@ class graph:
             self.id=other.id
             self.ignoreBlacks=other.ignoreBlacks
             self.blank( )
-
-        for i in range(0,other.x):
-            for j in range(0,other.y):
-                self.data[i][j].copy(other.data[i][j], same)
-
-        for typ in range(0, gt.lookup[len(gt.lookup)-1]+1):
-            for sq in other.sqgt[typ]:
-                self.sqgt[typ].add( self.data[sq.x][sq.y] )
-            
-        for sq in other.bbsq:
-            self.bbsq.add( self.data[sq.x][sq.y] )
-                            
+            for i in range(0,self.x):
+                for j in range(0,self.y):
+                    #change owner if ==? idk
+                    self.data[i][j].copy( other.data[i][j] )
+            #other.bbsq = set( )
+            #for sq in other.bbsq:
+            #    self.bbsq.add( self.data[sq.x][sq.y] )
+        else:
+            self.clear( )
+            for i in range(0,other.x):
+                for j in range(0,other.y):
+                    if other.data[i][j].type == gt.BULB:
+                        self.data[i][j].addLight( )    
         self.bad=other.bad
         self.invalid=other.invalid
         self.fit=other.fit
@@ -184,9 +182,10 @@ class graph:
                         next
                     
                     #print("Transposed (", (x+1), ",", (y+1), ",", b, ") as (", x, ",", y, ", ", b+gt.TRANSFORM,")" ) 
-                    self.addBlack( x, y, b )
+                    self.addBlack( self.data[x][y], b )
 
             fh.close()
+        self.optimize( )
             
     def genGraph( self, conf ):
         made = False
@@ -212,142 +211,164 @@ class graph:
                     next
                 for j in range(0, self.y):
                     if self.genCoinFlip( float(conf['placeblack']) ):
-                        self.genRandBlack( i, j, float(conf['blackmod']) )
+                        self.genRandBlack( self.data[i][j], float(conf['blackmod']) )
             made = True
+            self.optimize( )
 
     def blank( self ):        
         self.invalid=False
         self.bad=False
         self.blackSats = 0
         self.fit=-1
-        self.data = []
-
+        self.data.clear( )
+        self.bbsq.clear( )
+        self.sqgt.clear( )
+        
+        for typ in range(0,gt.MAX):
+            self.sqgt.insert(typ, set( ))
+            
         for i in range(0,self.x):
             self.data.append([])
             for j in range(0,self.y):
-                self.data[i].append( sq( self, i, j, gt.UNLIT ) )
-        return
-
+                self.data[i].insert( j, sq( self, i, j, gt.UNLIT ) )
+        
+    def clear( self ):
+        self.bad=False
+        self.fit=-1
+                
+        if len(self.sqgt) == 0:
+            raise OSError("Clear called before graph initilized.")
+        
+        if len(self.sqgt[gt.BULB]) == 0:
+            return
+        
+        while len(self.sqgt[gt.BULB]) != 0:
+            for sqr in self.sqgt[gt.BULB]:
+                sqr.rmLight( )
+                break
+            
     ######################################
     ### Graph Generator Sub Functions
     ######################################
     
-    def addBlack( self, x, y, b ):
-        self.data[x][y] = sq( self, x, y, b+gt.TRANSFORM )
-        ourType = b+gt.TRANSFORM
+    def addBlack( self, sqr, b ):
+        x = sqr.x
+        y = sqr.y
         if x > 0:
-            sqr = self.data[x-1][y]
-            sqr.blackN.add( self.data[x][y] )
-            if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( sqr in self.bbsq ):
-                self.bbsq.add( sqr )
-            if ourType == gt.BLACK0:
-                sqr.bad = True
+            self.data[x-1][y].addNeighbor( sqr )
         if x < self.x-1:
-            sqr = self.data[x+1][y]
-            sqr.blackN.add( self.data[x][y] )
-            if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( sqr in self.bbsq ):
-                self.bbsq.add( sqr )
-            if ourType == gt.BLACK0:
-                sqr.bad = True               
+            self.data[x+1][y].addNeighbor( sqr )
         if y > 0:
-            sqr = self.data[x][y-1]
-            sqr.blackN.add( self.data[x][y] )
-            if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( sqr in self.bbsq ):
-                self.bbsq.add( sqr )
-            if ourType == gt.BLACK0:
-                sqr.bad = True
+            self.data[x][y-1].addNeighbor( sqr )
         if y < self.y-1:
-            sqr = self.data[x][y+1]
-            sqr.blackN.add( self.data[x][y] )
-            if not( ourType == gt.BLACK0 or ourType == gt.BLACK ) \
-                and not( sqr in self.bbsq ):
-                self.bbsq.add( sqr )
-            if ourType == gt.BLACK0:
-                sqr.bad = True
-
-    def addLight( self, x, y, careful=False ):
+            self.data[x][y+1].addNeighbor( sqr )
+        sqr.newType(b+gt.TRANSFORM)
+        sqr.black = True
+ 
+    def addLight( self, sq, careful=False ):
         #Check surrounding spots for validation
-        if self.badBulbSpot( x, y ):
+        if sq.isBad( ) and not self.ignoreBlacks:
             if careful:
                 return False
             self.setBad( )
                 
-        self.data[x][y].type = gt.BULB
-        
-        self.data[x][y].addNeighbors( self )
-        
-        #Light up a line vertically and horizontally
-        self.lightUpPlus( x, y )
-
-        return True
-        
-    def lightUpPlus( self, x, y ):
-        if x > 0:
-            for i in range(x-1, -1, -1):
-                ret = self.data[i][y].light( self.data[x][y] )
-                if ret == lprets.STOPPED:
-                    break
-        if x < self.x-1:
-            for i in range(x+1, self.x ):
-                ret = self.data[i][y].light( self.data[x][y] )
-                if ret == lprets.STOPPED:
-                    break
-        if y > 0:
-            for i in range(y-1, -1, -1):
-                ret = self.data[x][i].light( self.data[x][y] )
-                if ret == lprets.STOPPED:
-                    break
-        if y < self.y-1:
-            for i in range(y+1, self.y):
-                ret = self.data[x][i].light( self.data[x][y] )
-                if ret == lprets.STOPPED:
-                    break
-        return lprets.LIT
-
+        return sq.addLight( )
     
-    def genRandBlack( self, x, y, bprob ):
-        if self.hasNeighbor( x, y, gt.BLACK4 ):
+    def genRandBlack( self, sqr, bprob ):
+        if self.hasNeighbor( sqr, gt.BLACK4 ):
             return
-            
+        
+        x = sqr.x
+        y = sqr.y
         #weighted towards non-requring blacks
         if self.genCoinFlip( bprob/1.5 ):
-            self.addBlack( x, y, gt.BLACK-gt.TRANSFORM )
+            self.addBlack( sqr, gt.BLACK-gt.TRANSFORM )
         elif self.genCoinFlip( bprob/1.75 ):
-            self.addBlack( x, y, gt.BLACK1-gt.TRANSFORM )
+            self.addBlack( sqr, gt.BLACK1-gt.TRANSFORM )
         elif self.genCoinFlip( bprob/2 ):
-            self.addBlack( x, y, gt.BLACK2-gt.TRANSFORM )
+            self.addBlack( sqr, gt.BLACK2-gt.TRANSFORM )
         elif self.genCoinFlip( bprob/2.25 ):
             if ( x == 0 or y == 0 ) and ( x == self.x-1 or y == self.y-1 ):
-                self.genRandBlack( x, y, bprob )
-            self.addBlack( x, y, gt.BLACK3-gt.TRANSFORM )
+                self.genRandBlack( sqr, bprob )
+            self.addBlack( sqr, gt.BLACK3-gt.TRANSFORM )
         elif self.genCoinFlip( bprob/2 ):   #Hard to place, higher,chance
             if x == self.x-1 or x == 0 or y == self.y-1 or y == 0 or \
                 ( x > 0 and self.data[x-1][y].type != gt.UNLIT ) or \
                 ( y > 0 and self.data[x][y-1].type != gt.UNLIT ) or \
                 ( y < self.y and self.data[x][y+1].type != gt.UNLIT ) or \
                 ( x < self.x and self.data[x+1][y].type != gt.UNLIT ):
-                self.genRandBlack( x, y, bprob )
+                self.genRandBlack( sqr, bprob )
                 return
                 
-            self.addBlack( x, y, gt.BLACK4-gt.TRANSFORM )
+            self.addBlack( sqr, gt.BLACK4-gt.TRANSFORM )
         elif self.genCoinFlip( bprob/2.75 ):
             if( x > 0 and self.data[x-1][y].type == gt.BLACK4 ) or \
                 ( y > 0 and self.data[x][y-1].type == gt.BLACK4 ):
-                self.genRandBlack( x, y, bprob )
+                self.genRandBlack( sqr, bprob )
                 return
             
-            self.addBlack( x, y, gt.BLACK0-gt.TRANSFORM )
+            self.addBlack( sqr, gt.BLACK0-gt.TRANSFORM )
         else:
-            self.genRandBlack( x, y, bprob )
+            self.genRandBlack( sqr, bprob )
 
     def genCoinFlip( self, prob ):
         if prob*100 >= random.randint( 0, 100 ):
             return True
         return False
 
+    def optimize( self ):
+        for i in range( 0, self.x ):
+            for j in range( 0, self.y ):
+                sqr = self.data[i][j]
+                
+                # Add us to the appropriate counter
+                self.sqgt[sqr.type].add( sqr )
+                
+                ################    UNLIT SQUARES   ################
+                # For unlit squares we are going to store where they would "shine" instead of doing this
+                #   on the fly. We are also going to store references to neighbors here of any type.
+                if sqr.type == gt.UNLIT:
+                    x = sqr.x
+                    y = sqr.y
+                    # Run lines down y=sqr.x, y=-sqr.x, x=sqr.y, x=-sqr.y from our location and add these.
+                    #   If a bulb is placed, it'll light these squares.
+                    if x > 0:
+                        sqr.addNeighbor( self.data[x-1][y] )
+                        for k in range(x-1, -1, -1):
+                            tsqr = self.data[k][y]
+                            if tsqr.isBlack( ):
+                                break
+                            sqr.shine.add( tsqr )
+                    if x < self.x-1:
+                        sqr.addNeighbor( self.data[x+1][y] )
+                        for k in range(x+1, self.x ):
+                            tsqr = self.data[k][y]
+                            if tsqr.isBlack( ):
+                                break
+                            sqr.shine.add( tsqr )
+                    if y > 0:
+                        sqr.addNeighbor( self.data[x][y-1] )
+                        for k in range(y-1, -1, -1):
+                            tsqr = self.data[x][k]
+                            if tsqr.isBlack( ):
+                                break
+                            sqr.shine.add( tsqr )
+                    if y < self.y-1:
+                        sqr.addNeighbor( self.data[x][y+1] )
+                        for k in range(y+1, self.y):
+                            tsqr = self.data[x][k]
+                            if tsqr.isBlack( ):
+                                break
+                            sqr.shine.add( tsqr )
+                    for tsqr in sqr.neighbors:
+                        if tsqr.type == gt.BLACK0:
+                            sqr.bad.add( tsqr ) 
+                elif sqr.black:
+                    sqr.chkCapacity( )
+                    for ni in sqr.neighbors:
+                        if not ni.isBad( ):
+                            self.bbsq.add( ni )
+                    
     ######################################
     # Checkers or Reporters
     ######################################
@@ -362,7 +383,6 @@ class graph:
         # * ( num of satisfied black squares / number of (satisifiable) black squares )
         if not self.ignoreBlacks:
             fit *= self.blackSats / self.blacksSb( )
-        
         return fit
 
     def isValid( self ):
@@ -373,90 +393,32 @@ class graph:
     def hitTopLim( self ):
         return ( self.hitTop > self.hitTopLimit )
     
-    def hasNeighbor( self, x, y, type=gt.NOTHING ):
+    def hasNeighbor( self, sqr, type=gt.NOTHING ):
         n = []
-        if x < self.x-1 and self.data[x+1][y].type != gt.UNLIT:
-            n.append( self.data[x+1][y].type )
-        if x > 0 and self.data[x-1][y].type != gt.UNLIT:
-            n.append( self.data[x-1][y].type )
-        if y < self.y-1 and self.data[x][y+1].type != gt.UNLIT:
-            n.append( self.data[x][y+1].type )
-        if y > 0 and self.data[x][y-1].type != gt.UNLIT:
-            n.append( self.data[x][y-1].type )
-        
-        for t in n:
-            if t == type or type == gt.NOTHING:
+        x = sqr.x
+        y = sqr.y
+        for sq in sqr.neighbors:
+            if sq.type == type or type == gt.NOTHING:
                 return True
         return False
-        
-    
-    def badBulbSpot( self, x, y ):
-        if self.data[x][y].type != gt.UNLIT:
-            return True
-        if self.fullNeighbors( x, y ) and not self.ignoreBlacks:
-            return True
-    
-    def fullNeighbors( self, x, y ):
-        if len(self.data[x][y].blackN) == 0:
-            return False
-        
-        for sqr in self.data[x][y].blackN:
-            if sqr.atCapacity( ):
-                return True
                 
     def unLitsq( self ):
-        count = 0
-        for i in range( 0, self.x ):
-            for j in range( 0, self.y ):
-                if self.data[i][j].type == gt.UNLIT:
-                    count += 1
-        return count
-        
+        return len(self.sqgt[gt.UNLIT])
+
+    def litsq( self ):
+        return len(self.sqgt[gt.LIT])
+
     def posLitsq( self ):
         return self.litsq( ) + self.unLitsq( )
         
-    def litsq( self ):
-        count = 0
-        for i in range( 0, self.x ):
-            for j in range( 0, self.y ):
-                if self.data[i][j].type == gt.LIT:
-                    count += 1
-        return count
-        
     def blacks( self ):
-        count = 0
-        for i in range( 0, self.x ):
-            for j in range( 0, self.y ):
-                if self.data[i][j].type > gt.BLACK_THRESHOLD:
-                    count += 1
-        return count
+        return len(self.sqgt[gt.BLACK1])+len(self.sqgt[gt.BLACK2])+len(self.sqgt[gt.BLACK3])+len(self.sqgt[gt.BLACK4])+len(self.sqgt[gt.BLACK0])+len(self.sqgt[gt.BLACK])
         
     def blacksSb( self ):
-        count = 0
-        for i in range( 0, self.x ):
-            for j in range( 0, self.y ):
-                mytype = self.data[i][j].type
-                if mytype >= gt.BLACK1 and mytype <= gt.BLACK4:
-                    count += 1
-        return count
+        return len(self.sqgt[gt.BLACK1])+len(self.sqgt[gt.BLACK2])+len(self.sqgt[gt.BLACK3])+len(self.sqgt[gt.BLACK4])
         
     def lights( self ):
-        count = 0
-        for i in range( 0, self.x ):
-            for j in range( 0, self.y ):
-                if self.data[i][j].type == gt.BULB:
-                    count += 1
-        return count
-
-    #Bordered by a black cell that isn't full
-    def bbRange( self ):
-        ret = []
-        for bsqr in self.bbsq:
-            for sqr in self.data[bsqr.x][bsqr.y].blackN:
-                if not sqr.atCapacity( ) and \
-                    not( [bsqr.x, bsqr.y] in ret ):
-                    ret.append( [bsqr.x, bsqr.y] )
-        return ret
+        return len(self.sqgt[gt.BULBS])
 
     def logResult( self, i, fh ):
         fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4)), '\n'] ) )
@@ -481,7 +443,6 @@ class graph:
         
     def rmLight( self, x, y ):
         self.data[x][y].rmLight( )
-        return
         
     def setFitness( self ):
         self.fit = self.fitness( )

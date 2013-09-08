@@ -15,14 +15,20 @@ class sq:
 
         # The puzzle this square belongs to. Reference.
         self.parent = puz
+        
+        # Update our parent's coutner with our type
+        puz.sqgt[type].add( self )
+        
+        self.black = self.type > gt.BLACK_THRESHOLD
 
         ######################## Caches ###############################
+        #### These are all initilized at graph generation and copied as
+        ####   the board modifies these at a whim.
         # Used for black tiles. The lights that are currently bordering 
         #    us.
         self.lights = set()
-        # "Black neighbors" used for bulbs. Any black tiles currently bordering
-        #   us. References to other squares.
-        self.blackN = set()
+        # References to neighbors are stored here
+        self.neighbors = set()
         # Owner squares--- used for lit tiles so we can decide
         #   whether to remove it or not. References to other squares.
         self.owner = set()
@@ -36,94 +42,69 @@ class sq:
         
         # Whether a bulb can place here or not. Flipped when this tile
         #   is bordered by a "0" black tile or full black tile.
-        self.bad = False
+        self.bad = set()
         
     def __str__( self ):
         return sym.tb[self.type]
     
     def copy( self, other, sameBoard=False ):
-        self.type=other.type
-        # We don't copy parent over here as our parent puzzle doesn't
-        #   change.
-        self.lights = set( )
+        self.newType( other.type )
+        self.black = other.black
+
+        self.lights.clear( )
         for lits in other.lights:
             self.lights.add(self.parent.data[lits.x][lits.y])
-        if not sameBoard:
-            self.parent = other.parent
-            self.blackN = set( )
-            for bln in other.blackN:
-                self.blackN.add(self.parent.data[bln.x][bln.y])
-            self.bad=other.bad
-        self.owner = set( )
+            
+        self.neighbors.clear( )
+        for i in other.neighbors:
+            self.neighbors.add(self.parent.data[i.x][i.y])
+        
+        self.bad.clear( )
+        for sqr in other.bad:
+            self.bad.add( self.parent.data[sqr.x][sqr.y] )
+            
+        self.owner.clear( )
         for own in other.owner:
             self.owner.add(self.parent.data[own.x][own.y])
         
+        if not sameBoard:
+            self.shine.clear( )
+            for sqr in other.shine:
+                self.shine.add( self.parent.data[sqr.x][sqr.y] )
+                
     def rmLight( self ):
         puz = self.parent
-        self.type = gt.UNLIT
-        if self.x > 0:
-            for i in range(self.x-1, -1, -1):
-                if puz.data[i][self.y].isBlack():
-                    break
-                puz.data[i][self.y].rmLit( self )
-                
-        if self.x < puz.x-1:
-            for i in range(self.x+1, puz.x):
-                if puz.data[i][self.y].isBlack():
-                    break
-                puz.data[i][self.y].rmLit( self )
+        self.newType( gt.UNLIT )
 
-        ##################
-        if self.y > 0:
-            for i in range(self.y-1, -1, -1):
-                if puz.data[self.x][i].isBlack():
-                    break
-                puz.data[i][self.y].rmLit( self )
-                    
-        if self.y < puz.y-1:
-            for i in range(self.y+1, puz.y):
-                if puz.data[self.x][i].isBlack():
-                    break
-                puz.data[i][self.y].rmLit( self )
-
-        for sqr in self.blackN:
-            if sqr.atCapacity( ):
-                puz.decBlackSats( )
+        for sqr in self.neighbors:
+            chk = False
+            if sqr.isBlack( ) and sqr.atCapacity( ):
+                self.parent.decBlackSats( )
+                chk = True
             sqr.lights.discard( self )
-
-    #Called by outsider to remove us, if we're a lit square
-    def rmLit( self, other ):
-        if self.type != gt.LIT:
-            return False
-        if not self.isOwner( other ):
-            return False
-        ret = False
-        
-        if len(self.owner) == 1:
-            ret = True
-            self.type = gt.UNLIT
-
-        self.owner.discard( other )
-        return ret
+            if chk:
+                sqr.chkCapacity( )
+            
+        for sqr in self.shine:
+            sqr.rmLit( self )
     
     #called by outsider light us up
     def light( self, other ):
-        #Unlit, light
-        if self.type == gt.UNLIT:
-            #FIXME: Light squares up... inc counter
-            self.type= gt.LIT
-            self.owner.add( other )
-            return lprets.LIT
-        #Add owner if lit
-        if self.type == gt.LIT:
-            self.owner.add( other )
-            return lprets.YALIT
-        #Bulb == invalid
-        if self.type == gt.BULB:
-            return lprets.BAD
-        #Black space stopped us
-        if self.isBlack():
-            return lprets.STOPPED
+        self.newType( gt.LIT )
+        self.owner.add( other )
+
+    def newType( self, type ):
+        if self.type == type:
+            return
+        self.parent.sqgt[self.type].remove(self)
+        self.type = type
+        self.parent.sqgt[self.type].add(self)
+
+    def rmLit( self, other ):
+        self.owner.remove( other )
+        
+        if len(self.owner) == 0:
+            self.newType( gt.UNLIT )
             
     def isOwner( self, other ):
         if other in self.owner:
@@ -132,7 +113,7 @@ class sq:
             return False
     
     def isBlack( self ):
-        return self.type > gt.BLACK_THRESHOLD
+        return self.black
         
     def atCapacity( self ):
         if not self.isBlack( ) or self.type == gt.BLACK:
@@ -143,41 +124,43 @@ class sq:
         
         if len(self.lights) >= self.type-gt.TRANSFORM:
             return True
-        else:
-            return False
+        return False
     
-    def addNeighbors( self, puz ):
-        x = self.x
-        y = self.y
-
-        if x > 0:
-            tx = x-1
-            ty = y
-            if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.add( self )
-                if puz.data[tx][ty].atCapacity( ):
-                    puz.incBlackSats( )
-                
-        if y > 0:
-            tx = x
-            ty = y-1
-            if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.add( self )
-                if puz.data[tx][ty].atCapacity( ):
-                    puz.incBlackSats( )
-                    
-        if x < (puz.x-1):
-            tx = x+1
-            ty = y
-            if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.add( self )
-                if puz.data[tx][ty].atCapacity( ):
-                    puz.incBlackSats( )
+    def addLight( self ):
+        self.newType( gt.BULB )
         
-        if y < (puz.y-1):
-            tx = x
-            ty = y+1
-            if puz.data[tx][ty].isBlack():
-                puz.data[tx][ty].lights.add( self )
-                if puz.data[tx][ty].atCapacity( ):
-                    puz.incBlackSats( )
+        for sqr in self.neighbors:
+            if sqr.isBlack( ):
+                sqr.lights.add( self )
+                if sqr.atCapacity( ):
+                    sqr.chkCapacity( )
+        
+        for sqr in self.shine:
+            sqr.light( self )
+
+    def addNeighbor( self, other ):
+        if other.isBlack( ):
+            self.neighbors.add( other )
+            self.parent.bbsq.add( self )
+            if other.type == gt.BLACK0:
+                self.bad.add( other )
+                self.parent.bbsq.discard( self )
+
+        self.neighbors.add( other )
+
+    def chkCapacity( self ):
+        if self.atCapacity( ):
+            for sqr in self.neighbors:
+                sqr.bad.add( self )
+                if sqr.type == gt.UNLIT:
+                    self.parent.bbsq.discard( sqr )
+        else:
+            for sqr in self.neighbors:
+                sqr.bad.discard( self )
+                if sqr.type == gt.UNLIT:
+                    self.parent.bbsq.add( sqr )
+                
+    def isBad( self ):
+        if not self.parent.ignoreBlacks and len(self.bad) > 0:
+            return True
+        return False

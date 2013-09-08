@@ -11,7 +11,7 @@ import random, sys, argparse, configparser, subprocess, re
 def readConfig( fn ):
     config = configparser.ConfigParser()
     config.read(fn)
-    return config
+    return config._sections
 
 def main():
     cfg = readConfig(gcfg( ))
