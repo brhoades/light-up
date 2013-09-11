@@ -248,7 +248,7 @@ class graph:
     #   generators in order to properly place black tiles and mark 
     #   a graph as invalid if an improper black tile is actually placed.
     # Magic happens here as we never make an invalid placement if check
-    #   is true. In a way, this is the brains of the graph generator.
+    #   is true. This is the brains of the graph generator.
     def addBlack( self, sqr, b, check=False ):
         x = sqr.x
         y = sqr.y
@@ -455,16 +455,20 @@ class graph:
         return len(self.sqgt[gt.BULBS])
 
     ######################################
-    # Logging Functions
+    # Logging Functions 
     ######################################
     # FIXME: This should be in util as a class
 
+    # Logs the result to a file handle. Used for result-log.txt
     def logResult( self, i, fh ):
         fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4)), '\n'] ) )
-        
+    
+    # Serializes and logs the soulution to solution-log.txt
     def logSolution( self, fh ):
         fh.write( ''.join( [ str(self.litsq( )), '\n', self.serialize( ) ] ) )
     
+    # Serializes our graph into Dr. Taurtiz's format. Since we rotated 90 degrees
+    #   ccw on input, we've now gotta go 90 degrees cw.
     def serialize( self ):
         ret = ""
         for i in range(0,self.x):
@@ -479,9 +483,11 @@ class graph:
     ######################################
     # Wrapper Functions
     ######################################
-        
+    
+    # Wraps sq.rmLight( ) by allowing you to pass arguments
     def rmLight( self, x, y ):
         self.data[x][y].rmLight( )
-        
+    
+    # Calculates fitness
     def setFitness( self ):
         self.fit = self.fitness( )

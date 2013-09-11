@@ -7,7 +7,12 @@
 import graph
 from const import gt, lh
 import random
+from util import flip
 
+# Random graph solver. Used to initlize base solutions for our 
+#   population. Goes over any "white" (unlit) tiles and flips a coin 
+#   using a probability from the config file.
+#FIXME: Probability should be random to maximize diversity.
 def rng( puz, prob ):
     for i in range(0,puz.x):
         for j in range(0,puz.y):
@@ -16,11 +21,8 @@ def rng( puz, prob ):
                 sqr.addLight( )
     puz.setFitness( )            
 
-def flip( chance ):
-    if( random.uniform(0, 100) <= chance*100 ):
-        return True
-    return False
-    
+# The main sequence for our solver. Will eventually call all of
+#   the generation handling, breeding, mutating, etc.
 def manSeq( puz, cfg, plh, run ):
     runs = int(cfg['solve']['fitevals'])
     chance = float(cfg['solve']['chance'])
@@ -57,6 +59,8 @@ def manSeq( puz, cfg, plh, run ):
     print( "" )
     puz.copy( best )
 
+# Prints our status out in a sexy format. Shouldn't be called often as it
+#   does do some calculation and a bunch of backspaces beforehand.
 def status( cfg, i, count ):
     #(numgoodruns/totalruns) (%done)
     line = str(i)
@@ -68,7 +72,9 @@ def status( cfg, i, count ):
     maxn = int(cfg['runs'])*int(cfg['fitevals'])
     line += ''.join( ["/", str(maxn), " (", str(round((count+i)/maxn*100, 3)), "%)" ] )
     return line
-    
+
+# Seperates our result log file with pretty run numbers.
+#FIXME: This really needs to be somewhere else
 def logSeperate( rlf, run ):
     rlf.flush( )
     rlf.write( ''.join( [ "\n", "Run ", str(run+1), "\n" ] ) )
