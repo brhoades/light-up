@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1A
+#Class: CS348 Assignment 1B
+#Graph Class File
+#  This file houses the container for graphs in which all tiles reside.
 
-from const import (gt, lprets, sym)
-from copy import deepcopy
+from const import gt
 from sq import sq
-from math import ceil
-import random, time, datetime, solve, fileinput, configparser
 import util
+import random, time, datetime, solve, fileinput, configparser
 
-#Graph class
 class graph:
     ######################################
     # Stock Methods
@@ -48,11 +47,13 @@ class graph:
          
         conf=None
 
+        # Custom file loading argument, used for testing
         if 'file' in args:
             config = configparser.ConfigParser()
             config.read(args['file'])
             conf=config
         
+        # Used for when conf is passed in or to string along the above
         if 'conf' in args or conf != None:
             if conf == None:
                 conf=args['conf']
@@ -80,7 +81,7 @@ class graph:
                 self.genGraph(conf['graph'])    
                 print("Randomly generated graph")
                 
-
+    # Fancily prints us out in a bordered graph when print(graph)
     def __str__(self):
         ret = ""
         ret += "┌"
@@ -100,8 +101,11 @@ class graph:
         ret +="┘\n" #\n
         
         return ret
-
+    
+    # Copies another graph over to us
     def copy(self, other):
+        # Same test speeds up functions that copy graphs 30 or 40 times
+        #   by not copying optimized info that never changes
         same = (self.id == other.id)
         if not same:
             self.x = other.x
@@ -110,15 +114,21 @@ class graph:
             self.id=other.id
             self.ignoreBlacks=other.ignoreBlacks
             self.blank( )
+            # Calls copy function per square
             for i in range(0,self.x):
                 for j in range(0,self.y):
                     self.data[i][j].copy( other.data[i][j] )
         else:
+            # If the graphs are known to be the same we just remove anything
+            #   that's not a black tile and then add bulbs. Drastically faster
+            #   than the constant calling.
             self.clear( )
             for i in range(0,other.x):
                 for j in range(0,other.y):
                     if other.data[i][j].type == gt.BULB:
                         self.data[i][j].addLight( )    
+                        
+        # This shit isn't static, it always needs to be copied
         self.bad=other.bad
         self.invalid=other.invalid
         self.fit=other.fit
@@ -127,26 +137,26 @@ class graph:
     ######################################
     # Incrementors or Bool Changers
     ######################################
+    
+    # Increments our "satisfied black tiles counter"
     def incBlackSats( self ):
         self.blackSats += 1
         
+    # Decrements our "satisfied black tiles counter"
     def decBlackSats( self ):
         self.blackSats -= 1
     
+    # Flips us to bad when we have a bad solution, not to be confused with
+    #   invalid which is for the graph (and deprecated)
     def setBad( self ):
         self.bad = True
         
-    def hitTopinc( self, f=False ):
-        if f:
-            self.hitTopLimit = (self.x*self.y) #cache
-            self.hitTop = 0
-        else:
-            self.hitTop += 1
-    
     ######################################
     ### Graph Generators
     ######################################
 
+    # This reads in Tauritz's funny-ass graph format, and beats it into submission,
+    #  and, subsequently, creates a graph from it.
     def readGraph( self, filename ):
         with fileinput.input(files=(filename)) as fh:
             for line in fh:
@@ -177,24 +187,23 @@ class graph:
 
             fh.close()
         self.optimize( )
-            
+    
+    # Generates a random and inherently valid graph by checking neighbors
     def genGraph( self, conf ):
-        made = False
         self.x = int(conf['x'])
         self.y = int(conf['y'])
         bprobs = self.readBlacks( conf )
-        
-        print( "Generating random, solveable graph: " )
-        if max(self.x, self.y) > 10:
-            print( "  Due to large graph size, this may take some time" )
-        
         self.blank()
+
+        print( "Generating random, solveable graph: " )
         for i in range(0, self.x):
             for j in range(0, self.y):
                 self.genRandBlack( self.data[i][j], bprobs )
-        made = True
+
         self.optimize( )
 
+    # Destroys a graph, clears its cache, and reinitilizes it with unlit tiles
+    #   Optimization is lost and must be done after again.
     def blank( self ):        
         self.invalid=False
         self.bad=False
@@ -213,7 +222,9 @@ class graph:
                 self.data[i].insert( j, sq( self, i, j, gt.UNLIT ) )
         
         self.procNeighbors( )
-        
+    
+    # Clears a graph of all bulbs, quicker for graphs that don't need to be
+    #   actually reinitilized as it allows optimization to stay and reuses squares.
     def clear( self ):
         self.bad=False
         self.fit=-1
@@ -233,20 +244,30 @@ class graph:
     ### Graph Generator Sub Functions
     ######################################
     
+    # A much improved addBlack function. This is used by all graph
+    #   generators in order to properly place black tiles and mark 
+    #   a graph as invalid if an improper black tile is actually placed.
+    # Magic happens here as we never make an invalid placement if check
+    #   is true. In a way, this is the brains of the graph generator.
     def addBlack( self, sqr, b, check=False ):
         x = sqr.x
         y = sqr.y
         canLight = 0
         
         if check:
+            #Black (no req) tiles, due to constant schemes put in place by Dr. Tauritz,
+            # appear to need 5 tiles around them. This is a caveat for those
+            # and a quick return false for anything that needs more than what's available.
             if len(sqr.neighbors) < b-gt.TRANSFORM and b != gt.BLACK:
                 return False
+            #We're looking at all of our neighbors that are black tiles
             for n in sqr.neighbors:
                 if n.isBlack( ):
-                    #If he's black0 or black he won't care
+                    #If it's black0 or black it won't care
                     if n.type == gt.BLACK0 or n.type == gt.BLACK:
                         continue
                     #Check to see if we're going to make an invalid board by blocking this square
+                    # We're essentially checking to see if he can be satisifed here.
                     hisLight = 0
                     for hn in n.neighbors:
                         if hn.x != x and hn.y != y and not hn.isBlack( ):
@@ -256,16 +277,21 @@ class graph:
                 else:
                     canLight += 1
             
+            #If we can't light more than our requirement and we aren't a nonrequiring black 
+            # tile or 0 (no bulbs down at graph gen so who cares) then return false.
             if canLight < b-gt.TRANSFORM and b != gt.BLACK and b != gt.BLACK0:
                 return False                
         
+        #FIXME: Put me in a function, baby
         sqr.newType(b)
         if sqr.type == gt.BLACK0:
             for n in sqr.neighbors:
                 if not sqr.isBlack( ):
                     n.bad.add( sqr )
         sqr.black = True
- 
+    
+    # Anymore, this is nothing more than a wrapper function. This is mostly
+    #   deprecated as we no longer need to be careful.
     def addLight( self, sqr, careful=False ):
         #Check surrounding spots for validation
         if not self.ignoreBlacks and sqr.isBad( ):
@@ -274,18 +300,9 @@ class graph:
             self.setBad( )
                 
         return sqr.addLight( )
-    
-    def genRandBlack( self, sqr, bprobs ):
-        prob = util.chance( )
-        
-        random.shuffle(bprobs)
-        for probs in bprobs:
-            typ = probs[0]
-            tprob = probs[1] 
-            if prob % tprob == 0:
-                if self.addBlack( sqr, typ, True ):
-                    return
-        
+
+    # This function reads in black tile probabilities from our .cfg
+    #   for later use by genRandomBlack
     def readBlacks( self, conf ):
         bprobs = []
         bprobs.append([gt.BLACK, int(conf['black'])])
@@ -295,7 +312,26 @@ class graph:
         bprobs.append([gt.BLACK4, int(conf['black4'])])
         bprobs.append([gt.BLACK0, int(conf['black0'])])
         return bprobs
+    
+    # This gerates a random black tile by looping through a list of lists
+    #   prepared by readBlacks. Each second argument is the 1 in # prob
+    #   supporting up to 1M.
+    def genRandBlack( self, sqr, bprobs ):
+        prob = util.chance( )
         
+        #If we don't shuffle here we're predisposed to get the ones at the
+        #  top more often because of the ordered list.
+        random.shuffle(bprobs)
+        for probs in bprobs:
+            typ = probs[0]
+            tprob = probs[1] 
+            #We're doing # % # == 0 here so we don't get 1-n/n and get 1/n...
+            #   It'll make sense, think about it.
+            if prob % tprob == 0:
+                if self.addBlack( sqr, typ, True ):
+                    return
+    
+    #Process Neighbors function. This is called at opimization 
     def procNeighbors( self ):
         for i in range( 0, self.x ):
             for j in range( 0, self.y ):
@@ -318,18 +354,18 @@ class graph:
                 x = sqr.x
                 y = sqr.y
                 
-                # Add us to the appropriate counter
+                # Add us to the appropriate counter, for all square types
                 self.sqgt[sqr.type].add( sqr )
                 
-                ################    UNLIT SQUARES   ################
-                # For unlit squares we are going to store where they would "shine" instead of doing this
-                #   on the fly. We are also going to store references to neighbors here of any type.
+                # For unlit squares we are going to store where they would "shine" 
+                #   instead of doing this on the fly.
                 if sqr.type == gt.UNLIT:
                     # Run lines down y=sqr.x, y=-sqr.x, x=sqr.y, x=-sqr.y from our location and add these.
                     #   If a bulb is placed, it'll light these squares.
                     if x > 0:
                         for k in range(x-1, -1, -1):
                             tsqr = self.data[k][y]
+                            # Black tiles block lights, so we finish here
                             if tsqr.isBlack( ):
                                 break
                             sqr.shine.add( tsqr )
@@ -351,14 +387,17 @@ class graph:
                             if tsqr.isBlack( ):
                                 break
                             sqr.shine.add( tsqr )
+                            
+                    #A quick and nasty caveat for black tiles that require 0.
                     for tsqr in sqr.neighbors:
                         if tsqr.type == gt.BLACK0:
                             sqr.bad.add( tsqr ) 
                     
     ######################################
-    # Checkers or Reporters
+    # Checkers
     ######################################
-
+    
+    # Our quick and lame fitness function.
     def fitness( self ):
         fit = 0
         if self.bad:
@@ -370,7 +409,8 @@ class graph:
         if not self.ignoreBlacks:
             fit *= self.blackSats / self.blacksSb( )
         return fit
-
+    
+    # A wrapper to determine if we're a valid solution.
     def isValid( self ):
         if not self.ignoreBlacks and self.blackSats < self.blacksSb( ):
             return False
@@ -385,23 +425,39 @@ class graph:
                 return True
         return False
                 
+    ######################################
+    # Reporters
+    ######################################
+    
+    # Number of unlit squares
     def unLitsq( self ):
         return len(self.sqgt[gt.UNLIT])
-
+    
+    # Number of lit squares
     def litsq( self ):
         return len(self.sqgt[gt.LIT])
 
+    # Number of possible lit squares
+    # FIXME: Tauritz wants bulbs to count as lit squares
     def posLitsq( self ):
         return self.litsq( ) + self.unLitsq( )
-        
+    
+    # Number of black tiles
     def blacks( self ):
         return len(self.sqgt[gt.BLACK1])+len(self.sqgt[gt.BLACK2])+len(self.sqgt[gt.BLACK3])+len(self.sqgt[gt.BLACK4])+len(self.sqgt[gt.BLACK0])+len(self.sqgt[gt.BLACK])
-        
+    
+    # Number of satisfied black tiles
     def blacksSb( self ):
         return len(self.sqgt[gt.BLACK1])+len(self.sqgt[gt.BLACK2])+len(self.sqgt[gt.BLACK3])+len(self.sqgt[gt.BLACK4])
         
+    # Number of bulbs
     def lights( self ):
         return len(self.sqgt[gt.BULBS])
+
+    ######################################
+    # Logging Functions
+    ######################################
+    # FIXME: This should be in util as a class
 
     def logResult( self, i, fh ):
         fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4)), '\n'] ) )

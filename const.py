@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1A
+#Class: CS348 Assignment 1B
+#Constants File
+#  This file holds various constants used to communicate between functions.
 
-#Constants
-
-#Graph type constants
+#Graph type
 class gt:
     NOTHING = 0                               # No idea when this would be used
     UNLIT = 1                                 # Unlit tile, default state
@@ -27,16 +27,8 @@ class gt:
     ###
     OWNER = 0
     TYPE = 1
-    
-#Light placement return values
-class lprets:
-    BAD = 0
-    LIT = 1
-    YALIT = 2
-    STOPPED = 3
-    OFFSET = 5
 
-#symbols
+#Symbol lookup table
 class sym:
     tb = []
     for i in range(0,gt.BLACK+1):
@@ -51,16 +43,6 @@ class sym:
     tb[gt.BLACK3] = "3"
     tb[gt.BLACK4] = "4"
     tb[gt.BLACK] = "X"
-
-class solv:
-    DONE = 1
-    BEST = 2                     
-    NOFIN = 3
-    
-class method:
-    MINBULB = 0
-    MAXBULB = 1
-    ANY = 2
 
 #Log handle indecies
 class lh:

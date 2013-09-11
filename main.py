@@ -4,14 +4,8 @@
 
 from const import lh
 from graph import graph
+from util import *
 import solve
-
-import random, sys, argparse, configparser, subprocess, re
-
-def readConfig( fn ):
-    config = configparser.ConfigParser()
-    config.read(fn)
-    return config._sections
 
 def main():
     cfg = readConfig(gcfg( ))
@@ -34,60 +28,6 @@ def main():
     for elh in plh:
         elh.close( )
     return 0
-
-def gcfg( ):
-    parser = argparse.ArgumentParser(description='CS348 FS2013 Assignment 1a')
-    parser.add_argument('-c', type=str,
-                       help='Specifies a configuration file (default: cfgs/default.cfg)',
-                       default="cfgs/default.cfg")
-
-    args = parser.parse_args()
-    return args.c
-    
-def initLogs( fcfg, puz, fname ):
-    cfg = fcfg['log']
-    resLogh = open( cfg['result'], 'w' )
-    solLogh = open( cfg['solution'], 'w' )
-    
-    resLogh.write( ''.join(["Result Log\n", "Config File: ", fname, "\n"]) )
-    if( fcfg['graph']['gen'] != 'True' ):
-        resLogh.write( ''.join(["Puzzle File: ", fcfg['graph']['gen'], "\n" ]) )
-    else:
-        resLogh.write( ''.join(["Randomly Generated Graph\n"]) )
-        
-    resLogh.write( ''.join(['Seed: ', str(puz.seed), '\n' ]) )
-    
-    if cfg['logh'] != '0':
-        output = subprocess.check_output("git log -n1 --pretty=\"Git Hash: %H\n  Commit Date: %ad (%ar)\n  Author: %an <%ae>\n  Change Message: %s\"", shell=True)
-        output = str( output )
-        output = re.sub( r'\\n', '\n', output )
-        output = re.sub( r'(b\'|\'$)', '', output )
-        resLogh.write( output )
-
-    if fcfg['graph']['gen'] == 'True':
-        #graph parameters
-        params = ''
-        params += "Map generation parameters:"
-        for param in fcfg['graph']:
-            if param == 'gen':
-                next
-            params += ''.join(["\n  ", param, ": ", fcfg['graph'][param]])
-        params += '\n'
-        resLogh.write( params )
-        
-    #rng parameters
-    resLogh.write( ''.join(["RNG solution parameters:\n", 
-        "  runs: ", fcfg['solve']['runs'], 
-        "\n  fitevals: ", fcfg['solve']['fitevals'], 
-        "\n  ignoreblack: ", fcfg['solve']['ignoreblack'], 
-        "\n  chance: ", fcfg['solve']['chance'], "\n" ] ) )
-
-    resLogh.write( "".join(['Graph:\n', str(puz)]) )
-
-    #solLogh.write( ''.join(["Solution Log", '\n', 'Seed: ', str(puz.seed), '\n']) )
-    
-    handles = [resLogh, solLogh]
-    return handles
 
 if __name__ == '__main__':
     main()
