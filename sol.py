@@ -47,7 +47,7 @@ class sol:
                         hsqr.addLight( )
         
         # Place a random number of bulbs
-        for i in range(0,math.floor(random.uniform(0,x*y+1))):
+        for i in range(0,math.floor(random.uniform(0,x*y/2))):
             #we're evolving placement of bulbs on unlit cells ("white") so we are careful
             self.graph.addLight( math.floor(random.uniform(0, x)), math.floor(random.uniform(0, y)), True )
 
@@ -66,30 +66,24 @@ class sol:
         
         self.fit = fit
         return fit
-    
-    # We're going to take a random amount of data from our parents and "melt" them
-    #   into one solution. This solution isn't allowed to be invalid.
+  
     def breed( self, p1, p2 ):
-        gamete1 = random.sample( p1.graph.sqgt[gt.BULB], math.ceil(p1.graph.lights( )/2) )
-        gamete2 = random.sample( p2.graph.sqgt[gt.BULB], math.ceil(p2.graph.lights( )/2) )
+        #print ( "\nParent 1, b:", p1.graph.lights( ), "f:", p1.fitness( ) )
+        #print( p1.graph )
+        #print ( "Parent 2, b:", p2.graph.lights( ), "f:", p2.fitness( ) )
+        #print( p2.graph ) 
         
-        #In a disgusting mess of hot sex, throw half of our squares in with 
-        #  the other side.
-        pchro = list( )
-        pchro.extend( gamete1 )
-        pchro.extend( gamete2 )
+        unlitsq = list( self.graph.sqgt[gt.UNLIT] )
+        random.shuffle( unlitsq )
         
-        print ( "\nParent 1, b:", p1.graph.lights( ), "f:", p1.fitness( ) )
-        print( p1.graph )
-        print ( "Parent 2, b:", p2.graph.lights( ), "f:", p2.fitness( ) )
-        print( p2.graph ) 
-        
-        minn = min(p1.graph.lights( ), p2.graph.lights( ))
-        
-        random.shuffle( pchro )
-        
-        for sqr in pchro:
-            self.graph.addLight( sqr.x, sqr.y, True )
-        
-        print ( "Babby, b:", self.graph.lights( ), "f:", self.fitness( ) )
-        print( self.graph )
+        while len(unlitsq) > 0:
+            sqr = unlitsq.pop( )
+            if sqr.type != gt.UNLIT:
+                continue
+            if flip( ) and p1.graph.data[sqr.x][sqr.y].type == gt.BULB:
+                sqr.addLight( )
+            elif p2.graph.data[sqr.x][sqr.y].type == gt.BULB:
+                sqr.addLight( )
+                
+        #print ( "Babby, b:", self.graph.lights( ), "f:", self.fitness( ) )
+        #print( self.graph )
