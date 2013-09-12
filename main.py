@@ -5,26 +5,25 @@
 from const import lh
 from graph import graph
 from util import *
-import solve
+import runner
 
 def main():
     cfg = readConfig(gcfg( ))
-    puz = graph(conf=cfg)
-    print( puz )
-    plh = initLogs( cfg, puz, gcfg( ) )
-    best = graph()
-    best.copy(puz)
-    for i in range( 0, int(cfg['solve']['runs']) ):
-        tester = graph( )
-        tester.copy(puz)
-        solve.manSeq( tester, cfg, plh, i )
-        if tester.fit > best.fit:
-            best.copy(tester)
     
-    best.logSolution( plh[lh.SOL] )
-    print( "Best found: " )
-    print( best )
+    if cfg['graph']['seed'] == 'random':
+        dt = datetime.datetime.now( )
+        cseed = seed( )
+    else:
+        cseed = float(cfg['graph']['seed'])
     
+    random.seed(cseed)
+    print( "Seeded RNG off ", cseed )
+    
+    plh = initLogs( cfg, gcfg( ) )
+    for i in range( int(cfg['main']['runs']) ):
+        puz = graph(conf=cfg)        
+        runner.manSeq( puz, cfg, plh, i )
+
     for elh in plh:
         elh.close( )
     return 0

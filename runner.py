@@ -4,60 +4,38 @@
 #Solver Functions
 #  This file does a bulk of the large scale logic operations and generation operations / output.
 
-import graph
 from const import gt, lh
+import gen
 import random
-from util import flip
-
-# Random graph solver. Used to initlize base solutions for our 
-#   population. Goes over any "white" (unlit) tiles and flips a coin 
-#   using a probability from the config file.
-#FIXME: Probability should be random to maximize diversity.
-def rng( puz, prob ):
-    for i in range(0,puz.x):
-        for j in range(0,puz.y):
-            sqr = puz.data[i][j]
-            if sqr.type == gt.UNLIT and not sqr.isBad( ) and flip(prob):
-                sqr.addLight( )
-    puz.setFitness( )            
+import util
 
 # The main sequence for our solver. Will eventually call all of
 #   the generation handling, breeding, mutating, etc.
 def manSeq( puz, cfg, plh, run ):
-    runs = int(cfg['solve']['fitevals'])
-    chance = float(cfg['solve']['chance'])
+    runs = int(cfg['main']['fitevals'])
+    chance = float(cfg['main']['chance'])
     
     slh = plh[lh.SOL]
     rlh = plh[lh.RES]
     
     i = 0
-    area = puz.x*puz.y
     lastline=""
-    count = run*int(cfg['solve']['fitevals'])
+    count = run*int(cfg['main']['fitevals'])
     
     logSeperate( rlh, run )
-    print( "Run #", run+1, "/", cfg['solve']['runs'] )
-    best = graph.graph( )
-    best.copy( puz )
-    sol = graph.graph( )
-    sol.copy( puz )
-    while i < runs:
-        sol.clear( )
-        rng( sol, chance )
-        
-        if sol.isValid( ):
-            i += 1
-            if sol.fit > best.fit:
-                best.copy(sol)
-                sol.logResult( i, rlh )
-            
-            if i % 3 > 0:
-                print('\b'*len(lastline), end='')
-                    
-                lastline = status(cfg['solve'], i, count)
-                print(lastline, end='')
+    util.delprn( ''.join(["Run #", str(run+1).zfill(len(cfg['main']['runs'])), "/", cfg['main']['runs'], ": "]), 0 )
+
+    gen.gen( conf=cfg, genNum=i, puz=puz )
+    
     print( "" )
-    puz.copy( best )
+    
+    #while i < runs:
+
+    #if i % 3 > 0:
+    #    print('\b'*len(lastline), end='')
+    #    lastline = status(cfg['main'], i, count)
+    #    print(lastline, end='')
+    #print( "" )
 
 # Prints our status out in a sexy format. Shouldn't be called often as it
 #   does do some calculation and a bunch of backspaces beforehand.

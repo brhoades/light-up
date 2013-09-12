@@ -4,7 +4,6 @@
 #Square Class File
 #  This file houses the functions and class for the square (sq) type, which holds tile info.
 
-
 from const import sym, gt
 
 class sq:
@@ -95,10 +94,14 @@ class sq:
         for sqr in other.shine:
             self.shine.add( self.parent.data[sqr.x][sqr.y] )
     
-    # Removes a light then recursively removes its lit cells in "shine".
+    # Removes a light then recursively removes its lit cells in "shine". Sometimes
+    #   we make bad placements, to notice this we'll know if a bulb has an owner.
     def rmLight( self ):
         puz = self.parent
-        self.newType( gt.UNLIT )
+        if len(self.owner) <= 0:
+            self.newType( gt.UNLIT )
+        else:
+            self.newType( gt.LIT )
 
         for sqr in self.neighbors:
             chk = False

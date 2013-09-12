@@ -7,7 +7,7 @@
 from const import gt
 from sq import sq
 import util
-import random, time, datetime, solve, fileinput, configparser
+import random, time, datetime, fileinput, configparser
 
 class graph:
     ######################################
@@ -18,12 +18,12 @@ class graph:
 
         #Is this an invalid graph?
         self.invalid=False
-        #Have we made a bad placement?
-        self.bad=False
+        
         #Satisfied Black Squares
         self.blackSats = 0
-        #Fitness
-        self.fit=-1
+        
+        #Possible squares to light
+        self.possq = 0
         
         ######################## Caches ###############################
         # Dyanmic references to all open squares bordering black tiles
@@ -38,9 +38,6 @@ class graph:
         
         # Set during configuration--- do we ignore black squares?
         self.ignoreBlacks = False
-        
-        # Our seed, generated at initilization
-        self.seed=0
                 
         # Our unique id, used for comparisons between two graphs
         self.id=util.id( )
@@ -61,26 +58,16 @@ class graph:
                 conf['graph']['x'] = str(args['x'])
             if 'y' in args:
                 conf['graph']['y'] = str(args['y'])
-            if 'seed' in args:
-                self.seed = args['seed']
-            elif conf['graph']['seed'] == 'random':
-                dt = datetime.datetime.now( )
-                self.seed = util.seed( )
-            else:
-                self.seed = float(conf['graph']['seed'])
            
-            self.ignoreBlacks = conf['solve']['ignoreblack'] == 'True'
-
-            random.seed(self.seed)
-            print( "Seeded RNG off ", self.seed )
+            self.ignoreBlacks = conf['main']['ignoreblack'] == 'True'
             
             if conf['graph']['gen'] != 'True':
                 self.readGraph(conf['graph']['gen'])
                 print("Loaded graph from:", conf['graph']['gen'])
             else:
                 self.genGraph(conf['graph'])    
-                print("Randomly generated graph")
-                
+                print("Randomly generated graph: ")
+                print( self )
     # Fancily prints us out in a bordered graph when print(graph)
     def __str__(self):
         ret = ""
@@ -110,9 +97,9 @@ class graph:
         if not same:
             self.x = other.x
             self.y = other.y
-            self.seed=other.seed
             self.id=other.id
             self.ignoreBlacks=other.ignoreBlacks
+            self.possq = other.possq
             self.blank( )
             # Calls copy function per square
             for i in range(0,self.x):
@@ -126,10 +113,9 @@ class graph:
             for i in range(0,other.x):
                 for j in range(0,other.y):
                     if other.data[i][j].type == gt.BULB:
-                        self.data[i][j].addLight( )    
+                        self.addLight( i, j )    
                         
         # This shit isn't static, it always needs to be copied
-        self.bad=other.bad
         self.invalid=other.invalid
         self.fit=other.fit
         self.blackSats=other.blackSats
@@ -145,11 +131,6 @@ class graph:
     # Decrements our "satisfied black tiles counter"
     def decBlackSats( self ):
         self.blackSats -= 1
-    
-    # Flips us to bad when we have a bad solution, not to be confused with
-    #   invalid which is for the graph (and deprecated)
-    def setBad( self ):
-        self.bad = True
         
     ######################################
     ### Graph Generators
@@ -195,7 +176,6 @@ class graph:
         bprobs = self.readBlacks( conf )
         self.blank()
 
-        print( "Generating random, solveable graph: " )
         for i in range(0, self.x):
             for j in range(0, self.y):
                 self.genRandBlack( self.data[i][j], bprobs )
@@ -206,7 +186,6 @@ class graph:
     #   Optimization is lost and must be done after again.
     def blank( self ):        
         self.invalid=False
-        self.bad=False
         self.blackSats = 0
         self.fit=-1
         self.data.clear( )
@@ -226,7 +205,6 @@ class graph:
     # Clears a graph of all bulbs, quicker for graphs that don't need to be
     #   actually reinitilized as it allows optimization to stay and reuses squares.
     def clear( self ):
-        self.bad=False
         self.fit=-1
                 
         if len(self.sqgt) == 0:
@@ -292,14 +270,14 @@ class graph:
     
     # Anymore, this is nothing more than a wrapper function. This is mostly
     #   deprecated as we no longer need to be careful.
-    def addLight( self, sqr, careful=False ):
+    def addLight( self, x, y, careful=False ):
         #Check surrounding spots for validation
-        if not self.ignoreBlacks and sqr.isBad( ):
-            if careful:
-                return False
-            self.setBad( )
+        if not self.ignoreBlacks and self.data[x][y].isBad( ) and careful:
+            return False
+        elif self.data[x][y].type != gt.UNLIT and careful:
+            return False
                 
-        return sqr.addLight( )
+        return self.data[x][y].addLight( )
 
     # This function reads in black tile probabilities from our .cfg
     #   for later use by genRandomBlack
@@ -346,8 +324,13 @@ class graph:
                     sqr.addNeighbor( self.data[x][y-1] )
                 if y < self.y-1:
                     sqr.addNeighbor( self.data[x][y+1] )
-                    
+    
+    # This function later pays itself off lightsPlaced/"self.unLitsq( )"-fold by automatically
+    #   storing the squares to light up instead of constantly searching every time we place
     def optimize( self ):
+        # Set our possible # of lit squares
+        self.possq = self.litsq( ) + self.unLitsq( ) + self.lights( )
+        
         for i in range( 0, self.x ):
             for j in range( 0, self.y ):
                 sqr = self.data[i][j]
@@ -397,19 +380,6 @@ class graph:
     # Checkers
     ######################################
     
-    # Our quick and lame fitness function.
-    def fitness( self ):
-        fit = 0
-        if self.bad:
-            return fit
-            
-        # ( num of lit tiles / num of possible lit tiles )
-        fit = self.litsq( )  / self.posLitsq( )
-        # * ( num of satisfied black squares / number of (satisifiable) black squares )
-        if not self.ignoreBlacks:
-            fit *= self.blackSats / self.blacksSb( )
-        return fit
-    
     # A wrapper to determine if we're a valid solution.
     def isValid( self ):
         if not self.ignoreBlacks and self.blackSats < self.blacksSb( ):
@@ -435,12 +405,11 @@ class graph:
     
     # Number of lit squares
     def litsq( self ):
-        return len(self.sqgt[gt.LIT])
+        return len(self.sqgt[gt.LIT]) + len(self.sqgt[gt.BULB])
 
     # Number of possible lit squares
-    # FIXME: Tauritz wants bulbs to count as lit squares
     def posLitsq( self ):
-        return self.litsq( ) + self.unLitsq( )
+        return self.possq
     
     # Number of black tiles
     def blacks( self ):
@@ -452,7 +421,7 @@ class graph:
         
     # Number of bulbs
     def lights( self ):
-        return len(self.sqgt[gt.BULBS])
+        return len(self.sqgt[gt.BULB])
 
     ######################################
     # Logging Functions 
@@ -487,7 +456,3 @@ class graph:
     # Wraps sq.rmLight( ) by allowing you to pass arguments
     def rmLight( self, x, y ):
         self.data[x][y].rmLight( )
-    
-    # Calculates fitness
-    def setFitness( self ):
-        self.fit = self.fitness( )
