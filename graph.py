@@ -453,6 +453,6 @@ class graph:
     # Wrapper Functions
     ######################################
     
-    # Wraps sq.rmLight( ) by allowing you to pass arguments
+    # Wraps sq.rmLight( ) by allowing you to pass coordinates
     def rmLight( self, x, y ):
         self.data[x][y].rmLight( )

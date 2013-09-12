@@ -23,19 +23,19 @@ def manSeq( puz, cfg, plh, run ):
     count = run*int(cfg['main']['fitevals'])
     
     logSeperate( rlh, run )
-    util.delprn( ''.join(["Run #", str(run+1).zfill(len(cfg['main']['runs'])), "/", cfg['main']['runs'], ": "]), 0 )
+    util.delprn( ''.join(["Run #", str(run+1), "/", cfg['main']['runs'], ": "]), 0 )
+        
+    while i < runs:
+        thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )
+        print( len(thisgen.ind) )
+        thisgen.reproduce( )
+        print( len(thisgen.ind) )
 
-    gen.gen( conf=cfg, genNum=i, puz=puz )
-    
+        
+        i += 1
+        
     print( "" )
-    
-    #while i < runs:
 
-    #if i % 3 > 0:
-    #    print('\b'*len(lastline), end='')
-    #    lastline = status(cfg['main'], i, count)
-    #    print(lastline, end='')
-    #print( "" )
 
 # Prints our status out in a sexy format. Shouldn't be called often as it
 #   does do some calculation and a bunch of backspaces beforehand.
