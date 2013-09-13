@@ -75,6 +75,6 @@ class sol:
             if sqr.type != gt.UNLIT:
                 continue
             if flip( ) and p1.graph.data[sqr.x][sqr.y].type == gt.BULB:
-                sqr.addLight( )
+                self.graph.addLight( sqr.x, sqr.y, True )
             elif p2.graph.data[sqr.x][sqr.y].type == gt.BULB:
-                sqr.addLight( )
+                self.graph.addLight( sqr.x, sqr.y, True )

@@ -104,9 +104,9 @@ class gen:
                     if flip( ) and len(sol.graph.sqgt[gt.BULB]) > 0:
                         bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
                         bulb[0].rmLight( )
-                        unlit[0].addLight( )
+                        sol.graph.addLight( unlit[0].x, unlit[0].y, True )
                     else:
-                        unlit[0].addLight( )
+                        sol.graph.addLight( unlit[0].x, unlit[0].y, True )
                 #Otherwise look through bulbs and delete one
                 else:
                     bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )

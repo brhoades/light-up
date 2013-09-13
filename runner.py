@@ -32,7 +32,7 @@ def manSeq( puz, cfg, plh, run ):
         prnBase( cfg, i, evals, thisgen )
         thisgen.reproduce( )
         thisgen.mutate( )
-        thisgen.natSelection( )
+        thisgen.natSelection( ) #FIXME: Make this a negative tournament
         if int(cfg['main']['gens']) != 0:
             i += 1
         else:
