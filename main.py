@@ -22,6 +22,8 @@ def main():
     plh = initLogs( cfg, gcfg( ) )
     for i in range( int(cfg['main']['runs']) ):
         puz = graph(conf=cfg)        
+        if i == 0:
+            print( "Run #\tRun %\tGen #\tGen %\tStatus\t\t\tStatus %" )
         runner.manSeq( puz, cfg, plh, i )
 
     for elh in plh:

@@ -12,7 +12,7 @@ import util
 # The main sequence for our solver. Will eventually call all of
 #   the generation handling, breeding, mutating, etc.
 def manSeq( puz, cfg, plh, run ):
-    runs = int(cfg['main']['fitevals'])
+    evals = int(cfg['main']['fitevals'])
     chance = float(cfg['main']['chance'])
     
     slh = plh[lh.SOL]
@@ -23,34 +23,21 @@ def manSeq( puz, cfg, plh, run ):
     count = run*int(cfg['main']['fitevals'])
     
     logSeperate( rlh, run )
-    util.delprn( ''.join(["Run #", str(run+1), "/", cfg['main']['runs'], ": "]), 0 )
-        
-    while i < runs:
-        thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )
-        print( len(thisgen.ind) )
+    util.delprn( ''.join([str(run+1), "/", cfg['main']['runs'], " \t", \
+        util.perStr( (run+1)/int(cfg['main']['runs']), False), "\t"]), 0 )
+    util.delprn( ''.join([str(i), "/", str(evals), "\t", util.perStr(i/evals, False), "\t" ]), 1 )
+    thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )        
+    
+    while i < evals:
+        util.delprn( ''.join([str(i), "/", str(evals), "\t", util.perStr(i/evals, False), "\t" ]), 1 )
         thisgen.reproduce( )
-        print( len(thisgen.ind) )
+        thisgen.mutate( )
+        thisgen.natSelection( )
 
-        
         i += 1
         
     print( "" )
-
-
-# Prints our status out in a sexy format. Shouldn't be called often as it
-#   does do some calculation and a bunch of backspaces beforehand.
-def status( cfg, i, count ):
-    #(numgoodruns/totalruns) (%done)
-    line = str(i)
-    line += ''.join( ["/", cfg['fitevals'], " (", str(round(i/int(cfg['fitevals'])*100, 1)), "%)"] )
-    #Spacer
-    line +=" "*4
-    #numoftotalpossibleruns/max (%done)
-    line += str(count+i)
-    maxn = int(cfg['runs'])*int(cfg['fitevals'])
-    line += ''.join( ["/", str(maxn), " (", str(round((count+i)/maxn*100, 3)), "%)" ] )
-    return line
-
+    
 # Seperates our result log file with pretty run numbers.
 #FIXME: This really needs to be somewhere else
 def logSeperate( rlf, run ):

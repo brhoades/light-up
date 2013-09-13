@@ -68,11 +68,6 @@ class sol:
         return fit
   
     def breed( self, p1, p2 ):
-        #print ( "\nParent 1, b:", p1.graph.lights( ), "f:", p1.fitness( ) )
-        #print( p1.graph )
-        #print ( "Parent 2, b:", p2.graph.lights( ), "f:", p2.fitness( ) )
-        #print( p2.graph ) 
-        
         unlitsq = list( self.graph.sqgt[gt.UNLIT] )
         random.shuffle( unlitsq )
         
@@ -84,6 +79,5 @@ class sol:
                 sqr.addLight( )
             elif p2.graph.data[sqr.x][sqr.y].type == gt.BULB:
                 sqr.addLight( )
-                
-        #print ( "Babby, b:", self.graph.lights( ), "f:", self.fitness( ) )
-        #print( self.graph )
+        
+        self.fitness( )
