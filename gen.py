@@ -30,6 +30,7 @@ class gen:
         self.tournMate = int(args['conf']['pop']['partsize'])
         
         self.parseltorun = (args['conf']['pop']['parseltourn'] == "True")
+        self.fitEvals = 0
         
         self.generate(args['conf'])
         
@@ -39,14 +40,14 @@ class gen:
     
     # Randomly generates a generation (hehe) from scratch
     def generate( self, cfg ):
-        delprn( "Generating Initial Pop.\t(" )
+        delprn( "Generating Initial Pop.\t" )
         
         forcevalid = (cfg['pop']['forcevalid'] == "True")
         for i in range(0,self.mu):            
             citizen = sol.sol( self )
             citizen.rng( forcevalid )
             self.ind.add( citizen )
-            delprn( ''.join([perStr(i/self.mu), "%)"]), 3 )
+            delprn( ''.join([perStr(i/self.mu)]), 3 )
     
     # Creates a random tournament and returns a single individual
     #   Disqualified peeps in ineg. Other parent, usually.
@@ -58,7 +59,7 @@ class gen:
             
         while len(parents) > 1:
             plist = parents.copy( )
-            delprn(''.join([perStr(((size-len(parents))/size*(1/totnum))+(curnum/totnum)), "%)"]), 3)
+            delprn(''.join([perStr(((size-len(parents))/size*(1/totnum))+(curnum/totnum))]), 3)
             
             while len(plist) > 1:
                 bracket = random.sample(plist, 2)
@@ -75,7 +76,7 @@ class gen:
 
     # Returns two parents
     def reproduce( self ):
-        delprn( "Procreating\t\t(" )
+        delprn( "Procreating\t\t" )
         newkids = set( )
         
         for i in range(0,self.lamb):
@@ -89,12 +90,13 @@ class gen:
     
     # Mutates some individuals randomly
     def mutate( self ):
-        delprn( "Mutating\t\t(" )
+        delprn( "Mutating\t\t" )
         i = 0
         for sol in self.ind: 
-            delprn( ''.join([perStr(i/len(self.ind)), "%)"]) )
+            delprn( ''.join([perStr(i/len(self.ind))]) )
             squares = mutateSq( self.muAlpha )
             while squares > 0:
+                sol.fit = -1
                 #Look through unlit squares first
                 if len(sol.graph.sqgt[gt.UNLIT]) > 0:
                     unlit = random.sample( sol.graph.sqgt[gt.UNLIT], 1 )
@@ -111,11 +113,10 @@ class gen:
                     bulb[0].rmLight( )
                 squares -= 1
             i += 1
-                        
             
     # Deletes those who don't survive natural selection
     def natSelection( self ):
-        delprn( "Selecting Survivors\t(" )
+        delprn( "Selecting Survivors\t" )
         
         newInds = set( )
         i = 0
@@ -126,5 +127,22 @@ class gen:
             newInds.add(newind)
             i += 1
         
-        self.ind.clear( )
         self.ind = newInds
+        
+    # Returns our best solution. Returns a random one if there's more than one
+    def best( self ):
+        best = random.sample( self.ind, 1 )
+        best = best[0]
+        
+        for sol in self.ind:
+            if sol.fitness( ) > best.fitness( ):
+                best = sol
+        
+        return best
+  
+    def average( self ):
+        fits = 0
+        for sol in self.ind:
+            fits += sol.fitness( )
+        
+        return fits/len(self.ind)

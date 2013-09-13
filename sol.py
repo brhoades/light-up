@@ -50,8 +50,6 @@ class sol:
         for i in range(0,math.floor(random.uniform(0,x*y/2))):
             #we're evolving placement of bulbs on unlit cells ("white") so we are careful
             self.graph.addLight( math.floor(random.uniform(0, x)), math.floor(random.uniform(0, y)), True )
-
-        self.fitness( )
         
     # Quick and lame fitness
     def fitness( self ):
@@ -65,6 +63,7 @@ class sol:
             fit *= self.graph.blackSats / self.graph.blacksSb( )
         
         self.fit = fit
+        self.gen.fitEvals += 1
         return fit
   
     def breed( self, p1, p2 ):
@@ -79,5 +78,3 @@ class sol:
                 sqr.addLight( )
             elif p2.graph.data[sqr.x][sqr.y].type == gt.BULB:
                 sqr.addLight( )
-        
-        self.fitness( )
