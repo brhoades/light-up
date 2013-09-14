@@ -30,7 +30,14 @@ class gen:
         self.tournMate = int(args['conf']['pop']['partsize'])
         
         self.parseltourn = (args['conf']['pop']['parseltourn'] == "True")
+        self.surseltourn = (args['conf']['pop']['surseltourn'] == "True")
         
+        self.surseltrunc = (args['conf']['pop']['surtrunc'])
+        if self.surseltrunc == 'lambda':
+            self.surseltrunc = self.lamb
+        else:
+            self.surseltrunc = int(self.surseltrunc)
+                                                
         # Termination Counters
         self.fitEvals = 0
         self.sameTurns = 0
@@ -83,13 +90,13 @@ class gen:
                     else:
                         parents.remove( p2 )
         return parents.pop( )
-
-    # Proportional to fitness, this function chooses a single individual randomly where the higher
-    #   the fitness, the more likely they are to be chosen
     
-    def fitPropor( self, indv=1, rem=True):
-        landscape = util.probDist( self.ind, rem )
-
+    # drops #self.surseltrunc of the worst individuals
+    def truncate( self ):
+        for i in range(0,self.surseltrunc):
+            delprn(perStr(i/self.surseltrunc), 3)
+            self.ind.discard( self.worst( ) )
+        
     # Returns two parents
     def reproduce( self ):
         delprn( "Procreating\t\t" )
@@ -139,11 +146,14 @@ class gen:
         delprn( "Selecting Survivors\t" )
         i = 0
         
-        while len(self.ind) > self.mu:
-            # Neg tournament
-            self.ind.discard(self.tournament(False, self.tournNat, i, self.mu))
-            i += 1
-                
+        if self.surseltourn:
+            while len(self.ind) > self.mu:
+                # Neg tournament
+                self.ind.discard(self.tournament(False, self.tournNat, i, self.mu))
+                i += 1
+        else:
+            self.truncate( )
+            
     # Returns our best solution. Returns a random one if there's more than one
     def best( self ):
         best = random.sample( self.ind, 1 )
@@ -154,6 +164,17 @@ class gen:
                 best = sol
         
         return best
+      
+    # Returns our worst solution. 
+    def worst( self ):
+        worst = random.sample( self.ind, 1 )
+        worst = worst[0]
+        
+        for sol in self.ind:
+            if sol.fitness( ) < worst.fitness( ):
+                worst = sol
+        
+        return worst
   
     def average( self ):
         fits = 0
