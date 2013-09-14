@@ -12,57 +12,69 @@ import math
 
 # The main sequence for our solver. Will eventually call all of
 #   the generation handling, breeding, mutating, etc.
-def manSeq( puz, cfg, plh, run ):
-    evals = int(cfg['main']['fitevals'])
-    chance = float(cfg['main']['chance'])
-    
-    slh = plh[lh.SOL]
-    rlh = plh[lh.RES]
-    
+def manSeq( puz, cfg, lg, run ):
     i = 0
     lastline=""
     
-    logSeperate( rlh, run )
-    util.delprn( ''.join([str(run+1), "/", cfg['main']['runs'], " \t", \
-        util.perStr( (run+1)/int(cfg['main']['runs']), False), "\t"]), 0 )
-    prnBase( cfg, i, evals, False )
+    lg.sep( run )
+    runs = ""
+    runs += str(run+1)
+    runs += '\t'
+    if int(cfg['main']['runs']) > 9:
+        runs += '\t' 
+    util.delprn( ''.join([str(run+1), "\t"]), 0 )
+    prnBase( cfg, False )
     thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )        
     
-    while runCriteria(cfg, i):
-        prnBase( cfg, i, evals, thisgen )
+    while runCriteria(cfg, thisgen):
+        prnBase( cfg, thisgen )
         thisgen.reproduce( )
         thisgen.mutate( )
-        thisgen.natSelection( ) #FIXME: Make this a negative tournament
-        if int(cfg['main']['gens']) != 0:
-            i += 1
-        else:
-            i = thisgen.fitEvals
-  
-    prnBase( cfg, i, evals, thisgen )
-  
-    print( "" )
-    print( thisgen.best( ).graph )
-    
-def runCriteria( cfg, i ):
-    if int(cfg['main']['gens']) != 0:
-        return i < int(cfg['main']['gens'])
-    elif int(cfg['main']['fitevals']) != 0:
-        return i < int(cfg['main']['fitevals'])
-   
-# Seperates our result log file with pretty run numbers.
-#FIXME: This really needs to be somewhere else
-def logSeperate( rlf, run ):
-    rlf.flush( )
-    rlf.write( ''.join( [ "\n", "Run ", str(run+1), "\n" ] ) )
+        thisgen.natSelection( )
+        lg.gen( thisgen )
+        thisgen.num += 1
+    prnBase( cfg, thisgen )
 
+    return thisgen.best( )
+  
+def runCriteria( cfg, gen ):
+    if cfg['main']['gens'] != "0":
+        return gen.num < int(cfg['main']['gens'])
+    elif cfg['main']['fitevals'] != "0":
+        return gen.fitEvals < int(cfg['main']['fitevals'])
+    elif cfg['main']['homogenity'] != "0":
+        thisavg = gen.best( )
+        if round(thisavg.fitness( ), int(cfg['main']['homoacc'])) == gen.lastFit:
+            gen.sameTurns += 1
+            if gen.sameTurns >= int(cfg['main']['homogenity']):
+                return False
+        else:
+            gen.lastFit = round(thisavg.fitness( ), int(cfg['main']['homoacc']))
+            gen.sameTurns = 0
+        return True
+        
 # Prints our basic string
-def prnBase( cfg, i, evals, gen ):
-    if gen == False:
-        avg = 0
-    else:
+def prnBase( cfg, gen=False ):
+    evals=0
+    avg=0
+    genn=0
+    if gen != False:
         avg = round( gen.average( ), 4 )
-    if cfg['main']['gens'] != 0:
-        util.delprn( ''.join([str(i), '\t'*(math.ceil(int(cfg['main']['gens'])/100000)-math.floor(i/10000)), '\t\t', util.perStr(i/evals, False), "\t", str(avg), "\t" ]), 1 )
-    else:
-        util.delprn( ''.join([str(i), '\t'*(math.ceil(int(cfg['main']['fitevals'])/100000)-math.floor(i/10000)), '\t\t',  util.perStr(i/evals, False), "\t", str(avg), "\t" ]), 1 )
-                    
+        genn = gen.num
+        evals = gen.fitEvals
+    
+    out = ""
+    out += util.pad(genn, cfg['main']['gens'])
+    out += "\t"
+    if int(cfg['main']['gens']) > 0:
+        out += "\t"
+        if math.log(int(cfg['main']['gens']), 10) >= 12:
+            out += "\t"
+    out += util.pad(evals, cfg['main']['fitevals'])
+    if int(cfg['main']['fitevals']) > 0 and math.log(int(cfg['main']['fitevals']), 10) >= 4:
+        out += "\t"
+    out += "\t"
+    out += str(avg)
+    out += "\t"
+    
+    util.delprn(out, 1)

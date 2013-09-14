@@ -63,11 +63,13 @@ class graph:
             
             if conf['graph']['gen'] != 'True':
                 self.readGraph(conf['graph']['gen'])
-                print("Loaded graph from:", conf['graph']['gen'])
+                if not 'quiet' in args:
+                    print("Loaded graph from:", conf['graph']['gen'])
             else:
                 self.genGraph(conf['graph'])    
-                print("Randomly generated graph: ")
-                print( self )
+                if not 'quiet' in args:
+                    print("Randomly generated graph: ")
+                    print( self )
     # Fancily prints us out in a bordered graph when print(graph)
     def __str__(self):
         ret = ""
@@ -422,31 +424,20 @@ class graph:
     # Number of bulbs
     def lights( self ):
         return len(self.sqgt[gt.BULB])
-
-    ######################################
-    # Logging Functions 
-    ######################################
-    # FIXME: This should be in util as a class
-
-    # Logs the result to a file handle. Used for result-log.txt
-    def logResult( self, i, fh ):
-        fh.write( ''.join( [ str(i), '\t', str(round(self.fit, 4)), '\n'] ) )
     
-    # Serializes and logs the soulution to solution-log.txt
-    def logSolution( self, fh ):
-        fh.write( ''.join( [ str(self.litsq( )), '\n', self.serialize( ) ] ) )
+    ######################################
+    # Loggers
+    ######################################
     
     # Serializes our graph into Dr. Taurtiz's format. Since we rotated 90 degrees
     #   ccw on input, we've now gotta go 90 degrees cw.
     def serialize( self ):
         ret = ""
-        for i in range(0,self.x):
-            for j in range(0,self.y):
-                if self.data[i][j].type == gt.BULB:
-                    #90 degree cw rotation about origin
-                    ni = i
-                    nj = (self.y-1)-j                
-                    ret += ''.join([str(ni+1), " ", str(nj+1), '\n'])
+        for sqr in self.sqgt[gt.BULB]:
+            #90 degree cw rotation about origin
+            ni = sqr.x
+            nj = (self.y-1)-sqr.y               
+            ret += ''.join([str(ni+1), " ", str(nj+1), '\n'])
         return ret
 
     ######################################

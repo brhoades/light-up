@@ -30,7 +30,11 @@ class gen:
         self.tournMate = int(args['conf']['pop']['partsize'])
         
         self.parseltorun = (args['conf']['pop']['parseltourn'] == "True")
+        
+        # Termination Counters
         self.fitEvals = 0
+        self.sameTurns = 0
+        self.lastFit = -1
         
         self.generate(args['conf'])
         
@@ -50,8 +54,8 @@ class gen:
             delprn( ''.join([perStr(i/self.mu)]), 3 )
     
     # Creates a random tournament and returns a single individual
-    #   Disqualified peeps in ineg. Other parent, usually.
-    def tournament( self, size=5, curnum=1, totnum=1, ineg=[] ):
+    #   Disqualified peeps in ineg.
+    def tournament( self, pos=True, size=5, curnum=1, totnum=1, ineg=[] ):
         parents = random.sample(self.ind, size)
         for sqr in ineg:
             if sqr in parents:
@@ -69,9 +73,15 @@ class gen:
                 plist.remove( p2 )
 
                 if p1.fitness( ) > p2.fitness( ):
-                    parents.remove( p2 )
+                    if pos:
+                        parents.remove( p2 )
+                    else:
+                        parents.remove( p1 )
                 elif p1.fitness( ) <= p2.fitness( ):
-                    parents.remove( p1 )
+                    if pos:
+                        parents.remove( p1 )
+                    else:
+                        parents.remove( p2 )
         return parents.pop( )
 
     # Returns two parents
@@ -81,8 +91,8 @@ class gen:
         
         for i in range(0,self.lamb):
             parents = []
-            parents.append( self.tournament(self.tournMate, i*2-1, self.lamb*2) )
-            parents.append( self.tournament(self.tournMate, i*2, self.lamb*2, [parents[0]]) )
+            parents.append( self.tournament(True, self.tournMate, i*2-1, self.lamb*2) )
+            parents.append( self.tournament(True, self.tournMate, i*2, self.lamb*2, [parents[0]]) )
             #Wait to add the babbies
             newkids.add( sol.sol( self, mate=parents ) )
           
@@ -117,18 +127,13 @@ class gen:
     # Deletes those who don't survive natural selection
     def natSelection( self ):
         delprn( "Selecting Survivors\t" )
-        
-        newInds = set( )
         i = 0
         
-        while len(newInds) < self.mu:
-            newind = self.tournament(self.tournNat, i, self.mu)
-            self.ind.discard(newind)
-            newInds.add(newind)
+        while len(self.ind) > self.mu:
+            # Neg tournament
+            self.ind.discard(self.tournament(False, self.tournNat, i, self.mu))
             i += 1
-        
-        self.ind = newInds
-        
+                
     # Returns our best solution. Returns a random one if there's more than one
     def best( self ):
         best = random.sample( self.ind, 1 )

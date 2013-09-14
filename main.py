@@ -17,18 +17,21 @@ def main():
         cseed = float(cfg['graph']['seed'])
     
     random.seed(cseed)
-    print( "Seeded RNG off ", cseed )
     
-    plh = initLogs( cfg, gcfg( ) )
+    lg = log( cfg, cseed, gcfg( ) )
+    best = False
     for i in range( int(cfg['main']['runs']) ):
-        puz = graph(conf=cfg)        
+        puz=graph(conf=cfg, quiet=True)        
         if i == 0:
             renderHead(cfg['main'])
-        runner.manSeq( puz, cfg, plh, i )
+        nbest = runner.manSeq( puz, cfg, lg, i )
+        if best == False or nbest.fitness( ) > best.fitness( ):
+            best = nbest
 
-    for elh in plh:
-        elh.close( )
-    return 0
+    print( "" )
+    
+    lg.best(best)
+    lg.finish( )
 
 if __name__ == '__main__':
     main()
