@@ -27,7 +27,6 @@ def main():
         nbest = runner.manSeq( puz, cfg, lg, i )
         if best == False or nbest.fitness( ) > best.fitness( ):
             best = nbest
-
     print( "" )
     
     lg.best(best)

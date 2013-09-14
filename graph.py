@@ -91,6 +91,15 @@ class graph:
         
         return ret
     
+    # Remove references recursively so the garbage collector will take care of the rest
+    def delete( self ):
+        for i in range(0,len(self.data)):
+            for j in range(0,len(self.data[i])):
+                self.data[i][j].delete( )
+        self.data.clear( )
+        self.bbsq.clear( )
+        self.sqgt.clear( )
+    
     # Copies another graph over to us
     def copy(self, other):
         # Same test speeds up functions that copy graphs 30 or 40 times
@@ -190,9 +199,7 @@ class graph:
         self.invalid=False
         self.blackSats = 0
         self.fit=-1
-        self.data.clear( )
-        self.bbsq.clear( )
-        self.sqgt.clear( )
+        self.delete( )
         
         for typ in range(0,gt.MAX):
             self.sqgt.insert(typ, set( ))

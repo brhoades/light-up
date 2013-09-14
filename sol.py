@@ -27,7 +27,12 @@ class sol:
         
         if 'mate' in args:
             self.breed( args['mate'][0], args['mate'][1] )
-        
+    
+    # Removes references to our graph and to our gen so we can be collected by the gc
+    def delete( self ):
+        self.gen = None
+        self.graph.delete( )
+    
     # Random graph solver
     def rng( self, forceValid ):
         x = self.graph.x
@@ -46,8 +51,14 @@ class sol:
                     for hsqr in sqr.neighbors:
                         hsqr.addLight( )
         
+        # Bulbs used are related to # of black tiles and size of board.
+        # This is a rough approximation. Overshooting it causes the board ot be solved very quickly and
+        #   statistically isn't interesting at all.
+        maxbulbs = max(x,y)
+        maxbulbs += self.graph.blacks( )
+        
         # Place a random number of bulbs
-        for i in range(0,math.floor(random.uniform(0,x*y/2))):
+        for i in range(0,random.randint(0,maxbulbs)):
             #we're evolving placement of bulbs on unlit cells ("white") so we are careful
             self.graph.addLight( math.floor(random.uniform(0, x)), math.floor(random.uniform(0, y)), True )
         
@@ -74,7 +85,8 @@ class sol:
             sqr = unlitsq.pop( )
             if sqr.type != gt.UNLIT:
                 continue
-            if flip( ) and p1.graph.data[sqr.x][sqr.y].type == gt.BULB:
-                self.graph.addLight( sqr.x, sqr.y, True )
+            if flip( ):
+                if p1.graph.data[sqr.x][sqr.y].type == gt.BULB:
+                    self.graph.addLight( sqr.x, sqr.y, True )
             elif p2.graph.data[sqr.x][sqr.y].type == gt.BULB:
                 self.graph.addLight( sqr.x, sqr.y, True )

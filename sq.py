@@ -54,6 +54,16 @@ class sq:
     def __str__( self ):
         return sym.tb[self.type]
     
+    # Clean up references so the gc will delete us and anything we referenced.
+    def delete( self ):
+        self.parent = None
+        self.lights.clear( )
+        self.neighbors.clear( )
+        self.bad.clear( )
+        self.owner.clear( )
+        self.shine.clear( )
+
+    
     # Copy ourself over. A sub function for clear / copy in graph.
     def copy( self, other ):
         self.newType( other.type )

@@ -21,8 +21,10 @@ class gen:
                 
         self.num=args['genNum']+1
         
+        self.caching = args['conf']['pop']['dynfit'] == "True"
         self.mu = int(args['conf']['pop']['mu'])
         self.lamb = int(args['conf']['pop']['lambda'])
+
         #Mutation chance
         self.muAlpha = int(args['conf']['pop']['mutatealpha'])
         
@@ -44,7 +46,14 @@ class gen:
         self.lastFit = -1
         
         self.generate(args['conf'])
-        
+    # Remove references recursively so that we can be cleaned up by the gc
+    def delete( self, expt=None ):
+        for sol in self.ind:
+            if sol is not expt:
+                sol.delete( )
+        self.ind.clear( )
+        self.puz = None
+    
     # Add a single individual to our pool
     def add( self, ind ):
         self.ind.add( ind )
@@ -57,6 +66,8 @@ class gen:
         for i in range(0,self.mu):            
             citizen = sol.sol( self )
             citizen.rng( forcevalid )
+            if not self.caching:
+                citizen.fitness( )
             self.ind.add( citizen )
             delprn( ''.join([perStr(i/self.mu)]), 3 )
     
@@ -95,7 +106,9 @@ class gen:
     def truncate( self ):
         for i in range(0,self.surseltrunc):
             delprn(perStr(i/self.surseltrunc), 3)
-            self.ind.discard( self.worst( ) )
+            worst = self.worst( )
+            self.ind.discard( worst )
+            worst.delete( )
         
     # Returns two parents
     def reproduce( self ):
@@ -112,14 +125,21 @@ class gen:
                 parents.extend( landscape.get( 2 ) )
             #Wait to add the babbies
             newkids.add( sol.sol( self, mate=parents ) )
-          
+        
+        #Mutate them
+        self.mutate( newkids )
+        
+        if not self.caching:
+            for solu in newkids:
+                solu.fitness( )
+        
         self.ind = self.ind.union( newkids )
     
     # Mutates some individuals randomly
-    def mutate( self ):
+    def mutate( self, babbies ):
         delprn( "Mutating\t\t" )
         i = 0
-        for sol in self.ind: 
+        for sol in babbies: 
             delprn( ''.join([perStr(i/len(self.ind))]) )
             squares = mutateSq( self.muAlpha )
             while squares > 0:
@@ -149,7 +169,9 @@ class gen:
         if self.surseltourn:
             while len(self.ind) > self.mu:
                 # Neg tournament
-                self.ind.discard(self.tournament(False, self.tournNat, i, self.mu))
+                loser = self.tournament(False, self.tournNat, i, self.mu)
+                self.ind.discard(loser)
+                loser.delete( )
                 i += 1
         else:
             self.truncate( )
