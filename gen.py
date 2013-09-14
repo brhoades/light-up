@@ -29,7 +29,7 @@ class gen:
         self.tournNat = int(args['conf']['pop']['sursize'])
         self.tournMate = int(args['conf']['pop']['partsize'])
         
-        self.parseltorun = (args['conf']['pop']['parseltourn'] == "True")
+        self.parseltourn = (args['conf']['pop']['parseltourn'] == "True")
         
         # Termination Counters
         self.fitEvals = 0
@@ -84,6 +84,12 @@ class gen:
                         parents.remove( p2 )
         return parents.pop( )
 
+    # Proportional to fitness, this function chooses a single individual randomly where the higher
+    #   the fitness, the more likely they are to be chosen
+    
+    def fitPropor( self, indv=1, rem=True):
+        landscape = util.probDist( self.ind, rem )
+
     # Returns two parents
     def reproduce( self ):
         delprn( "Procreating\t\t" )
@@ -91,8 +97,12 @@ class gen:
         
         for i in range(0,self.lamb):
             parents = []
-            parents.append( self.tournament(True, self.tournMate, i*2-1, self.lamb*2) )
-            parents.append( self.tournament(True, self.tournMate, i*2, self.lamb*2, [parents[0]]) )
+            if self.parseltourn:
+                parents.append( self.tournament(True, self.tournMate, i*2-1, self.lamb*2) )
+                parents.append( self.tournament(True, self.tournMate, i*2, self.lamb*2, [parents[0]]) )
+            else:
+                landscape = probDist( self.ind )
+                parents.extend( landscape.get( 2 ) )
             #Wait to add the babbies
             newkids.add( sol.sol( self, mate=parents ) )
           
