@@ -26,6 +26,7 @@ def main():
             renderHead(cfg['main'])
         nbest = runner.manSeq( puz, cfg, lg, i )
         if best == False or nbest.fitness( ) > best.fitness( ):
+            lg.newBest( nbest )
             best = nbest
     print( "" )
     

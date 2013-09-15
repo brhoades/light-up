@@ -38,6 +38,7 @@ def manSeq( puz, cfg, lg, run ):
     prnBase( cfg, thisgen )
     
     best = thisgen.best( )
+    lg.genBest( best, thisgen )
     # Clear best's reference so we can die when our other stuff is done and when best loses its reference.
     best.gen = None
     thisgen.ind.discard(best)

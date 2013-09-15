@@ -269,7 +269,7 @@ class graph:
             if canLight < b-gt.TRANSFORM and b != gt.BLACK and b != gt.BLACK0:
                 return False                
         
-        #FIXME: Put me in a function, baby
+        #FIXME: Put me in a function
         sqr.newType(b)
         if sqr.type == gt.BLACK0:
             for n in sqr.neighbors:

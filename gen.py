@@ -112,7 +112,7 @@ class gen:
         
     # Returns two parents
     def reproduce( self ):
-        delprn( "Procreating\t\t" )
+        delprn( "Choosing Parents\t" )
         newkids = set( )
         
         for i in range(0,self.lamb):
@@ -132,9 +132,8 @@ class gen:
         if not self.caching:
             for solu in newkids:
                 solu.fitness( )
-        
-        self.ind = self.ind.union( newkids )
-    
+                self.ind.add(solu)
+                
     # Mutates some individuals randomly
     def mutate( self, babbies ):
         delprn( "Mutating\t\t" )
@@ -176,14 +175,16 @@ class gen:
         else:
             self.truncate( )
             
-    # Returns our best solution. Returns a random one if there's more than one
+    # Returns our best solution. Returns the oldest if there's several
     def best( self ):
-        best = random.sample( self.ind, 1 )
-        best = best[0]
+        best = False
         
         for sol in self.ind:
-            if sol.fitness( ) > best.fitness( ):
+            if not best or sol.fitness( ) > best.fitness( ):
                 best = sol
+            elif sol.fitness( ) == best.fitness( ):
+                if sol.birth < best.birth:
+                    best = sol
         
         return best
       

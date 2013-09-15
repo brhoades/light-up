@@ -5,7 +5,7 @@
 # This file houses the solution class (sol) which contains arrangments
 #   for bulbs on a graph and related values.
 
-from util import flip
+from util import flip,delprn
 from const import gt
 import graph
 import random
@@ -18,6 +18,9 @@ class sol:
         
         # Fitness
         self.fit=-1
+        
+        # Birth Generation
+        self.birth=gen.num
         
         # Bad sol
         self.bad = False
