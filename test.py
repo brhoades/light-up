@@ -4,7 +4,7 @@
 #Test Unit Functions
 #  This program is called to test the assignment before submission.
 
-import os, unittest, io, cProfile, timeit, time, datetime, sys
+import os, unittest, io, cProfile, timeit, time, datetime, sys, pstats
 import main
 import graph
     
@@ -59,14 +59,14 @@ class TestSequenceFunctions(unittest.TestCase):
             
             print( avg, " µs", file=rstd )
          
-if __name__ == '__main__':
-    unittest.main(buffer=True)
-#pr = cProfile.Profile()
-#pr.enable()
-#main.main( )
-#pr.disable()
-#s = io.StringIO()
-#sortby = 'cumulative'
-#ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-#ps.print_stats()
-#print(s.getvalue())
+#if __name__ == '__main__':
+#    unittest.main(buffer=True)
+pr = cProfile.Profile()
+pr.enable()
+main.main( )
+pr.disable()
+s = io.StringIO()
+sortby = 'cumulative'
+ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+ps.print_stats()
+print(s.getvalue())

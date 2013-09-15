@@ -1,6 +1,6 @@
 Billy Rhoades (12352623) <bjrq48@mst.edu>
 Evolutionary Computation
-CS348 FS2013 Assignment 1a
+CS348 FS2013 Assignment 1b
 
 This program has been throughly tested on Linux on both Python 3.2 and Python 3.3.
 
@@ -14,15 +14,15 @@ You may load any of the preconfigured problem sets with the -c command line opti
 They can be found in the cfgs directory. The ones provided are the following:
 
 default.cfg:
-    Simple, easy to run and test configration file. Solves a random 6x6
-    30 times. This is loaded when -c isn't specified.
+    Contains all necessary documentation on everu different config option and what
+    it does. Also has a simple 5k fit evaluation run x2.
     
-reqnum2.cfg:
-    This satisifes the requirements of #2 of the second list in the assingment PDF.
+as1b-2.cfg:
+    This satisifes the requirements of #2 of the second list in the assignment PDF.
     The results will not be the same since this is random.
 
-reqnum3.cfg
-    This duplicates the requirements by #3 of the second list in the assignment PDf.
+as1b-3.cfg
+    This duplicates the requirements by #3 of the second list in the assignment PDF.
     The results will be the same.
 
 Example:
