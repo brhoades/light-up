@@ -43,8 +43,3 @@ class sym:
     tb[gt.BLACK3] = "3"
     tb[gt.BLACK4] = "4"
     tb[gt.BLACK] = "X"
-
-#Log handle indecies
-class lh:
-    RES = 0
-    SOL = 1
