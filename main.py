@@ -2,7 +2,6 @@
 #Author: Billy J Rhoades <bjrq48@mst.edu>
 #Class: CS348 Assignment 1B
 
-from const import lh
 from graph import graph
 from util import *
 import runner

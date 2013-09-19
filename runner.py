@@ -4,7 +4,7 @@
 #Solver Functions
 #  This file does a bulk of the large scale logic operations and generation operations / output.
 
-from const import gt, lh
+from const import gt
 import gen
 import random
 import util

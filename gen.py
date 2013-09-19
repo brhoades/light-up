@@ -110,22 +110,31 @@ class gen:
             self.ind.discard( worst )
             worst.delete( )
         
-    # Returns two parents
+    # Creates some new babbies and adds them to the generation
     def reproduce( self ):
         delprn( "Choosing Parents\t" )
         newkids = set( )
+        parents = []
         
         for i in range(0,self.lamb):
-            parents = []
+            pair = []
             if self.parseltourn:
-                parents.append( self.tournament(True, self.tournMate, i*2-1, self.lamb*2) )
-                parents.append( self.tournament(True, self.tournMate, i*2, self.lamb*2, [parents[0]]) )
+                pair.append( self.tournament(True, self.tournMate, i*2-1, self.lamb*2) )
+                pair.append( self.tournament(True, self.tournMate, i*2, self.lamb*2, [pair[0]]) )
             else:
                 landscape = probDist( self.ind )
-                parents.extend( landscape.get( 2 ) )
-            #Wait to add the babbies
-            newkids.add( sol.sol( self, mate=parents ) )
+                pair.extend( landscape.get( 2 ) )
+            #Store them up and get ready for babby makin'
+            parents.append( pair )
         
+        delprn( "Making Babbies\t\t" )
+        i = 0
+        for pair in parents:
+            delprn(perStr(i/len(parents)), 3)
+            newkids.add( sol.sol( self, mate=pair ) )
+            i += 1
+            
+        delprn( "Mutating\t\t" )
         #Mutate them
         self.mutate( newkids )
         
@@ -136,12 +145,12 @@ class gen:
                 
     # Mutates some individuals randomly
     def mutate( self, babbies ):
-        delprn( "Mutating\t\t" )
         i = 0
         for sol in babbies: 
-            delprn( ''.join([perStr(i/len(self.ind))]) )
             squares = mutateSq( self.muAlpha )
-            while squares > 0:
+            j = squares
+            while j > 0:
+                delprn( ''.join([perStr((i/len(self.ind))+((squares-j)/squares))]), 3 )
                 sol.fit = -1
                 #Look through unlit squares first
                 if len(sol.graph.sqgt[gt.UNLIT]) > 0:
@@ -157,7 +166,7 @@ class gen:
                 else:
                     bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
                     bulb[0].rmLight( )
-                squares -= 1
+                j -= 1
             i += 1
             
     # Deletes those who don't survive natural selection
