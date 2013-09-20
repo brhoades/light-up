@@ -96,9 +96,9 @@ class graph:
         for i in range(0,len(self.data)):
             for j in range(0,len(self.data[i])):
                 self.data[i][j].delete( )
-        self.data.clear( )
-        self.bbsq.clear( )
-        self.sqgt.clear( )
+        self.data = []
+        self.bbsq = []
+        self.sqgt = []
     
     # Copies another graph over to us
     def copy(self, other):

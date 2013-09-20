@@ -57,11 +57,11 @@ class sq:
     # Clean up references so the gc will delete us and anything we referenced.
     def delete( self ):
         self.parent = None
-        self.lights.clear( )
-        self.neighbors.clear( )
-        self.bad.clear( )
-        self.owner.clear( )
-        self.shine.clear( )
+        self.lights = []
+        self.neighbors = []
+        self.bad = []
+        self.owner = []
+        self.shine = []
 
     
     # Copy ourself over. A sub function for clear / copy in graph.
@@ -77,30 +77,30 @@ class sq:
         # Lights have to be cleared here regardless. If we're a black
         #   tile we have to have them cleared so that we may "start fresh."
         #   If we're not, we shouldn't have any lights anyway.
-        self.lights.clear( )
+        self.lights = []
         if self.black:
             for lits in other.lights:
                 self.lights.add(self.parent.data[lits.x][lits.y])
             
         # Neighbors are always cleared so that we don't think tiles on other
         #   graphs are our neighbors still.
-        self.neighbors.clear( )
+        self.neighbors = []
         for i in other.neighbors:
             self.neighbors.add(self.parent.data[i.x][i.y])
         
         # Bad is cleared, as black squares are considered no longer satisifed.
-        self.bad.clear( )
+        self.bad = []
         for sqr in other.bad:
             self.bad.add( self.parent.data[sqr.x][sqr.y] )
             
         # Any old unlit tiles are no longer unlit. This is a just in case.
-        self.owner.clear( )
+        self.owner = []
         for own in other.owner:
             self.owner.add(self.parent.data[own.x][own.y])
         
         # We can't skip optimization information if we're "the same board"
         #   as it may still point to different squares.
-        self.shine.clear( )
+        self.shine = []
         for sqr in other.shine:
             self.shine.add( self.parent.data[sqr.x][sqr.y] )
     
