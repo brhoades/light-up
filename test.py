@@ -15,58 +15,82 @@ class TestSequenceFunctions(unittest.TestCase):
         self.puzzles=[]
         self.times=[]
 
-    def test_randomGen(self):
-        count = 50
-        size = 10
-        
-        print( ''.join(["Square board generation tests (", str(count)," ea), ignoring black tiles: "]), file=rstd)
+    def test_randomGenSq(self):
+        count = 100
+        size = 15
+ 
+        print( ''.join(["Square board generation tests (", str(count)," ea): "]), file=rstd)
         
         for size in range(2,size+1):
-            print( ''.join(["  ", str(size), "x", str(size), ": "]), file=rstd, end='')
+            print(''.join(["  ", str(size), "x", str(size), ": "]), file=rstd, end='')
             times = []
+            
+            for i in range(0,count):
+                st = datetime.datetime.now()
+                test = graph.graph( file="cfgs/test-1.cfg", x=size, y=size )
+                t = datetime.datetime.now( ) - st            
+                times.append(t.microseconds)
+                
+                self.assertTrue(test.lights( ) == 0)
+            
+            avg = 0
+            for t in times:
+              avg += t
+            avg /= count
+            
+            print(avg, " µs", file=rstd)
 
-            for i in range(0,count):
-                st = datetime.datetime.now()
-                graph.graph( file="cfgs/test-1.cfg", x=size, y=size )
-                t = datetime.datetime.now( ) - st            
-                times.append(t.microseconds)
-            
-            avg = 0
-            for t in times:
-              avg += t
-            avg /= count
-            
-            
-            print( avg, " µs", file=rstd )
-            
-        print( ''.join(["Square board generation tests (", str(count)," ea), counting black tiles: "]), file=rstd)
+    def test_randomGenRect(self):
+        count = 100
+        upper = 15
+        sizes = []
         
-        for size in range(2,size+1):
-            print( ''.join(["  ", str(size), "x", str(size), ": "]), file=rstd, end='')
+        print( ''.join(["Rectangular board generation tests (", str(count)," ea): "]), file=rstd)
+        
+        for i in range(2,upper):
+            for j in range(2,upper):
+                if i == j:
+                    continue
+                sizes.append([i,j])
+        
+        for [x,y] in sizes:
+            if y == 2:
+                print(''.join[x,":"], file=rstd)
+            print(''.join([]), file=rstd, end='')
             times = []
             
             for i in range(0,count):
                 st = datetime.datetime.now()
-                test = graph.graph( file="cfgs/test-2.cfg", x=size, y=size )
+                test = graph.graph(file="cfgs/test-1.cfg", x=x, y=y)
                 t = datetime.datetime.now( ) - st            
                 times.append(t.microseconds)
-            
+                
+                self.assertTrue(test.lights( ) == 0)
+                
             avg = 0
             for t in times:
-              avg += t
-            avg /= count
-            
+                avg += t
+                avg /= count
             
             print( avg, " µs", file=rstd )
-         
-#if __name__ == '__main__':
-#    unittest.main(buffer=True)
-pr = cProfile.Profile()
-pr.enable()
-main.main( )
-pr.disable()
-s = io.StringIO()
-sortby = 'cumulative'
-ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-ps.print_stats()
-print(s.getvalue())
+            
+    def test_manSolve(self):
+        print("Manually solving a graph", file=rstd)
+        st = datetime.datetime.now()
+        test = graph.graph( file="cfgs/test-1.cfg" )
+        t = datetime.datetime.now( ) - st            
+        
+        test.addLight(0, 0)
+        print( graph )
+        
+if __name__ == '__main__':
+    unittest.main(buffer=True)
+#pr = cProfile.Profile()
+#pr.enable()
+#main.main( )
+#pr.disable()
+#s = io.StringIO()
+#sortby = 'cumulative'
+#ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+#ps.print_stats()
+#print(s.getvalue())
