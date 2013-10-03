@@ -16,6 +16,9 @@ class gen:
         #Store all of our populace here
         self.ind = set( )
         
+        #Store recycled, cleared graphs here
+        self.trash = []
+        
         #Store for the clean, master puzzle
         self.puz = args['puz']
                 

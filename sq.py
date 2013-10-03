@@ -134,6 +134,10 @@ class sq:
     def newType( self, type ):
         if self.type == type:
             return
+        if self.type > gt.BLACK_THRESHOLD and type < gt.BLACK_THRESHOLD:
+            self.parent.sqgt[gt.BLACK_THRESHOLD].remove(self)
+        if type > gt.BLACK_THRESHOLD and self.type < gt.BLACK_THRESHOLD:
+            self.parent.sqgt[gt.BLACK_THRESHOLD].add(self)
         self.parent.sqgt[self.type].remove(self)
         self.type = type
         self.parent.sqgt[self.type].add(self)
