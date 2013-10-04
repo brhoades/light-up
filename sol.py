@@ -81,6 +81,8 @@ class sol:
         return fit
   
     def breed( self, p1, p2 ):
+        self.graph.clear( )
+        self.fit = -1;
         unlitsq = list( self.graph.sqgt[gt.UNLIT] )
         random.shuffle( unlitsq )
         

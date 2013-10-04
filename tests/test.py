@@ -5,6 +5,7 @@
 #  This program is called to test the assignment before submission.
 
 import os, unittest, io, cProfile, timeit, time, datetime, sys, pstats
+sys.path.append('../')
 import main
 import graph
 from const import gt

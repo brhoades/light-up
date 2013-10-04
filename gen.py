@@ -64,16 +64,29 @@ class gen:
     # Randomly generates a generation (hehe) from scratch
     def generate( self, cfg ):
         delprn( "Generating Initial Pop.\t" )
+        citz = []
         
-        forcevalid = (cfg['pop']['forcevalid'] == "True")
         for i in range(0,self.mu):            
             citizen = sol.sol( self )
-            citizen.rng( forcevalid )
+            citz.append( citizen )
+            delprn( ''.join([perStr(i/(self.mu+self.lamb))]), 3 )
+        
+        for i in range(0,self.lamb):
+            trash = sol.sol( self )
+            trash.fitness( )
+            self.trash.append(trash)
+            delprn( ''.join([perStr(self.mu+i/(self.mu+self.lamb))]), 3 )
+            
+        delprn( "Randomly Solving Pop\t" )
+
+        forcevalid = (cfg['pop']['forcevalid'] == "True")
+        for i in range(0,self.mu):
+            citz[i].rng( forcevalid )
             if not self.caching:
-                citizen.fitness( )
-            self.ind.add( citizen )
+                citz[i].fitness( )
+            self.ind.add(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
-    
+            
     # Creates a random tournament and returns a single individual
     #   Disqualified peeps in ineg.
     def tournament( self, pos=True, size=5, curnum=1, totnum=1, ineg=[] ):
@@ -110,8 +123,8 @@ class gen:
         for i in range(0,self.surseltrunc):
             delprn(perStr(i/self.surseltrunc), 3)
             worst = self.worst( )
+            self.trash.append( worst )
             self.ind.discard( worst )
-            worst.delete( )
         
     # Creates some new babbies and adds them to the generation
     def reproduce( self ):
@@ -134,17 +147,22 @@ class gen:
         i = 0
         for pair in parents:
             delprn(perStr(i/len(parents)), 3)
-            newkids.add( sol.sol( self, mate=pair ) )
+            if len(self.trash) > 0:
+                newkid = self.trash.pop( )
+                newkid.breed( pair[0], pair[1] )
+                newkids.add( newkid )
+            else:
+                newkid = sol.sol( self, mate=pair )
+                newkids.add( newkid )
             i += 1
             
         delprn( "Mutating\t\t" )
         #Mutate them
         self.mutate( newkids )
         
-        if not self.caching:
-            for solu in newkids:
-                solu.fitness( )
-                self.ind.add(solu)
+        for solu in newkids:
+            solu.fitness( )
+            self.ind.add(solu)
                 
     # Mutates some individuals randomly
     def mutate( self, babbies ):
@@ -181,8 +199,8 @@ class gen:
             while len(self.ind) > self.mu:
                 # Neg tournament
                 loser = self.tournament(False, self.tournNat, i, self.mu)
+                self.trash.append(loser)
                 self.ind.discard(loser)
-                loser.delete( )
                 i += 1
         else:
             self.truncate( )
