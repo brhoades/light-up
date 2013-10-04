@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1B
+#Class: CS348 Assignment 1C
 #Generation class file
 # This file houses the class for generations (gen).
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1B
+#Class: CS348 Assignment 1C
 #Constants File
 #  This file holds various constants used to communicate between functions.
 

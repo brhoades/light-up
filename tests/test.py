@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1B
+#Class: CS348 Assignment 1C
 #Test Unit Functions
 #  This program is called to test the assignment before submission.
 

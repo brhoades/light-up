@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1B
+#Class: CS348 Assignment 1C
 #Graph Class File
 #  This file houses the container for graphs in which all tiles reside.
 

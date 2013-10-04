@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1B
+#Class: CS348 Assignment 1C
 #Solution Class File
 # This file houses the solution class (sol) which contains arrangments
 #   for bulbs on a graph and related values.
