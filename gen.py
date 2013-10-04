@@ -146,17 +146,24 @@ class gen:
         newkids = set( )
         parents = []
         
-        for i in range(0,self.lamb):
-            pair = []
-            if self.parseltourn:
+        if self.parseltourn:
+            for i in range(0,self.lamb):
+                pair = []
                 pair.append( self.tournament(True, self.tournMate, i*2-1, self.lamb*2) )
                 pair.append( self.tournament(True, self.tournMate, i*2, self.lamb*2, [pair[0]]) )
-            else:
-                landscape = probDist( self.ind )
+                
+                #Store them up and get ready for babby makin'
+                parents.append( pair )
+        else:
+            landscape = probDist( self.ind )
+            for i in range(0,self.lamb):
+                delprn(perStr(i/self.lamb), 3)
+                pair = []
                 pair.extend( landscape.get( 2 ) )
-            #Store them up and get ready for babby makin'
-            parents.append( pair )
-        
+                
+                #Store them up and get ready for babby makin'
+                parents.append( pair )    
+                
         delprn( "Making Babbies\t\t" )
         i = 0
         for pair in parents:
