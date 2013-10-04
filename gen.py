@@ -47,6 +47,16 @@ class gen:
         self.sameTurns = 0
         self.lastFit = -1
         
+        # FIXME: This should be a const / config reg. For now, 1 = constraint satisfaction
+        self.fitType = 1
+        
+        # Fitness denominator, static
+        self.fitDenom = 0
+        if not self.puz.ignoreBlacks:
+            self.fitDenom += self.puz.blacksSb( )
+        self.fitDenom += self.puz.posLitsq( )
+
+        
         self.generate(args['conf'])
         
     def __str__(self):
@@ -231,9 +241,15 @@ class gen:
         
         return worst
   
+    # Average everything out.
+    # NOT HUMAN-READABLE FITNESS, which is betweein [0,1]
     def average( self ):
         fits = 0
         for sol in self.ind:
             fits += sol.fit
-            
         return fits/len(self.ind)
+    
+    # A human readable average: [0,1]
+    def hAverage( self ):
+        return self.average( )/self.fitDenom
+        

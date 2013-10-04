@@ -19,6 +19,13 @@ class sol:
         # Fitness
         self.fit=-1
         
+        # Cached human-readable fitness array
+        self.hfit = []
+        ## First entry == human fitness
+        self.hfit.append( 0 )
+        ## Second entry == fitness when calculated
+        self.hfit.append( self.fit )
+        
         # Birth Generation
         self.birth=gen.num
         
@@ -60,24 +67,38 @@ class sol:
         maxbulbs = max(x,y)
         maxbulbs += self.graph.blacks( )
         
-        # Place a random number of bulbs
+        #Place a random number of bulbs
         for i in range(0,random.randint(0,maxbulbs)):
             #we're evolving placement of bulbs on unlit cells ("white") so we are careful
             self.graph.addLight( math.floor(random.uniform(0, x)), math.floor(random.uniform(0, y)), True )
+
+    # Returns a human-readable fitness. Does not evaluate, just calculates and caches.
+    def getFit( self ):
+        if self.hfit[1] != self.fit:            
+            #Cache was out of date, so calculate
+            self.hfit[1] = self.fit
+            self.hfit[0] = self.fit/self.gen.fitDenom
         
+        return self.hfit[0]
+
     # Quick and lame fitness
-    def fitness( self ):                
-        #print( self.graph.litsq( ), "/", self.graph.posLitsq( ), "*", self.graph.blackSats, "/", self.graph.blacksSb( ) )
-        # ( num of lit tiles / num of possible lit tiles )
-        fit = self.graph.litsq( )  / self.graph.posLitsq( )
-        
-        # * ( num of satisfied black squares / number of (satisifiable) black squares )
+    # FIXME: DESCRIBE
+    def fitness( self ):
+        # numerator: number of lit tiles + black tiles satisfied
+        self.fit = self.graph.litsq( )
         if not self.graph.ignoreBlacks:
-            fit *= self.graph.blackSats / self.graph.blacksSb( )
+            self.fit += self.graph.blackSats
+                
+        if self.gen.fitType == 1:
+            self.penalize( )
         
-        self.fit = fit
+        # denom: static and predefined self.parent.fitDenom, called when humans need it
         self.gen.fitEvals += 1
-        return fit
+        return self.fit
+    
+    # Penalty Function
+    def penalize( self ):
+        return
   
     def trash( self ):
         self.graph.clear( )

@@ -52,7 +52,7 @@ def runCriteria( cfg, gen ):
     elif cfg['main']['fitevals'] != "0":
         return gen.fitEvals < int(cfg['main']['fitevals'])
     elif cfg['main']['homogenity'] != "0":
-        thisavg = gen.average( )
+        thisavg = gen.hAverage( )
         if cfg['main']['stoponsol'] and gen.best( ).fitness( ) == 1:
             return False
         if round(thisavg, int(cfg['main']['homoacc'])) == gen.lastFit:
@@ -70,7 +70,7 @@ def prnBase( cfg, gen=False ):
     avg=0
     genn=0
     if gen != False:
-        avg = round( gen.average( ), 4 )
+        avg = round( gen.hAverage( ), 4 )
         genn = gen.num
         evals = gen.fitEvals
     
