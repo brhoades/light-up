@@ -24,7 +24,6 @@ class gen:
                 
         self.num=args['genNum']+1
         
-        self.caching = args['conf']['pop']['dynfit'] == "True"
         self.mu = int(args['conf']['pop']['mu'])
         self.lamb = int(args['conf']['pop']['lambda'])
 
@@ -49,6 +48,13 @@ class gen:
         self.lastFit = -1
         
         self.generate(args['conf'])
+        
+    def __str__(self):
+        for solu in self.ind:
+            ret = ''
+            ret = ''.join([ret, solu.graph, '\n'])
+            ret = ''.join([ret, "fit:", solu.fit, "birth:", solu.birth, '\n'])
+            ret = ''.join([ret, "============================", '\n'])
     # Remove references recursively so that we can be cleaned up by the gc
     def delete( self, expt=None ):
         for sol in self.ind:
@@ -73,7 +79,7 @@ class gen:
         
         for i in range(0,self.lamb):
             trash = sol.sol( self )
-            trash.fitness( )
+            trash.fit=0
             self.trash.append(trash)
             delprn( ''.join([perStr(self.mu+i/(self.mu+self.lamb))]), 3 )
             
@@ -82,8 +88,7 @@ class gen:
         forcevalid = (cfg['pop']['forcevalid'] == "True")
         for i in range(0,self.mu):
             citz[i].rng( forcevalid )
-            if not self.caching:
-                citz[i].fitness( )
+            citz[i].fitness( )
             self.ind.add(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
             
@@ -106,12 +111,12 @@ class gen:
                 plist.remove( p1 )
                 plist.remove( p2 )
 
-                if p1.fitness( ) > p2.fitness( ):
+                if p1.fit > p2.fit:
                     if pos:
                         parents.remove( p2 )
                     else:
                         parents.remove( p1 )
-                elif p1.fitness( ) <= p2.fitness( ):
+                else:
                     if pos:
                         parents.remove( p1 )
                     else:
@@ -123,8 +128,7 @@ class gen:
         for i in range(0,self.surseltrunc):
             delprn(perStr(i/self.surseltrunc), 3)
             worst = self.worst( )
-            self.trash.append( worst )
-            self.ind.discard( worst )
+            worst.trash( )
         
     # Creates some new babbies and adds them to the generation
     def reproduce( self ):
@@ -172,7 +176,6 @@ class gen:
             j = squares
             while j > 0:
                 delprn( ''.join([perStr((i/len(self.ind))+((squares-j)/squares))]), 3 )
-                sol.fit = -1
                 #Look through unlit squares first
                 if len(sol.graph.sqgt[gt.UNLIT]) > 0:
                     unlit = random.sample( sol.graph.sqgt[gt.UNLIT], 1 )
@@ -199,8 +202,7 @@ class gen:
             while len(self.ind) > self.mu:
                 # Neg tournament
                 loser = self.tournament(False, self.tournNat, i, self.mu)
-                self.trash.append(loser)
-                self.ind.discard(loser)
+                loser.trash( )
                 i += 1
         else:
             self.truncate( )
@@ -210,9 +212,9 @@ class gen:
         best = False
         
         for sol in self.ind:
-            if not best or sol.fitness( ) > best.fitness( ):
+            if not best or sol.fit > best.fit:
                 best = sol
-            elif sol.fitness( ) == best.fitness( ):
+            elif sol.fit == best.fit:
                 if sol.birth < best.birth:
                     best = sol
         
@@ -224,7 +226,7 @@ class gen:
         worst = worst[0]
         
         for sol in self.ind:
-            if sol.fitness( ) < worst.fitness( ):
+            if sol.fit < worst.fit:
                 worst = sol
         
         return worst
@@ -232,6 +234,6 @@ class gen:
     def average( self ):
         fits = 0
         for sol in self.ind:
-            fits += sol.fitness( )
-        
+            fits += sol.fit
+            
         return fits/len(self.ind)

@@ -130,18 +130,6 @@ class graph:
         self.invalid=other.invalid
         self.fit=other.fit
         self.blackSats=other.blackSats
-
-    ######################################
-    # Incrementors or Bool Changers
-    ######################################
-    
-    # Increments our "satisfied black tiles counter"
-    def incBlackSats( self ):
-        self.blackSats += 1
-        
-    # Decrements our "satisfied black tiles counter"
-    def decBlackSats( self ):
-        self.blackSats -= 1
         
     ######################################
     ### Graph Generators

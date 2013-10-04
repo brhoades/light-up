@@ -66,12 +66,11 @@ class sol:
             self.graph.addLight( math.floor(random.uniform(0, x)), math.floor(random.uniform(0, y)), True )
         
     # Quick and lame fitness
-    def fitness( self ):
-        if self.fit != -1:
-            return self.fit
-        
+    def fitness( self ):                
+        #print( self.graph.litsq( ), "/", self.graph.posLitsq( ), "*", self.graph.blackSats, "/", self.graph.blacksSb( ) )
         # ( num of lit tiles / num of possible lit tiles )
         fit = self.graph.litsq( )  / self.graph.posLitsq( )
+        
         # * ( num of satisfied black squares / number of (satisifiable) black squares )
         if not self.graph.ignoreBlacks:
             fit *= self.graph.blackSats / self.graph.blacksSb( )
@@ -80,11 +79,19 @@ class sol:
         self.gen.fitEvals += 1
         return fit
   
-    def breed( self, p1, p2 ):
+    def trash( self ):
         self.graph.clear( )
-        self.fit = -1;
+        self.birth = -1
+        self.bad = False
+        self.fit = 0
+        
+        self.gen.ind.remove(self)
+        self.gen.trash.append(self)
+  
+    def breed( self, p1, p2 ):
         unlitsq = list( self.graph.sqgt[gt.UNLIT] )
         random.shuffle( unlitsq )
+        self.birth=self.gen.num
         
         while len(unlitsq) > 0:
             sqr = unlitsq.pop( )

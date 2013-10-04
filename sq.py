@@ -116,7 +116,6 @@ class sq:
         for sqr in self.neighbors:
             chk = False
             if sqr.isBlack( ) and sqr.atCapacity( ):
-                self.parent.decBlackSats( )
                 chk = True
             sqr.lights.discard( self )
             if chk:
@@ -206,11 +205,11 @@ class sq:
         if self.type == gt.BLACK or self.type == gt.BLACK0:
             return
         if self.atCapacity( ):
-            self.parent.incBlackSats( )
+            self.parent.blackSats += 1
             for sqr in self.neighbors:
                 sqr.bad.add( self )
         else:
-            self.parent.decBlackSats( )
+            self.parent.blackSats -= 1
             for sqr in self.neighbors:
                 sqr.bad.discard( self )
     
