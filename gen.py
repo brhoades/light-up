@@ -50,11 +50,13 @@ class gen:
         self.generate(args['conf'])
         
     def __str__(self):
+        ret = ''
         for solu in self.ind:
-            ret = ''
             ret = ''.join([ret, solu.graph, '\n'])
             ret = ''.join([ret, "fit:", solu.fit, "birth:", solu.birth, '\n'])
             ret = ''.join([ret, "============================", '\n'])
+            
+        return ret
     # Remove references recursively so that we can be cleaned up by the gc
     def delete( self, expt=None ):
         for sol in self.ind:
@@ -101,15 +103,13 @@ class gen:
                 parents.remove( sqr )
             
         while len(parents) > 1:
+            random.shuffle( parents )
             plist = parents.copy( )
             delprn(''.join([perStr(((size-len(parents))/size*(1/totnum))+(curnum/totnum))]), 3)
             
             while len(plist) > 1:
-                bracket = random.sample(plist, 2)
-                p1 = bracket.pop( )
-                p2 = bracket.pop( )
-                plist.remove( p1 )
-                plist.remove( p2 )
+                p1 = plist.pop( )
+                p2 = plist.pop( )
 
                 if p1.fit > p2.fit:
                     if pos:
