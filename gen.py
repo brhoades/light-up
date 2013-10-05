@@ -4,10 +4,11 @@
 #Generation class file
 # This file houses the class for generations (gen).
 
+import math
+
 import graph, sol
 from util import *
-import math
-from const import gt
+from const import gt, ci, opp
 
 class gen:
 
@@ -16,7 +17,7 @@ class gen:
         #Store all of our populace here
         self.ind = set( )
         
-        #Store recycled, cleared graphs here
+        #Store recycled graphs here
         self.trash = []
         
         #Store for the clean, master puzzle
@@ -24,41 +25,43 @@ class gen:
                 
         self.num=args['genNum']+1
         
-        self.mu = int(args['conf']['pop']['mu'])
-        self.lamb = int(args['conf']['pop']['lambda'])
-
-        #Mutation chance
-        self.muAlpha = int(args['conf']['pop']['mutatealpha'])
+        cfg = args['conf']
         
-        self.tournNat = int(args['conf']['pop']['sursize'])
-        self.tournMate = int(args['conf']['pop']['partsize'])
+        self.mu = int(cfg[ci.POP][ci.MU])
+        self.lamb = int(cfg[ci.POP][ci.LAMBDA])
         
-        self.parseltourn = (args['conf']['pop']['parseltourn'] == "True")
-        self.surseltourn = (args['conf']['pop']['surseltourn'] == "True")
+        #Penalty control
+        self.penalty = (cfg[ci.MAIN][ci.FITNESS_TYPE] == opp.PENALTY_FUNCTION)
         
-        self.surseltrunc = (args['conf']['pop']['surtrunc'])
-        if self.surseltrunc == 'lambda':
-            self.surseltrunc = self.lamb
+        #These are specific to generations and needed by ops--- copy these
+        copyover = [ci.INIT, ci.PARENT_SEL, ci.MUTATE, ci.SURVIVAL_SEL, ci.TERMINATION]
+        self.cfg = {}
+        for typ in copyover:
+            self.cfg[typ] = cfg[typ]
+        
+        #Catches for ints and whatnot
+        if self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE] == "lambda":
+            self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE] = self.mu
         else:
-            self.surseltrunc = int(self.surseltrunc)
-                                                
+            self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE] = int(self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE])
+        self.cfg[ci.PARENT_SEL][ci.K] = int(self.cfg[ci.PARENT_SEL][ci.K])
+        self.cfg[ci.SURVIVAL_SEL][ci.K] = int(self.cfg[ci.SURVIVAL_SEL][ci.K])
+        self.cfg[ci.MUTATE][ci.ALPHA] = int(self.cfg[ci.MUTATE][ci.ALPHA])
+
         # Termination Counters
         self.fitEvals = 0
         self.sameTurns = 0
         self.lastBestAvg = 0
         self.sameTurns = 0
         
-        # FIXME: This should be a const / config reg. For now, 1 = constraint satisfaction
-        self.fitType = 1
-        
         # Fitness denominator, static
+        #   When we spit out a human-readable fitness we divide by this
         self.fitDenom = 0
         if not self.puz.ignoreBlacks:
             self.fitDenom += self.puz.blacksSb( )
         self.fitDenom += self.puz.posLitsq( )
 
-        
-        self.generate(args['conf'])
+        self.generate( )
         
     def __str__(self):
         ret = ''
@@ -81,7 +84,7 @@ class gen:
         self.ind.add( ind )
     
     # Randomly generates a generation (hehe) from scratch
-    def generate( self, cfg ):
+    def generate( self ):
         delprn( "Generating Initial Pop.\t" )
         citz = []
         
@@ -98,7 +101,7 @@ class gen:
             
         delprn( "Randomly Solving Pop\t" )
 
-        forcevalid = (cfg['pop']['forcevalid'] == "True")
+        forcevalid = (self.cfg[ci.INIT][ci.TYPE] == opp.VALIDITY_ENFORCED_PLUS_UNIFORM_RANDOM)
         for i in range(0,self.mu):
             citz[i].rng( forcevalid )
             citz[i].fitness( )
@@ -136,8 +139,8 @@ class gen:
     
     # drops #self.surseltrunc of the worst individuals
     def truncate( self ):
-        for i in range(0,self.surseltrunc):
-            delprn(perStr(i/self.surseltrunc), 3)
+        for i in range(0,self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE]):
+            delprn(perStr(i/self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE]), 3)
             worst = self.worst( )
             worst.trash( )
         
@@ -147,15 +150,15 @@ class gen:
         newkids = set( )
         parents = []
         
-        if self.parseltourn:
+        if self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.TOURNAMENT_WITH_REPLACEMENT:
             for i in range(0,self.lamb):
                 pair = []
-                pair.append( self.tournament(True, self.tournMate, i*2-1, self.lamb*2) )
-                pair.append( self.tournament(True, self.tournMate, i*2, self.lamb*2, [pair[0]]) )
+                pair.append( self.tournament(True, self.cfg[ci.PARENT_SEL][ci.K], i*2-1, self.lamb*2) )
+                pair.append( self.tournament(True, self.cfg[ci.PARENT_SEL][ci.K], i*2, self.lamb*2, [pair[0]]) )
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )
-        else:
+        elif self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL_SELECTION:
             landscape = probDist( self.ind )
             for i in range(0,self.lamb):
                 delprn(perStr(i/self.lamb), 3)
@@ -164,7 +167,8 @@ class gen:
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )    
-                
+        #else if self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
+
         delprn( "Making Babbies\t\t" )
         i = 0
         for pair in parents:
@@ -186,11 +190,12 @@ class gen:
             solu.fitness( )
             self.ind.add(solu)
                 
-    # Mutates some individuals randomly
+    # Mutates some individuals randomly, whatever is passed in
+    #   Uses alpha and a special distribution (documentation in default.cfg)
     def mutate( self, babbies ):
         i = 0
         for sol in babbies: 
-            squares = mutateSq( self.muAlpha )
+            squares = mutateSq( self.cfg[ci.MUTATE][ci.ALPHA] )
             j = squares
             if j > 0:
                 places = []
@@ -200,7 +205,7 @@ class gen:
                 while j > 0:
                     delprn( ''.join([perStr((i/len(self.ind))+((squares-j)/squares))]), 3 )
                     #Look through unlit squares first
-                    if self.fitType == 0:
+                    if not self.penalty:
                         if len(sol.graph.sqgt[gt.UNLIT]) > 0:
                             unlit = random.sample( sol.graph.sqgt[gt.UNLIT], 1 )
                             #Move a random light here if we have one
@@ -228,13 +233,15 @@ class gen:
         delprn( "Selecting Survivors\t" )
         i = 0
         
-        if self.surseltourn:
+        if self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.TOURNAMENT_WITHOUT_REPLACEMENT:
             while len(self.ind) > self.mu:
                 # Neg tournament
-                loser = self.tournament(False, self.tournNat, i, self.mu)
+                loser = self.tournament(False, self.cfg[ci.SURVIVAL_SEL][ci.K], i, self.mu)
                 loser.trash( )
                 i += 1
-        else:
+        #elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
+        #elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
+        elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.TRUNCATION:
             self.truncate( )
             
     # Returns our best solution. Returns the oldest if there's several

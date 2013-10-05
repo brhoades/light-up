@@ -4,7 +4,7 @@
 #Solver Functions
 #  This file does a bulk of the large scale logic operations and generation operations / output.
 
-from const import gt
+from const import gt, ci, opp
 import gen
 import random
 import util
@@ -20,14 +20,14 @@ def manSeq( puz, cfg, lg, run ):
     runs = ""
     runs += str(run+1)
     runs += '\t'
-    if int(cfg['main']['runs']) > 9:
+    if int(cfg[ci.MAIN][ci.TOTAL_RUNS]) > 9:
         runs += '\t' 
     util.delprn( ''.join([str(run+1), "\t"]), 0 )
     prnBase( cfg, False )
     thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )        
     lg.gen( thisgen )
 
-    while runCriteria(cfg, thisgen):
+    while runCriteria(cfg[ci.TERMINATION], thisgen):
         if thisgen.num % 25:
             lg.flush( )
         prnBase( cfg, thisgen )
@@ -44,22 +44,21 @@ def manSeq( puz, cfg, lg, run ):
     thisgen.delete( )
     return best
   
-# This is the logic behind the termination critera described in default.cfg under 'main'
+# This is the logic behind the termination critera described in default.cfg under [main]
 #   Takes our basic configuration and the generation to test.
-def runCriteria( cfg, gen ):
-    if gen.best( ).getFit( ) == 1 and cfg['main']['stopbest'] == "True":
+def runCriteria( tcfg, gen ):
+    
+    if gen.best( ).getFit( ) == 1 and tcfg[ci.STOP_ON_BEST] == "True":
         return False
-    if cfg['main']['gens'] != "0":
-        return gen.num < int(cfg['main']['gens'])
-    elif cfg['main']['fitevals'] != "0":
-        return gen.fitEvals < int(cfg['main']['fitevals'])
-    elif cfg['main']['homogenity'] != "0":
+    if tcfg[ci.TYPE] == opp.GENERATIONAL_LIMIT:
+        return gen.num < int(cfg[ci.GENERATION_LIMIT])
+    elif tcfg[ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
+        return gen.fitEvals < int(tcfg[ci.EVALUATION_LIMIT])
+    elif tcfg[ci.TYPE] == opp.CONVERGENCE:
         thisbest = gen.average( )
-        #if cfg['main']['stoponsol'] and gen.best( ).fitness( ) == 1:
-        #    return False
         if thisbest <= gen.lastBestAvg:
             gen.sameTurns += 1
-            if gen.sameTurns >= int(cfg['main']['homogenity']):
+            if gen.sameTurns >= int(tcfg[ci.TURNS_NO_CHANGE]):
                 return False
         else:
             gen.lastBestAvg = thisbest
@@ -77,18 +76,16 @@ def prnBase( cfg, gen=False ):
         evals = gen.fitEvals
     
     out = ""
-    #if cfg['main']['gens'] != "0":
-    #    out = "\t"
-    if int(cfg['main']['runs']) >= 10:
+    if int(cfg[ci.MAIN][ci.TOTAL_RUNS]) >= 10:
         out += "\t"
-    out += util.pad(genn, cfg['main']['gens'])
+    out += util.pad(genn, cfg[ci.TERMINATION][ci.GENERATION_LIMIT])
     out += "\t"
-    if int(cfg['main']['gens']) > 0:
+    if cfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT:
         out += "\t"
-        if math.log(int(cfg['main']['gens']), 10) >= 12:
+        if math.log(int(cfg[ci.TERMINATION][ci.GENERATION_LIMIT]), 10) >= 12:
             out += "\t"
-    out += util.pad(evals, cfg['main']['fitevals'])
-    if int(cfg['main']['fitevals']) > 0 and math.log(int(cfg['main']['fitevals']), 10) >= 3:
+    out += util.pad(evals, cfg[ci.TERMINATION][ci.EVALUATION_LIMIT])
+    if cfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT and math.log(int(cfg[ci.TERMINATION][ci.EVALUATION_LIMIT]), 10) >= 3:
         out += "\t"
     out += "\t"
     out += str(avg)

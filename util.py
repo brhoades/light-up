@@ -5,7 +5,7 @@
 #  This file houses most of the functions that don't belong anywhere else or are used in several classes
 
 import random, datetime, time, configparser, fileinput, argparse, re, sys, math
-from const import gt
+from const import gt, ci, opp
 
 ######################################
 # RNG-related functions
@@ -58,48 +58,49 @@ def gcfg( ):
 
 class log:        
     def __init__( self, fcfg, gseed, cfgf):
-        cfg = fcfg['log']
-        self.res = open( cfg['result'], 'w' )
-        self.sol = open( cfg['solution'], 'w' )
+        cfg = fcfg[ci.LOG]
+        self.res = open( cfg[ci.RESULT_LOG_FILE], 'w' )
+        self.sol = open( cfg[ci.SOLUTION_LOG_FILE], 'w' )
         res = self.res
         sol = self.sol
         
-        res.write( ''.join(["Result Log\n", "Config File: ", cfgf, "\n"]) )
-        if( fcfg['graph']['gen'] != 'True' ):
-            res.write( ''.join(["Puzzle File: ", fcfg['graph']['gen'], "\n" ]) )
-        else:
-            res.write( ''.join(["Randomly Generating Graph(s)\n"]) )
+        #FIXME: ALL THIS BORKED
+        #res.write( ''.join(["Result Log\n", "Config File: ", cfgf, "\n"]) )
+        #if( fcfg['graph']['gen'] != 'True' ):
+            #res.write( ''.join(["Puzzle File: ", fcfg['graph']['gen'], "\n" ]) )
+        #else:
+            #res.write( ''.join(["Randomly Generating Graph(s)\n"]) )
             
-        res.write( ''.join(['Seed: ', str(gseed), '\n' ]) )
+        #res.write( ''.join(['Seed: ', str(gseed), '\n' ]) )
         
-        #Fancy git output
-        if cfg['logh'] != '0':
-            output = subprocess.check_output("git log -n1 --pretty=\"Git Hash: %H\n  Commit Date: %ad (%ar)\n  Author: %an <%ae>\n  Change Message: %s\"", shell=True)
-            output = str( output )
-            output = re.sub( r'\\n', '\n', output )
-            output = re.sub( r'(b\'|\'$)', '', output )
-            resLogh.write( output )
+        ##Fancy git output
+        #if cfg['logh'] != '0':
+            #output = subprocess.check_output("git log -n1 --pretty=\"Git Hash: %H\n  Commit Date: %ad (%ar)\n  Author: %an <%ae>\n  Change Message: %s\"", shell=True)
+            #output = str( output )
+            #output = re.sub( r'\\n', '\n', output )
+            #output = re.sub( r'(b\'|\'$)', '', output )
+            #resLogh.write( output )
         
-        #Map generation parameters
-        if fcfg['graph']['gen'] == 'True':
-            self.cfgStr( fcfg['graph'], res, "Map generation parameters:", ['gen'] )
+        ##Map generation parameters
+        #if fcfg['graph']['gen'] == 'True':
+            #self.cfgStr( fcfg['graph'], res, "Map generation parameters:", ['gen'] )
         
-        #Population Section
-        self.cfgStr( fcfg['pop'], res, "Population Parameters:" )
+        ##Population Section
+        #self.cfgStr( fcfg['pop'], res, "Population Parameters:" )
             
-        #General Information
-        res.write( ''.join(["Overall Parameters:\n", 
-            "  Runs: ", fcfg['main']['runs']]) )
-        if fcfg['main']['gens'] != '0':
-            res.write( ''.join (["\n  Termination criteria: ", fcfg['main']['gens'], " generations"]) )
-        elif fcfg['main']['fitevals'] != '0':
-            res.write( ''.join (["\n  Termination criteria: ", fcfg['main']['fitevals'], " fitness evaluations"]) )
-        elif fcfg['main']['homogenity'] != '0':
-            res.write( ''.join (["\n  Termination criteria: ", fcfg['main']['homogenity'], " turns without a new, better, best fitness in a solution"]) )
+        ##General Information
+        #res.write( ''.join(["Overall Parameters:\n", 
+            #"  Runs: ", fcfg[ci.MAIN]['runs']]) )
+        #if fcfg[ci.MAIN]['gens'] != '0':
+            #res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.MAIN]['gens'], " generations"]) )
+        #elif fcfg[ci.MAIN]['fitevals'] != '0':
+            #res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.MAIN]['fitevals'], " fitness evaluations"]) )
+        #elif fcfg[ci.MAIN]['homogenity'] != '0':
+            #res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.MAIN]['homogenity'], " turns without a new, better, best fitness in a solution"]) )
         
-        res.write( ''.join([ "\n  ignoreblack: ", fcfg['main']['ignoreblack']]) )
+        #res.write( ''.join([ "\n  ignoreblack: ", fcfg[ci.MAIN]['ignoreblack']]) )
 
-        sol.write( ''.join(["Solution Log", '\n', 'Seed: ', str(gseed), '\n']) )
+        #sol.write( ''.join(["Solution Log", '\n', 'Seed: ', str(gseed), '\n']) )
         
     def flush( self ):
         self.sol.flush( )
@@ -192,17 +193,18 @@ def mutateSq( prob ):
 
 # Renders a header depending on options
 def renderHead( cfg ):
-    print(''.join(["Run #/",cfg['runs']]), end='')
-    if int(cfg['runs']) < 100:
+    print(''.join(["Run #/",cfg[ci.MAIN][ci.TOTAL_RUNS]]), end='')
+    if int(cfg[ci.MAIN][ci.TOTAL_RUNS]) < 100:
         print('\t', end='') 
-    if cfg['gens'] != "0":
-        print(''.join(["Gen #/", cfg['gens'], '\t', "Fit"]), end='')
-    elif cfg['fitevals'] != "0":
-        print(''.join(["Gen", '\t', "Fit #/", cfg['fitevals']]), end='')
+    if cfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT:
+        print(''.join(["Gen #/", cfg[ci.TERMINATION][ci.GENERATION_LIMIT], '\t', "Fit"]), end='')
+    elif cfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
+        print(''.join(["Gen", '\t', "Fit #/", cfg[ci.TERMINATION][ci.EVALUATION_LIMIT]]), end='')
     else:
         print(''.join(["Gen", '\t', "Fit"]), end='')
     print("\tAvg Fit\tStatus\t", end='' )
-    if cfg['gens'] != "0" or cfg['fitevals'] != 0:
+    if cfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT or \
+            cfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
         print("\t", end='')
     print("\tStatus %")
     

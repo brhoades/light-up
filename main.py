@@ -4,25 +4,26 @@
 
 from graph import graph
 from util import *
+from const import ci
 import runner
 
 def main():
     cfg = readConfig(gcfg( ))
     
-    if cfg['graph']['seed'] == 'random':
+    if cfg[ci.GRAPH][ci.SEED] == 'random':
         dt = datetime.datetime.now( )
         cseed = seed( )
     else:
-        cseed = float(cfg['graph']['seed'])
+        cseed = float(cfg[ci.GRAPH][ci.SEED])
     
     random.seed(cseed)
     
     lg = log( cfg, cseed, gcfg( ) )
     best = False
-    for i in range( int(cfg['main']['runs']) ):
+    for i in range( int(cfg[ci.MAIN][ci.TOTAL_RUNS]) ):
         puz=graph(conf=cfg, quiet=True)        
         if i == 0:
-            renderHead(cfg['main'])
+            renderHead(cfg)
         nbest = runner.manSeq( puz, cfg, lg, i )
         if best == False or nbest.fitness( ) > best.fitness( ):
             lg.newBest( nbest )

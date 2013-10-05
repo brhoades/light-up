@@ -6,7 +6,7 @@
 #   for bulbs on a graph and related values.
 
 from util import flip,delprn,maxLights
-from const import gt
+from const import gt, ci, opp
 import graph
 import random
 import math
@@ -95,7 +95,7 @@ class sol:
         if not self.graph.ignoreBlacks:
             self.fit += self.graph.blackSats( )
                 
-        if self.gen.fitType == 1:
+        if self.gen.penalty:
             self.penalize( )
         
         # denom: static and predefined self.parent.fitDenom, called when humans need it
@@ -144,7 +144,7 @@ class sol:
         
         while len(unlitsq) > 0:
             sqr = unlitsq.pop( )
-            if sqr.type != gt.UNLIT and self.gen.fitType == 0:
+            if sqr.type != gt.UNLIT and not self.gen.penalty:
                 continue
             if flip( ):
                 if p1.graph.data[sqr.x][sqr.y].type == gt.BULB:
