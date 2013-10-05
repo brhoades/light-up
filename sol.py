@@ -118,11 +118,9 @@ class sol:
             for j in range(self.graph.y):
                 sqr = self.graph.data[i][j]
                 #BULB PENALTY
-                if sqr.type == gt.BULB:
-                    if len(sqr.owner) > 0:
-                        penalty += blight
-                elif sqr.isBlack( ) and sqr.atCapacity( ) and not self.graph.ignoreBlacks:
-                    if len(sqr.lights) > maxLights(sqr.type):
+                if sqr.type == gt.BULB and len(sqr.owner) > 0:
+                    penalty += blight
+                elif sqr.isBlack( ) and sqr.atCapacity( ) and not self.graph.ignoreBlacks and len(sqr.lights) > maxLights(sqr.type):
                         penalty += osatb*(len(sqr.lights)-maxLights(sqr.type))
                 elif sqr.isBlack( ) and not sqr.atCapacity( ) and not sqr.type == gt.BLACK and not self.graph.ignoreBlacks:
                     penalty += usatb*(len(sqr.lights)-maxLights(sqr.type))
