@@ -136,8 +136,13 @@ class gen:
     
     # drops the worst individuals down to µ
     def truncate( self ):
-        for i in range(0,self.mu):
-            delprn(perStr(i/self.mu), 3)
+        if self.strat == opp.COMMA:
+            left = self.lamb - self.mu
+        else:
+            left = self.lamb
+            
+        for i in range(0,left):
+            delprn(perStr(i/left), 3)
             worst = self.worst( )
             worst.trash( )
         
