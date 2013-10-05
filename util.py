@@ -254,7 +254,9 @@ class probDist:
             if self.prn:
                 delprn(''.join(perStr(len(rets)/num)), 3)
             pnt = random.randint( 0, self.cumFit )
+            #print("NEW")
             i = self.binSearch( pnt, 0, len(self.line)-1 )
+            #print(i,"!")
             sol = self.line[i][1]
             if not self.remove:
                 if sol in rets:
@@ -271,20 +273,30 @@ class probDist:
                     self.sols.add(sol)
             self.reDistribute( )
         return rets
-        
+    
+    #points [0, @sol.fit=2], [2, @sol.fit=6], [8, @sol.fit=3], [11, @sol.fit=4]
+    #[0, 2), [2, 8), [8, 11), [11, 15]
+    #Their respective ranges are below. If a point falls on that range, they get
+    #  chosen.
     def binSearch( self, i, imin, imax ):
         mp = math.floor((imin+imax)/2)
+        #print( mp, "[", imin, ",", imax, "]" )
         thispoint = self.line[mp]
 
         if mp == imax and mp == imin:
             return mp
-
+            
         if i > self.line[mp][0]:
             return self.binSearch( i, mp+1, imax )
         elif i < self.line[mp][0]:
-            if mp == 0 or i > self.line[mp-1][0]:
+            if mp == 0:
                 return mp
+            if i > self.line[mp-1][0]:
+                return mp-1
             else:
                 return self.binSearch( i, imin, mp-1 )
         else:
-            return mp
+            if mp < len(self.line):
+                return mp+1
+            else:
+                return mp
