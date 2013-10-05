@@ -205,11 +205,9 @@ class sq:
         if self.type == gt.BLACK or self.type == gt.BLACK0:
             return
         if self.atCapacity( ):
-            self.parent.blackSats += 1
             for sqr in self.neighbors:
                 sqr.bad.add( self )
         else:
-            self.parent.blackSats -= 1
             for sqr in self.neighbors:
                 sqr.bad.discard( self )
     

@@ -52,15 +52,16 @@ def runCriteria( cfg, gen ):
     elif cfg['main']['fitevals'] != "0":
         return gen.fitEvals < int(cfg['main']['fitevals'])
     elif cfg['main']['homogenity'] != "0":
-        thisavg = gen.hAverage( )
-        if cfg['main']['stoponsol'] and gen.best( ).fitness( ) == 1:
-            return False
-        if round(thisavg, int(cfg['main']['homoacc'])) == gen.lastFit:
+        thisbests = gen.best( )
+        thisbest = thisbests.fit
+        #if cfg['main']['stoponsol'] and gen.best( ).fitness( ) == 1:
+        #    return False
+        if thisbest <= gen.lastBest:
             gen.sameTurns += 1
             if gen.sameTurns >= int(cfg['main']['homogenity']):
                 return False
         else:
-            gen.lastFit = round(thisavg, int(cfg['main']['homoacc']))
+            gen.lastBest = thisbest
             gen.sameTurns = 0
         return True
         

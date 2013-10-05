@@ -93,7 +93,7 @@ class sol:
         # numerator: number of lit tiles + black tiles satisfied
         self.fit = self.graph.litsq( )
         if not self.graph.ignoreBlacks:
-            self.fit += self.graph.blackSats
+            self.fit += self.graph.blackSats( )
                 
         if self.gen.fitType == 1:
             self.penalize( )
@@ -110,9 +110,9 @@ class sol:
     #   * undersatisfied black tile => blackSb*.02, per missing light, ea (ciel)
     def penalize( self ):
         penalty = 0
-        blight = math.ceil(self.gen.fitDenom*.05)
-        osatb = math.ceil(self.gen.fitDenom*.0075)
-        usatb = math.ceil(self.gen.fitDenom*.01)
+        blight = math.ceil(self.gen.fitDenom*.025)
+        osatb = math.ceil(self.gen.fitDenom*.005)
+        usatb = math.ceil(self.gen.fitDenom*.005)
 
         for i in range(self.graph.x):
             for j in range(self.graph.y):
@@ -121,9 +121,9 @@ class sol:
                 if sqr.type == gt.BULB and len(sqr.owner) > 0:
                     penalty += blight
                 elif sqr.isBlack( ) and sqr.atCapacity( ) and not self.graph.ignoreBlacks and len(sqr.lights) > maxLights(sqr.type):
-                        penalty += osatb*(len(sqr.lights)-maxLights(sqr.type))
+                    penalty += osatb*(len(sqr.lights)-maxLights(sqr.type))
                 elif sqr.isBlack( ) and not sqr.atCapacity( ) and not sqr.type == gt.BLACK and not self.graph.ignoreBlacks:
-                    penalty += usatb*(len(sqr.lights)-maxLights(sqr.type))
+                    penalty += usatb*(maxLights(sqr.type)-len(sqr.lights))
         
         self.fit -= penalty
         return

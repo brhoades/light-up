@@ -19,9 +19,6 @@ class graph:
         #Is this an invalid graph?
         self.invalid=False
         
-        #Satisfied Black Squares
-        self.blackSats = 0
-        
         #Possible squares to light
         self.possq = 0
         
@@ -129,7 +126,6 @@ class graph:
         # This shit isn't static, it always needs to be copied
         self.invalid=other.invalid
         self.fit=other.fit
-        self.blackSats=other.blackSats
         
     ######################################
     ### Graph Generators
@@ -185,7 +181,6 @@ class graph:
     #   Optimization is lost and must be done after again.
     def blank( self ):        
         self.invalid=False
-        self.blackSats = 0
         self.fit=-1
         self.delete( )
         
@@ -379,7 +374,7 @@ class graph:
     
     # A wrapper to determine if we're a valid solution.
     def isValid( self ):
-        if not self.ignoreBlacks and self.blackSats < self.blacksSb( ):
+        if not self.ignoreBlacks and self.blackSats( ) < self.blacksSb( ):
             return False
         return True
 
@@ -413,13 +408,25 @@ class graph:
         return len(self.sqgt[gt.BLACK1])+len(self.sqgt[gt.BLACK2])+len(self.sqgt[gt.BLACK3])+len(self.sqgt[gt.BLACK4])+len(self.sqgt[gt.BLACK0])+len(self.sqgt[gt.BLACK])
     
     # Number of satisfiable black tiles
+    #   We count zero as being satisifiable since 1C as it can now be unsatisfied (bulbs around it)
     def blacksSb( self ):
-        return len(self.sqgt[gt.BLACK1])+len(self.sqgt[gt.BLACK2])+len(self.sqgt[gt.BLACK3])+len(self.sqgt[gt.BLACK4])
+        return len(self.sqgt[gt.BLACK1])+len(self.sqgt[gt.BLACK2])+len(self.sqgt[gt.BLACK3])+len(self.sqgt[gt.BLACK4])+len(self.sqgt[gt.BLACK0])
         
     # Number of bulbs
     def lights( self ):
         return len(self.sqgt[gt.BULB])
     
+    # Number of satisfied black tiles
+    def blackSats( self ):
+        sat = 0
+        for sqr in self.sqgt[gt.TRANSFORM]:
+            if sqr.type == gt.BLACK:
+                continue
+            if util.maxLights(sqr.type) == len(sqr.lights):
+                sat += 1
+                
+        return sat 
+            
     ######################################
     # Loggers
     ######################################

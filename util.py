@@ -95,7 +95,7 @@ class log:
         elif fcfg['main']['fitevals'] != '0':
             res.write( ''.join (["\n  Termination criteria: ", fcfg['main']['fitevals'], " fitness evaluations"]) )
         elif fcfg['main']['homogenity'] != '0':
-            res.write( ''.join (["\n  Termination criteria: ", fcfg['main']['homogenity'], " turns without a 10^-", fcfg['main']['homoacc']," change in fitness"]) )
+            res.write( ''.join (["\n  Termination criteria: ", fcfg['main']['homogenity'], " turns without a new, better, best fitness in a solution"]) )
         
         res.write( ''.join([ "\n  ignoreblack: ", fcfg['main']['ignoreblack']]) )
 
@@ -126,7 +126,7 @@ class log:
             evals = tgen.fitEvals
         else:
             evals = tgen.mu
-        self.res.write( ''.join( [ str(evals), '\t', str(round(tgen.hAverage( ), 5)), '\t', str(round(tgen.best( ).fit,5)), '\n'] ) )
+        self.res.write( ''.join( [ str(evals), '\t', str(round(tgen.hAverage( ), 5)), '\t', str(round(tgen.best( ).getFit(),5)), '\n'] ) )
         
     # Serializes and logs the soulution to solution-log.txt
     def best( self, solu ):
@@ -135,10 +135,12 @@ class log:
     
     # Our generational best
     def genBest( self, solu, thisgen ):
-        self.res.write( ''.join([ "Generation best: \n", str(solu.graph), "Fitness: ", str(solu.fitness( )), " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
+        self.res.write( ''.join([ "Run best: \n", str(solu.graph), "Fitness: ", str(solu.getFit( )), " (", str(solu.fit),
+                                 "/", str(thisgen.fitDenom), ") ", " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
+        self.res.write( ''.join([ "Bulbs: ", str(solu.graph.lights( )), " Satisified Black Tiles: ", str(solu.graph.blackSats( )), "\n"]) )
         
     def newBest( self, solu ):
-        self.res.write( ''.join([ "This is our new overall best!\n"]) )
+        self.res.write( ''.join([ "This is our new global best!\n"]) )
 
     def finish( self ):
         self.res.close( )
