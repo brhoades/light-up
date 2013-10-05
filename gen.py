@@ -36,16 +36,12 @@ class gen:
         self.penalty = (cfg[ci.MAIN][ci.FITNESS_TYPE] == opp.PENALTY_FUNCTION)
         
         #These are specific to generations and needed by ops--- copy these
-        copyover = [ci.INIT, ci.PARENT_SEL, ci.MUTATE, ci.SURVIVAL_SEL, ci.TERMINATION]
+        copyover = [ci.INIT, ci.PARENT_SEL, ci.MUTATE, ci.SURVIVAL_SEL, ci.TERMINATION, ci.MAIN]
         self.cfg = {}
         for typ in copyover:
             self.cfg[typ] = cfg[typ]
         
         #Catches for ints and whatnot
-        if self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE] == "lambda":
-            self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE] = self.mu
-        else:
-            self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE] = int(self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE])
         self.cfg[ci.PARENT_SEL][ci.K] = int(self.cfg[ci.PARENT_SEL][ci.K])
         self.cfg[ci.SURVIVAL_SEL][ci.K] = int(self.cfg[ci.SURVIVAL_SEL][ci.K])
         self.cfg[ci.MUTATE][ci.ALPHA] = int(self.cfg[ci.MUTATE][ci.ALPHA])
@@ -138,10 +134,10 @@ class gen:
                         parents.remove( p2 )
         return parents.pop( )
     
-    # drops #self.surseltrunc of the worst individuals
+    # drops the worst individuals down to µ
     def truncate( self ):
-        for i in range(0,self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE]):
-            delprn(perStr(i/self.cfg[ci.SURVIVAL_SEL][ci.TRUNCATION_TYPE]), 3)
+        for i in range(0,self.mu):
+            delprn(perStr(i/self.mu), 3)
             worst = self.worst( )
             worst.trash( )
         

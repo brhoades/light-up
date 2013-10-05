@@ -103,16 +103,15 @@ class sol:
         return self.fit
     
     # Penalty Function
-    #   We penalize base on how many violations we've got. For now, (FIXME) we are
-    #   using the following weights for each mistake:
-    #   * bad light => fitDenom*.025 ea (ciel) (0.025 as we're taking a hit for EACH light being shined on, so 2 each, so .05)
-    #   * over satisfied black tile => blackSb*.015, per extra light, ea (ciel)
-    #   * undersatisfied black tile => blackSb*.02, per missing light, ea (ciel)
+    #   We penalize base on how many violations we've got.
+    #   * bad light => fitDenom*cfgval ea (ciel) (0.025 as we're taking a hit for EACH light being shined on, so 2 each, so .05)
+    #   * over satisfied black tile => blackSb*cfgval, per extra light, ea (ciel)
+    #   * undersatisfied black tile => blackSb*cfgval, per missing light, ea (ciel)
     def penalize( self ):
         penalty = 0
-        blight = math.ceil(self.gen.fitDenom*.025)
-        osatb = math.ceil(self.gen.fitDenom*.005)
-        usatb = math.ceil(self.gen.fitDenom*.005)
+        blight = math.ceil(self.gen.fitDenom*int(self.gen.cfg[ci.MAIN][ci.BAD_LIGHT_PENALTY]))
+        osatb = math.ceil(self.gen.fitDenom*int(self.gen.cfg[ci.MAIN][ci.OVERSAT_BLACK_PENALTY]))
+        usatb = math.ceil(self.gen.fitDenom*int(self.gen.cfg[ci.MAIN][ci.UNDERSAT_BLACK_PENALTY]))
 
         for i in range(self.graph.x):
             for j in range(self.graph.y):
@@ -128,6 +127,8 @@ class sol:
         self.fit -= penalty
         return
   
+    # Trash things and use them again later. Save a crapton of time not allocating memory and recursively
+    #   destroying / creating things.
     def trash( self ):
         self.graph.clear( )
         self.birth = -1
@@ -137,6 +138,8 @@ class sol:
         self.gen.ind.remove(self)
         self.gen.trash.append(self)
   
+    # Combine two objects with something akin to crossover. If we're using a penalty function it gets less
+    #   ideal and is completely random.
     def breed( self, p1, p2 ):
         unlitsq = list( self.graph.sqgt[gt.UNLIT] )
         random.shuffle( unlitsq )

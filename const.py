@@ -124,7 +124,7 @@ class ci:
     #####Parent Selection Parameters#####
     #TYPE = 'type' sharedx50
     #K ='k' shared
-    TRUNCATION_TYPE = 'trunc'
+    #TRUNCATION_TYPE = 'trunc'
     #FITNESS_PROPORTIONAL_TYPE = 'fitpro' shared
     
     TERMINATION = 'term'
@@ -147,6 +147,9 @@ class ci:
     TOTAL_RUNS = 'runs'
     IGNORE_BLACK_TILES = 'ignoreblack'
     FITNESS_TYPE = 'fittype'
+    BAD_LIGHT_PENALTY = 'blight'
+    OVERSAT_BLACK_PENALTY = 'osatb'
+    UNDERSAT_BLACK_PENALTY = 'usatb'
     
     #####Shared Indicies#####
     TYPE = 'type'
