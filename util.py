@@ -5,6 +5,7 @@
 #  This file houses most of the functions that don't belong anywhere else or are used in several classes
 
 import random, datetime, time, configparser, fileinput, argparse, re, sys, math
+from const import gt
 
 ######################################
 # RNG-related functions

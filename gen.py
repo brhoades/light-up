@@ -191,23 +191,35 @@ class gen:
         for sol in babbies: 
             squares = mutateSq( self.muAlpha )
             j = squares
-            while j > 0:
-                delprn( ''.join([perStr((i/len(self.ind))+((squares-j)/squares))]), 3 )
-                #Look through unlit squares first
-                if len(sol.graph.sqgt[gt.UNLIT]) > 0:
-                    unlit = random.sample( sol.graph.sqgt[gt.UNLIT], 1 )
-                    #Move a random light here if we have one
-                    if flip( ) and len(sol.graph.sqgt[gt.BULB]) > 0:
-                        bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
-                        bulb[0].rmLight( )
-                        sol.graph.addLight( unlit[0].x, unlit[0].y, True )
+            if j > 0:
+                places = []
+                places.extend(sol.graph.sqgt[gt.LIT])
+                places.extend(sol.graph.sqgt[gt.UNLIT])
+                places.extend(sol.graph.sqgt[gt.BULB])
+                while j > 0:
+                    delprn( ''.join([perStr((i/len(self.ind))+((squares-j)/squares))]), 3 )
+                    #Look through unlit squares first
+                    if self.fitType == 0:
+                        if len(sol.graph.sqgt[gt.UNLIT]) > 0:
+                            unlit = random.sample( sol.graph.sqgt[gt.UNLIT], 1 )
+                            #Move a random light here if we have one
+                            if flip( ) and len(sol.graph.sqgt[gt.BULB]) > 0:
+                                bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
+                                bulb[0].rmLight( )
+                                sol.graph.addLight( unlit[0].x, unlit[0].y, True )
+                            else:
+                                sol.graph.addLight( unlit[0].x, unlit[0].y, True )
+                        #Otherwise look through bulbs and delete one
+                        else:
+                            bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
+                            bulb[0].rmLight( )
                     else:
-                        sol.graph.addLight( unlit[0].x, unlit[0].y, True )
-                #Otherwise look through bulbs and delete one
-                else:
-                    bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
-                    bulb[0].rmLight( )
-                j -= 1
+                        sqr = random.sample( places, 1 )
+                        if sqr[0].type == gt.BULB:
+                            sqr[0].rmLight( )
+                        else:
+                            sqr[0].addLight( )
+                    j -= 1
             i += 1
             
     # Deletes those who don't survive natural selection
