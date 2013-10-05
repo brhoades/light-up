@@ -166,8 +166,14 @@ class gen:
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )    
-        #else if self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
-
+        elif self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
+            for i in range(self.lamb):
+                delprn(perStr(i/self.lamb), 3)
+                pair = random.sample( self.ind, 2 )
+                
+                #Store them up and get ready for babby makin'
+                parents.append( pair )    
+                
         delprn( "Making Babbies\t\t" )
         i = 0
         for pair in parents:
@@ -246,10 +252,13 @@ class gen:
                 if solu not in save:
                     trash.append(solu)
             for i in range(len(trash)):
-                trash.pop( ).trash( )
-                    
-                    
-        #elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
+                trash.pop( ).trash( )            
+        elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
+            i = 0
+            max = len(self.ind)-self.mu
+            while len(self.ind) > self.mu:
+                delprn(perStr(i/max), 3)
+                random.sample(self.ind, 1)[0].trash( )
         elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.TRUNCATION:
             self.truncate( )
             
