@@ -88,7 +88,9 @@ class sol:
         return self.hfit[0]
 
     # Quick and lame fitness
-    # FIXME: DESCRIBE
+    # Denomintor for fitness is ignored as it only adds floats into the mess.
+    #   We're going to give everyone a rating based on their black tiles satisfied + 
+    #   their lit squares. Penalties applied if need be.
     def fitness( self ):
         # numerator: number of lit tiles + black tiles satisfied
         self.fit = self.graph.litsq( )
