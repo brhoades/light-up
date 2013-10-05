@@ -27,6 +27,8 @@ class gen:
         
         cfg = args['conf']
         
+        self.strat = cfg[ci.MAIN][ci.SURVIVAL_STRATEGY]
+        
         self.mu = int(cfg[ci.POP][ci.MU])
         self.lamb = int(cfg[ci.POP][ci.LAMBDA])
         
@@ -191,9 +193,22 @@ class gen:
         #Mutate them
         self.mutate( newkids )
         
-        for solu in newkids:
-            solu.fitness( )
-            self.ind.add(solu)
+        # (µ+λ)-EA, Default, tried and true. Merge kids with parents then go through hell.
+        if self.strat == opp.PLUS:
+            for solu in newkids:
+                solu.fitness( )
+                self.ind.add(solu)
+        # (µ,λ)-EA, Drop all parents and start with our kids. Status quo after that.
+        elif self.strat == opp.COMMA:
+            while len(self.ind) != 0:
+                # This is the only way I know of to deal with this if set size changes.
+                # THIS WORKS
+                for sol in self.ind:
+                    sol.trash( )
+                    break
+            for solu in newkids:
+                solu.fitness( )
+                self.ind.add( solu )
                 
     # Mutates some individuals randomly, whatever is passed in
     #   Uses alpha and a special distribution (documentation in default.cfg)

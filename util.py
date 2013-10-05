@@ -102,10 +102,12 @@ class log:
 
         #sol.write( ''.join(["Solution Log", '\n', 'Seed: ', str(gseed), '\n']) )
         
+    # Flushes our logs to a file
     def flush( self ):
         self.sol.flush( )
         self.res.flush( )
-        
+    
+    # Prints parameters for a long config sequence, beautifully
     def cfgStr( self, cfg, log, title, skip=[] ):
         params = ''
         params += title
@@ -140,9 +142,11 @@ class log:
                                  "/", str(thisgen.fitDenom), ") ", " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
         self.res.write( ''.join([ "Bulbs: ", str(solu.graph.lights( )), " Satisified Black Tiles: ", str(solu.graph.blackSats( )), "\n"]) )
         
+    # Just prints this simple string to mark a new best
     def newBest( self, solu ):
         self.res.write( ''.join([ "This is our new global best!\n"]) )
-
+    
+    # Closes our log files
     def finish( self ):
         self.res.close( )
         self.sol.close( )
@@ -239,6 +243,8 @@ class probDist:
             if sol.fit > 0:
                 self.cumFit += sol.fit
 
+    #Remove a point from our line, decrement our cumulative fitness and decrement everyone's
+    #  point after us.
     def rm( self, strt ):
         amt = self.line[strt][1].fit
         self.line.remove(self.line[strt])
@@ -274,7 +280,7 @@ class probDist:
             self.reDistribute( )
         return rets
     
-    #points [0, @sol.fit=2], [2, @sol.fit=6], [8, @sol.fit=3], [11, @sol.fit=4]
+    #points [0, &sol.fit==2], [2, &sol.fit==6], [8, &sol.fit==3], [11, &sol.fit==4]
     #[0, 2), [2, 8), [8, 11), [11, 15]
     #Their respective ranges are below. If a point falls on that range, they get
     #  chosen.
