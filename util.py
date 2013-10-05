@@ -224,7 +224,7 @@ class probDist:
         self.prn = prn
         self.sols = ind.copy( )
         self.remove = remove
-        self.line = []
+        self.line = ()
         self.lookup = []
         
         self.reDistribute( )
@@ -233,26 +233,24 @@ class probDist:
     # Pretty simple, just adding an index as we scoot alone and append references to ourself
     def reDistribute( self ):
         self.cumFit = 0
-        self.line = []
+        self.line = ()
         
         for sol in self.sols:
-            thisfit = sol.fit
-            for i in range(self.cumFit, self.cumFit+thisfit):
-                self.line.append(sol)
-            self.cumFit += thisfit
+            temp = (sol,)*sol.fit       #This wizardry here lets us create sol.fit sols
+            self.line = temp+self.line
     
     #Intelligently remove this point from our line
     def rm( self, point ):
         self.sols.remove( point )
         self.cumFit -= point.fit
         i = 0
-        for i in range(self.cumFit):
+        while True:
             sol = self.line[i]
             if sol != point:
                 i += sol.fit
             else:
                 break
-        del self.line[i:i+self.line[i].fit]
+        self.line = self.line[:i] + self.line[i+sol.fit:]
     
     #Got to get, from our line a random element, throw it into a list, remove it from our probDist,
     #  reDistribute, then grab the next, etc, then at the end throw them all back on and redistribute again
@@ -261,15 +259,15 @@ class probDist:
         while len(rets) < num:
             if self.prn:
                 delprn(''.join(perStr(len(rets)/num)), 3)
-            desPoint = math.floor(random.uniform(0,self.cumFit))
+            sol = random.choice(self.line)
             if not self.remove:
-                if self.line[desPoint] in rets:
+                if sol in rets:
                     continue
                 else:
-                    rets.append(self.line[desPoint])
+                    rets.append(sol)
             else:
-                rets.append(self.line[desPoint])
-                self.rm(self.line[desPoint])
+                rets.append(sol)
+                self.rm(sol)
                 
         for sol in rets:
             self.sols.add(sol)
