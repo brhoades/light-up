@@ -115,6 +115,7 @@ class TestSequenceFunctions(unittest.TestCase):
         
         for [x,y] in sizes:
             for i in range(0,count):
+                print(x,"x",y)
                 test = graph.graph(file="cfgs/test-1.cfg", x=x, y=y)
                 
                 print(x,"x",y)

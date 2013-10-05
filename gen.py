@@ -95,7 +95,7 @@ class gen:
             trash = sol.sol( self )
             trash.fit=0
             self.trash.append( trash )
-            delprn( ''.join([perStr(self.mu+i/(self.mu+self.lamb))]), 3 )
+            delprn( ''.join([perStr((self.mu+i)/(self.mu+self.lamb))]), 3 )
             
         delprn( "Randomly Solving Pop\t" )
         forcevalid = (self.cfg[ci.INIT][ci.TYPE] == opp.VALIDITY_ENFORCED_PLUS_UNIFORM_RANDOM)
@@ -194,22 +194,33 @@ class gen:
         #Mutate them
         self.mutate( newkids )
         
+        
+        delprn( "Integrating New Kids\t" )
         # (µ+λ)-EA, Default, tried and true. Merge kids with parents then go through hell.
+        i = 0
         if self.strat == opp.PLUS:
             for solu in newkids:
+                delprn(perStr(i/len(newkids)), 3)
                 solu.fitness( )
                 self.ind.add(solu)
+                i += 1
         # (µ,λ)-EA, Drop all parents and start with our kids. Status quo after that.
         elif self.strat == opp.COMMA:
+            starting = len(self.ind)
             while len(self.ind) != 0:
                 # This is the only way I know of to deal with this if set size changes.
                 # THIS WORKS
                 for sol in self.ind:
+                    delprn(perStr(i/starting*.5), 3)
                     sol.trash( )
+                    i += 1
                     break
+            i = 0
             for solu in newkids:
+                delprn(perStr(i/len(newkids)*.5+.5), 3)
                 solu.fitness( )
                 self.ind.add( solu )
+                i += 1
                 
     # Mutates some individuals randomly, whatever is passed in
     #   Uses alpha and a special distribution (documentation in default.cfg)
@@ -224,7 +235,7 @@ class gen:
                 places.extend(sol.graph.sqgt[gt.UNLIT])
                 places.extend(sol.graph.sqgt[gt.BULB])
                 while j > 0:
-                    delprn( ''.join([perStr((i/len(self.ind))+((squares-j)/squares))]), 3 )
+                    delprn( perStr((i+j)/(len(babbies)+squares)), 3 )
                     #Look through unlit squares first
                     if not self.penalty:
                         if len(sol.graph.sqgt[gt.UNLIT]) > 0:
