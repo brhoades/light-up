@@ -96,11 +96,10 @@ class gen:
         for i in range(0,self.lamb):
             trash = sol.sol( self )
             trash.fit=0
-            self.trash.append(trash)
+            self.trash.append( trash )
             delprn( ''.join([perStr(self.mu+i/(self.mu+self.lamb))]), 3 )
             
         delprn( "Randomly Solving Pop\t" )
-
         forcevalid = (self.cfg[ci.INIT][ci.TYPE] == opp.VALIDITY_ENFORCED_PLUS_UNIFORM_RANDOM)
         for i in range(0,self.mu):
             citz[i].rng( forcevalid )
@@ -158,9 +157,9 @@ class gen:
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )
-        elif self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL_SELECTION:
+        elif self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
             landscape = probDist( self.ind )
-            for i in range(0,self.lamb):
+            for i in range(self.lamb):
                 delprn(perStr(i/self.lamb), 3)
                 pair = []
                 pair.extend( landscape.get( 2 ) )
@@ -239,7 +238,17 @@ class gen:
                 loser = self.tournament(False, self.cfg[ci.SURVIVAL_SEL][ci.K], i, self.mu)
                 loser.trash( )
                 i += 1
-        #elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
+        elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
+            landscape = probDist( self.ind, self.cfg[ci.SURVIVAL_SEL][ci.FITNESS_PROPORTIONAL_TYPE] == opp.REMOVAL, True )
+            save = landscape.get( self.mu )
+            trash = []
+            for solu in self.ind:
+                if solu not in save:
+                    trash.append(solu)
+            for i in range(len(trash)):
+                trash.pop( ).trash( )
+                    
+                    
         #elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
         elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.TRUNCATION:
             self.truncate( )
@@ -269,7 +278,7 @@ class gen:
         return worst
   
     # Average everything out.
-    # NOT HUMAN-READABLE FITNESS, which is betweein [0,1]
+    # NOT HUMAN-READABLE FITNESS, which is between [0,1]
     def average( self ):
         fits = 0
         for sol in self.ind:

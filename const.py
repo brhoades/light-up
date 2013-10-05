@@ -128,7 +128,7 @@ class ci:
     #FITNESS_PROPORTIONAL_TYPE = 'fitpro' shared
     
     TERMINATION = 'term'
-    #####Termination Critera Selection#####
+    #####Termination Criteria Selection#####
     #TYPE = 'type' sharedx50
     EVALUATION_LIMIT = 'evals'
     GENERATION_LIMIT = 'gens'
