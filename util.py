@@ -4,7 +4,7 @@
 #Utility Functions
 #  This file houses most of the functions that don't belong anywhere else or are used in several classes
 
-import random, datetime, time, configparser, fileinput, argparse, re, sys, math
+import random, datetime, time, configparser, fileinput, argparse, re, sys, math, subprocess
 from const import gt, ci, opp
 
 ######################################
@@ -64,43 +64,48 @@ class log:
         res = self.res
         sol = self.sol
         
-        #FIXME: ALL THIS BORKED
-        #res.write( ''.join(["Result Log\n", "Config File: ", cfgf, "\n"]) )
-        #if( fcfg['graph']['gen'] != 'True' ):
-            #res.write( ''.join(["Puzzle File: ", fcfg['graph']['gen'], "\n" ]) )
-        #else:
-            #res.write( ''.join(["Randomly Generating Graph(s)\n"]) )
+        res.write( ''.join(["Result Log\n", "Config File: ", cfgf, "\n"]) )
+        if( fcfg[ci.GRAPH][ci.GENERATE] != 'True' ):
+            res.write( ''.join(["Puzzle File: ", fcfg[ci.GRAPH][ci.GENERATE], "\n" ]) )
+        else:
+            res.write( ''.join(["Randomly Generating Graph(s)\n"]) )
             
-        #res.write( ''.join(['Seed: ', str(gseed), '\n' ]) )
+        res.write( ''.join(['Seed: ', str(gseed), '\n' ]) )
         
-        ##Fancy git output
-        #if cfg['logh'] != '0':
-            #output = subprocess.check_output("git log -n1 --pretty=\"Git Hash: %H\n  Commit Date: %ad (%ar)\n  Author: %an <%ae>\n  Change Message: %s\"", shell=True)
-            #output = str( output )
-            #output = re.sub( r'\\n', '\n', output )
-            #output = re.sub( r'(b\'|\'$)', '', output )
-            #resLogh.write( output )
+        #Fancy git output
+        if cfg[ci.GIT_LOG_HEADERS] != '0':
+            output = subprocess.check_output("git log -n1 --pretty=\"Git Hash: %H\n  Commit Date: %ad (%ar)\n  Author: %an <%ae>\n  Change Message: %s\"", shell=True)
+            output = str( output )
+            output = re.sub( r'\\n', '\n', output )
+            output = re.sub( r'(b\'|\'$)', '', output )
+            self.res.write( output )
         
-        ##Map generation parameters
-        #if fcfg['graph']['gen'] == 'True':
-            #self.cfgStr( fcfg['graph'], res, "Map generation parameters:", ['gen'] )
-        
-        ##Population Section
-        #self.cfgStr( fcfg['pop'], res, "Population Parameters:" )
+        #Map generation parameters
+        if fcfg[ci.GRAPH][ci.GENERATE] == 'True':
+            self.cfgStr( fcfg[ci.GRAPH], "Map generation parameters:", [ci.GRAPH] )
             
-        ##General Information
-        #res.write( ''.join(["Overall Parameters:\n", 
-            #"  Runs: ", fcfg[ci.MAIN]['runs']]) )
-        #if fcfg[ci.MAIN]['gens'] != '0':
-            #res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.MAIN]['gens'], " generations"]) )
-        #elif fcfg[ci.MAIN]['fitevals'] != '0':
-            #res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.MAIN]['fitevals'], " fitness evaluations"]) )
-        #elif fcfg[ci.MAIN]['homogenity'] != '0':
-            #res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.MAIN]['homogenity'], " turns without a new, better, best fitness in a solution"]) )
+        self.cfgStr( fcfg[ci.POP], "Population Parameters:" )
         
-        #res.write( ''.join([ "\n  ignoreblack: ", fcfg[ci.MAIN]['ignoreblack']]) )
+        self.cfgStr( fcfg[ci.INIT], "Initilization Parameters:" )
+                
+        self.cfgStr( fcfg[ci.PARENT_SEL], "Parent Selection Parameters:" )
+                
+        self.cfgStr( fcfg[ci.MUTATE], "Mutate Parameters:" )
 
-        #sol.write( ''.join(["Solution Log", '\n', 'Seed: ', str(gseed), '\n']) )
+        self.cfgStr( fcfg[ci.MAIN], "Main Parameters:" )
+
+        #Termination Parameters
+        res.write( ''.join(["Termination Parameters:"]) )
+        if fcfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT:
+            res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.TERMINATION][ci.GENERATION_LIMIT], " generations"]) )
+        elif fcfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
+            res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.TERMINATION][ci.EVALUATION_LIMIT], " fitness evaluations"]) )
+        elif fcfg[ci.TERMINATION][ci.TYPE] == opp.CONVERGENCE:
+            res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.TERMINATION][ci.TURNS_NO_CHANGE], " turns without a new, better, best fitness in a solution"]) )
+        
+        self.cfgStr( fcfg[ci.TERMINATION], "", [ci.TYPE] )
+        
+        sol.write( ''.join(["Solution Log", '\n', 'Seed: ', str(gseed), '\n']) )
         
     # Flushes our logs to a file
     def flush( self ):
@@ -108,7 +113,7 @@ class log:
         self.res.flush( )
     
     # Prints parameters for a long config sequence, beautifully
-    def cfgStr( self, cfg, log, title, skip=[] ):
+    def cfgStr( self, cfg, title, skip=[] ):
         params = ''
         params += title
         for param in cfg:
@@ -116,7 +121,7 @@ class log:
                 next
             params += ''.join(["\n  ", param, ": ", cfg[param]])
         params += '\n'
-        log.write( params )
+        self.res.write( params )
 
     # Seperates our result log file with pretty run numbers.
     def sep( self, run ):

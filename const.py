@@ -146,7 +146,9 @@ class ci:
     SURVIVAL_STRATEGY = 'strat'
     TOTAL_RUNS = 'runs'
     IGNORE_BLACK_TILES = 'ignoreblack'
+    
     FITNESS_TYPE = 'fittype'
+    
     BAD_LIGHT_PENALTY = 'blight'
     OVERSAT_BLACK_PENALTY = 'osatb'
     UNDERSAT_BLACK_PENALTY = 'usatb'
