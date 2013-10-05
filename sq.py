@@ -69,7 +69,7 @@ class sq:
         self.newType( other.type )
         self.black = other.black
     
-        # All copied entries are interpolated frmo our parent, otherwise
+        # All copied entries are interpolated from our parent, otherwise
         #   we get references to a different graph and things get nasty, fast.
         #   Additonally since we're relocating we don't copy our parent, we use
         #   our current one.
@@ -133,9 +133,7 @@ class sq:
     def newType( self, type ):
         if self.type == type:
             return
-        if self.type > gt.BLACK_THRESHOLD and type < gt.BLACK_THRESHOLD:
-            self.parent.sqgt[gt.BLACK_THRESHOLD].remove(self)
-        if type > gt.BLACK_THRESHOLD and self.type < gt.BLACK_THRESHOLD:
+        if type > gt.BLACK_THRESHOLD:
             self.parent.sqgt[gt.BLACK_THRESHOLD].add(self)
         self.parent.sqgt[self.type].remove(self)
         self.type = type
@@ -176,6 +174,9 @@ class sq:
     # Turns us into a light with no checks. If there are any black squares
     #   around us we add ourself to their lights counter.
     def addLight( self ):
+        if self.type == gt.BULB:
+            raise TypeError("Can't place a bulb on a bulb @ (", self.x, self.y,")",
+                   self.parent )
         self.newType( gt.BULB )
         
         for sqr in self.neighbors:

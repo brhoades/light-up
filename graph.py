@@ -419,7 +419,7 @@ class graph:
     # Number of satisfied black tiles
     def blackSats( self ):
         sat = 0
-        for sqr in self.sqgt[gt.TRANSFORM]:
+        for sqr in self.sqgt[gt.BLACK_THRESHOLD]:
             if sqr.type == gt.BLACK:
                 continue
             if util.maxLights(sqr.type) == len(sqr.lights):
