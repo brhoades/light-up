@@ -47,21 +47,22 @@ def manSeq( puz, cfg, lg, run ):
 # This is the logic behind the termination critera described in default.cfg under 'main'
 #   Takes our basic configuration and the generation to test.
 def runCriteria( cfg, gen ):
+    if gen.best( ).getFit( ) == 1 and cfg['main']['stopbest'] == "True":
+        return False
     if cfg['main']['gens'] != "0":
         return gen.num < int(cfg['main']['gens'])
     elif cfg['main']['fitevals'] != "0":
         return gen.fitEvals < int(cfg['main']['fitevals'])
     elif cfg['main']['homogenity'] != "0":
-        thisbests = gen.best( )
-        thisbest = thisbests.fit
+        thisbest = gen.average( )
         #if cfg['main']['stoponsol'] and gen.best( ).fitness( ) == 1:
         #    return False
-        if thisbest <= gen.lastBest:
+        if thisbest <= gen.lastBestAvg:
             gen.sameTurns += 1
             if gen.sameTurns >= int(cfg['main']['homogenity']):
                 return False
         else:
-            gen.lastBest = thisbest
+            gen.lastBestAvg = thisbest
             gen.sameTurns = 0
         return True
         

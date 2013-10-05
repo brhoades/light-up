@@ -45,7 +45,7 @@ class gen:
         # Termination Counters
         self.fitEvals = 0
         self.sameTurns = 0
-        self.lastBest = 0
+        self.lastBestAvg = 0
         self.sameTurns = 0
         
         # FIXME: This should be a const / config reg. For now, 1 = constraint satisfaction
