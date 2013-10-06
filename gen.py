@@ -74,7 +74,11 @@ class gen:
         for sol in self.ind:
             if sol is not expt:
                 sol.delete( )
+        for sol in self.trash:
+            if sol is not expt:
+                sol.delete( )
         self.ind = []
+        self.trash = []
         self.puz = None
     
     # Add a single individual to our pool

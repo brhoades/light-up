@@ -61,7 +61,8 @@ class sol:
             for sqr in blacktiles:
                 if len(sqr.neighbors) == sqr.type-gt.TRANSFORM:
                     for hsqr in sqr.neighbors:
-                        hsqr.addLight( )
+                        if hsqr.type == gt.LIT or hsqr.type == gt.UNLIT:
+                            hsqr.addLight( )
         
         # Bulbs used are related to # of black tiles and size of board.
         # This is a rough approximation. Overshooting it causes the board to be solved very quickly and
