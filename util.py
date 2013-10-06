@@ -4,7 +4,7 @@
 #Utility Functions
 #  This file houses most of the functions that don't belong anywhere else or are used in several classes
 
-import random, datetime, time, configparser, fileinput, argparse, re, sys, math, subprocess
+import random, datetime, time, configparser, fileinput, argparse, re, sys, math, subprocess, shutil, os
 from const import gt, ci, opp
 
 ######################################
@@ -59,8 +59,16 @@ def gcfg( ):
 class log:        
     def __init__( self, fcfg, gseed, cfgf):
         cfg = fcfg[ci.LOG]
-        self.res = open( cfg[ci.RESULT_LOG_FILE], 'w' )
-        self.sol = open( cfg[ci.SOLUTION_LOG_FILE], 'w' )
+        self.rfn = cfg[ci.RESULT_LOG_FILE].rsplit('/')
+        self.sfn = cfg[ci.SOLUTION_LOG_FILE].rsplit('/')
+        
+        self.processDirs( )
+                
+        self.fullRes = self.rfn
+        self.fullSol = self.sfn
+        
+        self.res = open( self.rfn, 'w' )
+        self.sol = open( self.sfn, 'w' )
         res = self.res
         sol = self.sol
         
@@ -111,7 +119,7 @@ class log:
     def flush( self ):
         self.sol.flush( )
         self.res.flush( )
-    
+                
     # Prints parameters for a long config sequence, beautifully
     def cfgStr( self, cfg, title, skip=[] ):
         params = ''
@@ -145,16 +153,69 @@ class log:
     def genBest( self, solu, thisgen ):
         self.res.write( ''.join([ "Run best: \n", str(solu.graph), "Fitness: ", str(solu.getFit( )), " (", str(solu.fit),
                                  "/", str(thisgen.fitDenom), ") ", " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
-        self.res.write( ''.join([ "Bulbs: ", str(solu.graph.lights( )), " Satisified Black Tiles: ", str(solu.graph.blackSats( )), "\n"]) )
+        self.res.write( ''.join([ "Bulbs: ", str(solu.graph.lights( )), " Sats Black Tiles: ", str(solu.graph.blackSats( )), "\n"]) )
         
     # Just prints this simple string to mark a new best
     def newBest( self, solu ):
         self.res.write( ''.join([ "This is our new global best!\n"]) )
     
-    # Closes our log files
-    def finish( self ):
+    # Do our initial variable sub
+    def processDirs( self ):
+        for i in range(len(self.rfn)):
+            self.rfn[i] = self.variableHand( self.rfn[i] )
+        for i in range(len(self.sfn)):
+            self.sfn[i] = self.variableHand( self.sfn[i] )
+            
+        self.createDirectories( self.rfn )
+        self.createDirectories( self.sfn )
+        
+        self.rfn = '/'.join(self.rfn)
+        self.sfn = '/'.join(self.sfn)    
+        
+    # Move any files with new names, organize everything properly
+    def wrapUp( self, best ):
         self.res.close( )
         self.sol.close( )
+        
+        oldrfn = self.rfn
+        oldsfn = self.sfn
+        
+        newrfn = self.variableHand( oldrfn, best )
+        newsfn = self.variableHand( oldsfn, best )
+
+        print(self.rfn, newrfn)
+        print(self.sfn, newsfn)
+        
+        if newrfn != oldrfn:
+            shutil.move( os.path.abspath(self.rfn), os.path.abspath(newrfn) )
+            
+        if newsfn != oldsfn:
+            shutil.move( os.path.abspath(self.sfn), os.path.abspath(newsfn) )
+            
+    # Translate some variables over to something useful
+    def variableHand( self, dir, best=None ):
+        com = str(subprocess.check_output("git rev-parse --short HEAD", shell=True))
+        com = re.sub( r'(b\'|\'$|\?|\\n)', '', com)
+        dir = re.sub( r'\%cm', com, dir )
+        if best != None:
+            dir = re.sub(r'\%bf', str(round(best.getFit( ),3)), dir )
+        return dir
+    
+    # Create directories and do substutitions on variabes (currently only %c)
+    def createDirectories( self, infn ):
+        if len(infn) < 2:
+            return
+        
+        fn = infn[0:len(infn)-1]
+        for i in range(len(fn)):
+            me = ""
+            for pd in range(0,i):
+                me += me.join([fn[pd], "/"])
+            me += fn[i]
+            
+            d = os.path.abspath(me)
+            if not os.path.exists(d):
+                os.makedirs(d)   
 
 ######################################
 # Miscellaneous functions

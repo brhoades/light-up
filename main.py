@@ -31,7 +31,7 @@ def main():
     print( "" )
     
     lg.best(best)
-    lg.finish( )
+    lg.wrapUp(best)
 
 if __name__ == '__main__':
     main()
