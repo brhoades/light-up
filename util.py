@@ -183,9 +183,6 @@ class log:
         newrfn = self.variableHand( oldrfn, best )
         newsfn = self.variableHand( oldsfn, best )
 
-        print(self.rfn, newrfn)
-        print(self.sfn, newsfn)
-        
         if newrfn != oldrfn:
             shutil.move( os.path.abspath(self.rfn), os.path.abspath(newrfn) )
             
