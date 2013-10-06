@@ -74,8 +74,8 @@ class opp:
     CONVERGENCE = "2"
     
     #Fitness Type
-    PENALTY_FUNCTION = 1
-    VALIDITY_ENFORCED = 0
+    PENALTY_FUNCTION = "1"
+    VALIDITY_ENFORCED = "0"
     
     #######MULTIPLE OPERATORS#######
     FITNESS_PROPORTIONAL = "1"

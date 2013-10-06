@@ -113,9 +113,9 @@ class sol:
     #   * undersatisfied black tile => blackSb*cfgval, per missing light, ea (ciel)
     def penalize( self ):
         penalty = 0
-        blight = math.ceil(self.gen.fitDenom*int(self.gen.cfg[ci.MAIN][ci.BAD_LIGHT_PENALTY]))
-        osatb = math.ceil(self.gen.fitDenom*int(self.gen.cfg[ci.MAIN][ci.OVERSAT_BLACK_PENALTY]))
-        usatb = math.ceil(self.gen.fitDenom*int(self.gen.cfg[ci.MAIN][ci.UNDERSAT_BLACK_PENALTY]))
+        blight = math.ceil(self.gen.fitDenom*float(self.gen.cfg[ci.MAIN][ci.BAD_LIGHT_PENALTY]))
+        osatb = math.ceil(self.gen.fitDenom*float(self.gen.cfg[ci.MAIN][ci.OVERSAT_BLACK_PENALTY]))
+        usatb = math.ceil(self.gen.fitDenom*float(self.gen.cfg[ci.MAIN][ci.UNDERSAT_BLACK_PENALTY]))
 
         for i in range(self.graph.x):
             for j in range(self.graph.y):
