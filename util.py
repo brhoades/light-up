@@ -59,6 +59,7 @@ def gcfg( ):
 class log:        
     def __init__( self, fcfg, gseed, cfgf):
         cfg = fcfg[ci.LOG]
+        self.cfgf = cfgf
         self.rfn = cfg[ci.RESULT_LOG_FILE].rsplit('/')
         self.sfn = cfg[ci.SOLUTION_LOG_FILE].rsplit('/')
         
@@ -194,6 +195,8 @@ class log:
         com = str(subprocess.check_output("git rev-parse --short HEAD", shell=True))
         com = re.sub( r'(b\'|\'$|\?|\\n)', '', com)
         dir = re.sub( r'\%cm', com, dir )
+        #ccfg = re.sub( r'\.cfg', '', self.cfgf )
+        #dir = re.sub( r'\%cfg', ccfg, dir )
         if best != None:
             dir = re.sub(r'\%bf', str(round(best.getFit( ),3)), dir )
         return dir
