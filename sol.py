@@ -48,16 +48,18 @@ class sol:
         x = self.graph.x
         y = self.graph.y
         if forceValid:
-            blacktiles = set( )
-            blacktiles.union(self.graph.sqgt[gt.BLACK1])
-            blacktiles.union(self.graph.sqgt[gt.BLACK2])
-            blacktiles.union(self.graph.sqgt[gt.BLACK3])
-            blacktiles.union(self.graph.sqgt[gt.BLACK4])
+            blacktiles = list( )
+            blacktiles.extend(list(self.graph.sqgt[gt.BLACK1]))
+            blacktiles.extend(list(self.graph.sqgt[gt.BLACK2]))
+            blacktiles.extend(list(self.graph.sqgt[gt.BLACK3]))
+            blacktiles.extend(list(self.graph.sqgt[gt.BLACK4]))
+            
+            random.shuffle(blacktiles)
             
             #go through all satisifiable black tile's neighbors
             #if they have #neighbors = requirement, add bulbs
             for sqr in blacktiles:
-                if len(sqr.neighbors) == sqr.type-gt.BLACK_TRANSFORM:
+                if len(sqr.neighbors) == sqr.type-gt.TRANSFORM:
                     for hsqr in sqr.neighbors:
                         hsqr.addLight( )
         
