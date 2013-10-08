@@ -10,8 +10,8 @@ import runner
 def main():
     cfg = readConfig(gcfg( ))
     
+    cseed = 0
     if cfg[ci.GRAPH][ci.SEED] == 'random':
-        dt = datetime.datetime.now( )
         cseed = seed( )
     else:
         cseed = float(cfg[ci.GRAPH][ci.SEED])

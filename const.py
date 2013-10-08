@@ -118,7 +118,8 @@ class ci:
     MUTATE = 'mute'
     #####Mutate Parameters#####
     #TYPE = 'type' sharedx50
-    ALPHA = 'alpha'
+    SIGMA = 'sigma'
+    MU = 'mu'
     
     SURVIVAL_SEL = 'surv'
     #####Parent Selection Parameters#####

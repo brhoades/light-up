@@ -44,7 +44,8 @@ class gen:
         #Catches for ints and whatnot
         self.cfg[ci.PARENT_SEL][ci.K] = int(self.cfg[ci.PARENT_SEL][ci.K])
         self.cfg[ci.SURVIVAL_SEL][ci.K] = int(self.cfg[ci.SURVIVAL_SEL][ci.K])
-        self.cfg[ci.MUTATE][ci.ALPHA] = int(self.cfg[ci.MUTATE][ci.ALPHA])
+        self.cfg[ci.MUTATE][ci.SIGMA] = int(self.cfg[ci.MUTATE][ci.SIGMA])
+        self.cfg[ci.MUTATE][ci.MU] = int(self.cfg[ci.MUTATE][ci.MU])
 
         # Termination Counters
         self.fitEvals = 0
@@ -231,7 +232,7 @@ class gen:
     def mutate( self, babbies ):
         i = 0
         for sol in babbies: 
-            squares = mutateSq( self.cfg[ci.MUTATE][ci.ALPHA] )
+            squares = mutateSq( self.cfg[ci.MUTATE][ci.MU], self.cfg[ci.MUTATE][ci.SIGMA] )
             j = squares
             if j > 0:
                 places = []
