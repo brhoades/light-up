@@ -48,7 +48,7 @@ class sol:
         x = self.graph.x
         y = self.graph.y
         if forceValid:
-            blacktiles = list( )
+            blacktiles = []
             blacktiles.extend(list(self.graph.sqgt[gt.BLACK1]))
             blacktiles.extend(list(self.graph.sqgt[gt.BLACK2]))
             blacktiles.extend(list(self.graph.sqgt[gt.BLACK3]))

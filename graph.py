@@ -23,8 +23,8 @@ class graph:
         self.possq = 0
         
         ######################## Caches ###############################
-        # Dyanmic references to all open squares bordering black tiles
-        self.bbsq = set( )
+        # Dynamic references to all open squares bordering black tiles
+        self.bbsq = []
         # Dynamic list of sets of references to squares of that type
         self.sqgt = []
         ###############################################################
@@ -185,7 +185,7 @@ class graph:
         self.delete( )
         
         for typ in range(0,gt.MAX):
-            self.sqgt.insert(typ, set( ))
+            self.sqgt.insert(typ, [])
             
         for i in range(0,self.x):
             self.data.append([])
@@ -257,7 +257,7 @@ class graph:
         if sqr.type == gt.BLACK0:
             for n in sqr.neighbors:
                 if not sqr.isBlack( ):
-                    n.bad.add( sqr )
+                    n.bad.append( sqr )
         sqr.black = True
     
     # Anymore, this is nothing more than a wrapper function. This is mostly
@@ -330,7 +330,7 @@ class graph:
                 y = sqr.y
                 
                 # Add us to the appropriate counter, for all square types
-                self.sqgt[sqr.type].add( sqr )
+                self.sqgt[sqr.type].append( sqr )
                 
                 # For unlit squares we are going to store where they would "shine" 
                 #   instead of doing this on the fly.
@@ -343,30 +343,30 @@ class graph:
                             # Black tiles block lights, so we finish here
                             if tsqr.isBlack( ):
                                 break
-                            sqr.shine.add( tsqr )
+                            sqr.shine.append( tsqr )
                     if x < self.x-1:
                         for k in range(x+1, self.x ):
                             tsqr = self.data[k][y]
                             if tsqr.isBlack( ):
                                 break
-                            sqr.shine.add( tsqr )
+                            sqr.shine.append( tsqr )
                     if y > 0:
                         for k in range(y-1, -1, -1):
                             tsqr = self.data[x][k]
                             if tsqr.isBlack( ):
                                 break
-                            sqr.shine.add( tsqr )
+                            sqr.shine.append( tsqr )
                     if y < self.y-1:
                         for k in range(y+1, self.y):
                             tsqr = self.data[x][k]
                             if tsqr.isBlack( ):
                                 break
-                            sqr.shine.add( tsqr )
+                            sqr.shine.append( tsqr )
                             
                     #A quick and nasty caveat for black tiles that require 0.
                     for tsqr in sqr.neighbors:
                         if tsqr.type == gt.BLACK0:
-                            sqr.bad.add( tsqr ) 
+                            sqr.bad.append( tsqr ) 
                     
     ######################################
     # Checkers

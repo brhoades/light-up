@@ -19,7 +19,7 @@ class sq:
         self.parent = puz
         
         # Update our parent's coutner with our type
-        puz.sqgt[type].add( self )
+        puz.sqgt[type].append( self )
         
         # A simple boolean to indicate if this is a black tile.
         #   Mostly redundant as black tiles are never, currently,
@@ -31,23 +31,23 @@ class sq:
         ####   the board modifies these at a whim.
         # Used for black tiles. The lights that are currently bordering 
         #    us.
-        self.lights = set()
+        self.lights = []
         # References to neighbors are stored here
-        self.neighbors = set()
+        self.neighbors = []
         # Owner squares--- used for lit tiles so we can decide
         #   whether to remove it or not. References to other squares.
-        self.owner = set()
+        self.owner = []
         for sq in owner:
-            self.owner.add(sq)
+            self.owner.append(sq)
         # Where this square shines when it's a bulb. References to other
         #   squares on the board. Initilized on graph generation. Not filled
         #   for black tiles or squares that are black on startup.
-        self.shine = set()
+        self.shine = []
         ###############################################################
         
         # Whether a bulb can place here or not. Flipped when this tile
         #   is bordered by a "0" black tile or full black tile.
-        self.bad = set()
+        self.bad = []
     
     # A sub function for graph's print string that looks up our symbol
     #   in our constant list.
@@ -57,11 +57,11 @@ class sq:
     # Clean up references so the gc will delete us and anything we referenced.
     def delete( self ):
         self.parent = None
-        self.lights = set()
-        self.neighbors = set()
-        self.bad = set()
-        self.owner = set()
-        self.shine = set()
+        self.lights = []
+        self.neighbors = []
+        self.bad = []
+        self.owner = []
+        self.shine = []
 
     
     # Copy ourself over. A sub function for clear / copy in graph.
@@ -77,32 +77,32 @@ class sq:
         # Lights have to be cleared here regardless. If we're a black
         #   tile we have to have them cleared so that we may "start fresh."
         #   If we're not, we shouldn't have any lights anyway.
-        self.lights = set()
+        self.lights = []
         if self.black:
             for lits in other.lights:
-                self.lights.add(self.parent.data[lits.x][lits.y])
+                self.lights.append(self.parent.data[lits.x][lits.y])
             
         # Neighbors are always cleared so that we don't think tiles on other
         #   graphs are our neighbors still.
-        self.neighbors = set()
+        self.neighbors = []
         for i in other.neighbors:
-            self.neighbors.add(self.parent.data[i.x][i.y])
+            self.neighbors.append(self.parent.data[i.x][i.y])
         
         # Bad is cleared, as black squares are considered no longer satisifed.
-        self.bad = set()
+        self.bad = []
         for sqr in other.bad:
-            self.bad.add( self.parent.data[sqr.x][sqr.y] )
+            self.bad.append( self.parent.data[sqr.x][sqr.y] )
             
         # Any old unlit tiles are no longer unlit. This is a just in case.
-        self.owner = set()
+        self.owner = []
         for own in other.owner:
-            self.owner.add(self.parent.data[own.x][own.y])
+            self.owner.append(self.parent.data[own.x][own.y])
         
         # We can't skip optimization information if we're "the same board"
         #   as it may still point to different squares.
-        self.shine = set()
+        self.shine = []
         for sqr in other.shine:
-            self.shine.add( self.parent.data[sqr.x][sqr.y] )
+            self.shine.append( self.parent.data[sqr.x][sqr.y] )
     
     # Removes a light then recursively removes its lit cells in "shine". Sometimes
     #   we make bad placements, to notice this we'll know if a bulb has an owner.
@@ -117,7 +117,8 @@ class sq:
             chk = False
             if sqr.isBlack( ) and sqr.atCapacity( ):
                 chk = True
-            sqr.lights.discard( self )
+            if self in sqr.lights:
+                sqr.lights.remove( self )
             if chk:
                 sqr.chkCapacity( )
             
@@ -127,17 +128,17 @@ class sq:
     # Called by another function to light us up, and subsequently, claim ownership.
     def light( self, other ):
         self.newType( gt.LIT )
-        self.owner.add( other )
+        self.owner.append( other )
 
     # Switch our types and update our parent's list
     def newType( self, type ):
         if self.type == type:
             return
         if type > gt.BLACK_THRESHOLD:
-            self.parent.sqgt[gt.BLACK_THRESHOLD].add(self)
+            self.parent.sqgt[gt.BLACK_THRESHOLD].append(self)
         self.parent.sqgt[self.type].remove(self)
         self.type = type
-        self.parent.sqgt[self.type].add(self)
+        self.parent.sqgt[self.type].append(self)
 
     # Unlight this cell if the caller is our owner and there are no other
     #   owners.
@@ -181,7 +182,7 @@ class sq:
         
         for sqr in self.neighbors:
             if sqr.isBlack( ):
-                sqr.lights.add( self )
+                sqr.lights.append( self )
                 if sqr.atCapacity( ):
                     sqr.chkCapacity( )
         
@@ -192,13 +193,13 @@ class sq:
     # Add ourself as a neighbor to other.
     def addNeighbor( self, other ):
         if other.isBlack( ):
-            self.neighbors.add( other )
-            self.parent.bbsq.add( self )
+            self.neighbors.append( other )
+            self.parent.bbsq.append( self )
             if other.type == gt.BLACK0:
-                self.bad.add( other )
-                self.parent.bbsq.discard( self )
+                self.bad.append( other )
+                self.parent.bbsq.remove( self )
 
-        self.neighbors.add( other )
+        self.neighbors.append( other )
 
     # Recheck capacity of a black tile, called when we add a light and its
     #   capacity flips from False to True or the other way.
@@ -207,10 +208,11 @@ class sq:
             return
         if self.atCapacity( ):
             for sqr in self.neighbors:
-                sqr.bad.add( self )
+                sqr.bad.append( self )
         else:
             for sqr in self.neighbors:
-                sqr.bad.discard( self )
+                if self in sqr.bad:
+                    sqr.bad.remove( self )
     
     # Return true or false if we're a bad pick.
     def isBad( self ):

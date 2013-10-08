@@ -40,7 +40,7 @@ def manSeq( puz, cfg, lg, run ):
     lg.genBest( best, thisgen )
     # Clear best's reference so we can die when our other stuff is done and when best loses its reference.
     best.gen = None
-    thisgen.ind.discard(best)
+    thisgen.ind.remove(best)
     thisgen.delete( )
     return best
   

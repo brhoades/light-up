@@ -15,7 +15,7 @@ class gen:
     #argument is the previous generation's number
     def __init__( self, **args ):
         #Store all of our populace here
-        self.ind = set( )
+        self.ind = []
         
         #Store recycled graphs here
         self.trash = []
@@ -84,7 +84,7 @@ class gen:
     
     # Add a single individual to our pool
     def add( self, ind ):
-        self.ind.add( ind )
+        self.ind.append( ind )
     
     # Randomly generates a generation (hehe) from scratch
     def generate( self ):
@@ -107,7 +107,7 @@ class gen:
         for i in range(0,self.mu):
             citz[i].rng( forcevalid )
             citz[i].fitness( )
-            self.ind.add(citz[i])
+            self.ind.append(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
             
     # Creates a random tournament and returns a single individual
@@ -154,7 +154,7 @@ class gen:
     # Creates some new babbies and adds them to the generation
     def reproduce( self ):
         delprn( "Choosing Parents\t" )
-        newkids = set( )
+        newkids = []
         parents = []
         
         if self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.TOURNAMENT_WITH_REPLACEMENT:
@@ -189,10 +189,10 @@ class gen:
             if len(self.trash) > 0:
                 newkid = self.trash.pop( )
                 newkid.breed( pair[0], pair[1] )
-                newkids.add( newkid )
+                newkids.append( newkid )
             else:
                 newkid = sol.sol( self, mate=pair )
-                newkids.add( newkid )
+                newkids.append( newkid )
             i += 1
             
         delprn( "Mutating\t\t" )
@@ -207,7 +207,7 @@ class gen:
             for solu in newkids:
                 delprn(perStr(i/len(newkids)), 3)
                 solu.fitness( )
-                self.ind.add(solu)
+                self.ind.append(solu)
                 i += 1
         # (µ,λ)-EA, Drop all parents and start with our kids. Status quo after that.
         elif self.strat == opp.COMMA:
@@ -224,7 +224,7 @@ class gen:
             for solu in newkids:
                 delprn(perStr(i/len(newkids)*.5+.5), 3)
                 solu.fitness( )
-                self.ind.add( solu )
+                self.ind.append( solu )
                 i += 1
                 
     # Mutates some individuals randomly, whatever is passed in
