@@ -14,7 +14,6 @@ def main():
     if cfg[ci.GRAPH][ci.SEED] == 'random':
         cseed = seed( )
     else:
-        print( "using:", cfg[ci.GRAPH][ci.SEED] )
         cseed = float(cfg[ci.GRAPH][ci.SEED])
     
     random.seed(cseed)
