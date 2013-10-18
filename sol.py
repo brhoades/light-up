@@ -6,7 +6,7 @@
 #   for bulbs on a graph and related values.
 
 from util import flip,delprn,maxLights
-from const import gt, ci, opp
+from const import *
 import graph
 import random
 import math

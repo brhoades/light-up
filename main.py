@@ -4,23 +4,23 @@
 
 from graph import graph
 from util import *
-from const import ci
+from const import *
 import runner
 
 def main():
     cfg = readConfig(gcfg( ))
     
     cseed = 0
-    if cfg[ci.GRAPH][ci.SEED] == 'random':
+    if cfg[GRAPH][SEED] == 'random':
         cseed = seed( )
     else:
-        cseed = float(cfg[ci.GRAPH][ci.SEED])
+        cseed = float(cfg[GRAPH][SEED])
     
     random.seed(cseed)
     
     lg = log( cfg, cseed, gcfg( ) )
     best = False
-    for i in range( int(cfg[ci.MAIN][ci.TOTAL_RUNS]) ):
+    for i in range( int(cfg[MAIN][TOTAL_RUNS]) ):
         puz=graph(conf=cfg, quiet=True)        
         if i == 0:
             renderHead(cfg)

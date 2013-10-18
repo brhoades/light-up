@@ -4,7 +4,7 @@
 #Solver Functions
 #  This file does a bulk of the large scale logic operations and generation operations / output.
 
-from const import gt, ci, opp
+from const import *
 import gen
 import random
 import util
@@ -20,14 +20,14 @@ def manSeq( puz, cfg, lg, run ):
     runs = ""
     runs += str(run+1)
     runs += '\t'
-    if int(cfg[ci.MAIN][ci.TOTAL_RUNS]) > 9:
+    if int(cfg[MAIN][TOTAL_RUNS]) > 9:
         runs += '\t' 
     util.delprn( ''.join([str(run+1), "\t"]), 0 )
     prnBase( cfg, False )
     thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )        
     lg.gen( thisgen )
 
-    while runCriteria(cfg[ci.TERMINATION], thisgen):
+    while runCriteria(cfg[TERMINATION], thisgen):
         if thisgen.num % 25:
             lg.flush( )
         prnBase( cfg, thisgen )
@@ -48,17 +48,17 @@ def manSeq( puz, cfg, lg, run ):
 #   Takes our basic configuration and the generation to test.
 def runCriteria( tcfg, gen ):
     
-    if gen.best( ).getFit( ) == 1 and tcfg[ci.STOP_ON_BEST] == "True":
+    if gen.best( ).getFit( ) == 1 and tcfg[STOP_ON_BEST] == "True":
         return False
-    if tcfg[ci.TYPE] == opp.GENERATIONAL_LIMIT:
-        return gen.num < int(cfg[ci.GENERATION_LIMIT])
-    elif tcfg[ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
-        return gen.fitEvals < int(tcfg[ci.EVALUATION_LIMIT])
-    elif tcfg[ci.TYPE] == opp.CONVERGENCE:
+    if tcfg[TYPE] == GENERATIONAL_LIMIT:
+        return gen.num < int(cfg[GENERATION_LIMIT])
+    elif tcfg[TYPE] == FITNESS_EVALUATION_LIMIT:
+        return gen.fitEvals < int(tcfg[EVALUATION_LIMIT])
+    elif tcfg[TYPE] == CONVERGENCE:
         thisbest = gen.average( )
         if thisbest <= gen.lastBestAvg:
             gen.sameTurns += 1
-            if gen.sameTurns >= int(tcfg[ci.TURNS_NO_CHANGE]):
+            if gen.sameTurns >= int(tcfg[TURNS_NO_CHANGE]):
                 return False
         else:
             gen.lastBestAvg = thisbest
@@ -76,16 +76,16 @@ def prnBase( cfg, gen=False ):
         evals = gen.fitEvals
     
     out = ""
-    if int(cfg[ci.MAIN][ci.TOTAL_RUNS]) >= 10:
+    if int(cfg[MAIN][TOTAL_RUNS]) >= 10:
         out += "\t"
-    out += util.pad(genn, cfg[ci.TERMINATION][ci.GENERATION_LIMIT])
+    out += util.pad(genn, cfg[TERMINATION][GENERATION_LIMIT])
     out += "\t"
-    if cfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT:
+    if cfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT:
         out += "\t"
-        if math.log(int(cfg[ci.TERMINATION][ci.GENERATION_LIMIT]), 10) >= 12:
+        if math.log(int(cfg[TERMINATION][GENERATION_LIMIT]), 10) >= 12:
             out += "\t"
-    out += util.pad(evals, cfg[ci.TERMINATION][ci.EVALUATION_LIMIT])
-    if cfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT and math.log(int(cfg[ci.TERMINATION][ci.EVALUATION_LIMIT]), 10) >= 3:
+    out += util.pad(evals, cfg[TERMINATION][EVALUATION_LIMIT])
+    if cfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT and math.log(int(cfg[TERMINATION][EVALUATION_LIMIT]), 10) >= 3:
         out += "\t"
     out += "\t"
     out += str(avg)

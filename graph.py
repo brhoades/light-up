@@ -4,7 +4,7 @@
 #Graph Class File
 #  This file houses the container for graphs in which all tiles reside.
 
-from const import gt, ci
+from const import *
 from sq import sq
 import util
 import random, time, datetime, fileinput, configparser
@@ -52,18 +52,18 @@ class graph:
             if conf == None:
                 conf=args['conf']
             if 'x' in args:
-                conf[ci.GRAPH][ci.X] = str(args['x'])
+                conf[GRAPH][X] = str(args['x'])
             if 'y' in args:
-                conf[ci.GRAPH][ci.Y] = str(args['y'])
+                conf[GRAPH][Y] = str(args['y'])
            
-            self.ignoreBlacks = conf[ci.MAIN][ci.IGNORE_BLACK_TILES] == 'True'
+            self.ignoreBlacks = conf[MAIN][IGNORE_BLACK_TILES] == 'True'
             
-            if conf[ci.GRAPH][ci.GENERATE] != 'True':
-                self.readGraph(conf[ci.GRAPH][ci.GENERATE])
+            if conf[GRAPH][GENERATE] != 'True':
+                self.readGraph(conf[GRAPH][GENERATE])
                 if not 'quiet' in args:
-                    print("Loaded graph from:", conf[ci.GRAPH][ci.GENERATE])
+                    print("Loaded graph from:", conf[GRAPH][GENERATE])
             else:
-                self.genGraph(conf[ci.GRAPH])    
+                self.genGraph(conf[GRAPH])    
                 if not 'quiet' in args:
                     print("Randomly generated graph: ")
                     print( self )
@@ -166,8 +166,8 @@ class graph:
     
     # Generates a random and inherently valid graph by checking neighbors
     def genGraph( self, conf ):
-        self.x = int(conf[ci.X])
-        self.y = int(conf[ci.Y])
+        self.x = int(conf[X])
+        self.y = int(conf[Y])
         bprobs = self.readBlacks( conf )
         self.blank()
 
@@ -275,12 +275,12 @@ class graph:
     #   for later use by genRandomBlack
     def readBlacks( self, conf ):
         bprobs = []
-        bprobs.append([gt.BLACK, int(conf[ci.BLACK])])
-        bprobs.append([gt.BLACK1, int(conf[ci.BLACK1])])
-        bprobs.append([gt.BLACK2, int(conf[ci.BLACK2])])
-        bprobs.append([gt.BLACK3, int(conf[ci.BLACK3])])
-        bprobs.append([gt.BLACK4, int(conf[ci.BLACK4])])
-        bprobs.append([gt.BLACK0, int(conf[ci.BLACK0])])
+        bprobs.append([gt.BLACK, int(conf[BLACK])])
+        bprobs.append([gt.BLACK1, int(conf[BLACK1])])
+        bprobs.append([gt.BLACK2, int(conf[BLACK2])])
+        bprobs.append([gt.BLACK3, int(conf[BLACK3])])
+        bprobs.append([gt.BLACK4, int(conf[BLACK4])])
+        bprobs.append([gt.BLACK0, int(conf[BLACK0])])
         return bprobs
     
     # This gerates a random black tile by looping through a list of lists

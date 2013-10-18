@@ -5,7 +5,7 @@
 #  This file houses most of the functions that don't belong anywhere else or are used in several classes
 
 import random, datetime, time, configparser, fileinput, argparse, re, sys, math, subprocess, shutil, os
-from const import gt, ci, opp
+from const import *
 
 ######################################
 # RNG-related functions
@@ -58,10 +58,10 @@ def gcfg( ):
 
 class log:        
     def __init__( self, fcfg, gseed, cfgf):
-        cfg = fcfg[ci.LOG]
+        cfg = fcfg[LOG]
         self.cfgf = cfgf
-        self.rfn = cfg[ci.RESULT_LOG_FILE].rsplit('/')
-        self.sfn = cfg[ci.SOLUTION_LOG_FILE].rsplit('/')
+        self.rfn = cfg[RESULT_LOG_FILE].rsplit('/')
+        self.sfn = cfg[SOLUTION_LOG_FILE].rsplit('/')
         
         self.processDirs( )
                 
@@ -74,15 +74,15 @@ class log:
         sol = self.sol
         
         res.write( ''.join(["Result Log\n", "Config File: ", cfgf, "\n"]) )
-        if( fcfg[ci.GRAPH][ci.GENERATE] != 'True' ):
-            res.write( ''.join(["Puzzle File: ", fcfg[ci.GRAPH][ci.GENERATE], "\n" ]) )
+        if( fcfg[GRAPH][GENERATE] != 'True' ):
+            res.write( ''.join(["Puzzle File: ", fcfg[GRAPH][GENERATE], "\n" ]) )
         else:
             res.write( ''.join(["Randomly Generating Graph(s)\n"]) )
             
         res.write( ''.join(['Seed: ', str(gseed), '\n' ]) )
         
         #Fancy git output
-        if cfg[ci.GIT_LOG_HEADERS] != '0':
+        if cfg[GIT_LOG_HEADERS] != '0':
             output = subprocess.check_output("git log -n1 --pretty=\"Git Hash: %H\n  Commit Date: %ad (%ar)\n  Author: %an <%ae>\n  Change Message: %s\"", shell=True)
             output = str( output )
             output = re.sub( r'\\n', '\n', output )
@@ -90,29 +90,29 @@ class log:
             self.res.write( output )
         
         #Map generation parameters
-        if fcfg[ci.GRAPH][ci.GENERATE] == 'True':
-            self.cfgStr( fcfg[ci.GRAPH], "Map generation parameters:", [ci.GRAPH] )
+        if fcfg[GRAPH][GENERATE] == 'True':
+            self.cfgStr( fcfg[GRAPH], "Map generation parameters:", [GRAPH] )
             
-        self.cfgStr( fcfg[ci.POP], "Population Parameters:" )
+        self.cfgStr( fcfg[POP], "Population Parameters:" )
         
-        self.cfgStr( fcfg[ci.INIT], "Initilization Parameters:" )
+        self.cfgStr( fcfg[INIT], "Initilization Parameters:" )
                 
-        self.cfgStr( fcfg[ci.PARENT_SEL], "Parent Selection Parameters:" )
+        self.cfgStr( fcfg[PARENT_SEL], "Parent Selection Parameters:" )
                 
-        self.cfgStr( fcfg[ci.MUTATE], "Mutate Parameters:" )
+        self.cfgStr( fcfg[MUTATE], "Mutate Parameters:" )
 
-        self.cfgStr( fcfg[ci.MAIN], "Main Parameters:" )
+        self.cfgStr( fcfg[MAIN], "Main Parameters:" )
 
         #Termination Parameters
         res.write( ''.join(["Termination Parameters:"]) )
-        if fcfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT:
-            res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.TERMINATION][ci.GENERATION_LIMIT], " generations"]) )
-        elif fcfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
-            res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.TERMINATION][ci.EVALUATION_LIMIT], " fitness evaluations"]) )
-        elif fcfg[ci.TERMINATION][ci.TYPE] == opp.CONVERGENCE:
-            res.write( ''.join (["\n  Termination criteria: ", fcfg[ci.TERMINATION][ci.TURNS_NO_CHANGE], " turns without a new, better, best fitness in a solution"]) )
+        if fcfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT:
+            res.write( ''.join (["\n  Termination criteria: ", fcfg[TERMINATION][GENERATION_LIMIT], " generations"]) )
+        elif fcfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT:
+            res.write( ''.join (["\n  Termination criteria: ", fcfg[TERMINATION][EVALUATION_LIMIT], " fitness evaluations"]) )
+        elif fcfg[TERMINATION][TYPE] == CONVERGENCE:
+            res.write( ''.join (["\n  Termination criteria: ", fcfg[TERMINATION][TURNS_NO_CHANGE], " turns without a new, better, best fitness in a solution"]) )
         
-        self.cfgStr( fcfg[ci.TERMINATION], "", [ci.TYPE] )
+        self.cfgStr( fcfg[TERMINATION], "", [TYPE] )
         
         sol.write( ''.join(["Solution Log", '\n', 'Seed: ', str(gseed), '\n']) )
         
@@ -263,18 +263,18 @@ def mutateSq( mu, sigma ):
 
 # Renders a header depending on options
 def renderHead( cfg ):
-    print(''.join(["Run #/",cfg[ci.MAIN][ci.TOTAL_RUNS]]), end='')
-    if int(cfg[ci.MAIN][ci.TOTAL_RUNS]) < 100:
+    print(''.join(["Run #/",cfg[MAIN][TOTAL_RUNS]]), end='')
+    if int(cfg[MAIN][TOTAL_RUNS]) < 100:
         print('\t', end='') 
-    if cfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT:
-        print(''.join(["Gen #/", cfg[ci.TERMINATION][ci.GENERATION_LIMIT], '\t', "Fit"]), end='')
-    elif cfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
-        print(''.join(["Gen", '\t', "Fit #/", cfg[ci.TERMINATION][ci.EVALUATION_LIMIT]]), end='')
+    if cfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT:
+        print(''.join(["Gen #/", cfg[TERMINATION][GENERATION_LIMIT], '\t', "Fit"]), end='')
+    elif cfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT:
+        print(''.join(["Gen", '\t', "Fit #/", cfg[TERMINATION][EVALUATION_LIMIT]]), end='')
     else:
         print(''.join(["Gen", '\t', "Fit"]), end='')
     print("\tAvg Fit\tStatus\t", end='' )
-    if cfg[ci.TERMINATION][ci.TYPE] == opp.GENERATIONAL_LIMIT or \
-            cfg[ci.TERMINATION][ci.TYPE] == opp.FITNESS_EVALUATION_LIMIT:
+    if cfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT or \
+            cfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT:
         print("\t", end='')
     print("\tStatus %")
     

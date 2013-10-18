@@ -8,7 +8,7 @@ import math
 
 import graph, sol
 from util import *
-from const import gt, ci, opp
+from const import *
 
 class gen:
 
@@ -27,22 +27,22 @@ class gen:
         
         cfg = args['conf']
         
-        self.strat = cfg[ci.MAIN][ci.SURVIVAL_STRATEGY]
+        self.strat = cfg[MAIN][SURVIVAL_STRATEGY]
         
-        self.mu = int(cfg[ci.POP][ci.MU])
-        self.lamb = int(cfg[ci.POP][ci.LAMBDA])
+        self.mu = int(cfg[POP][MU])
+        self.lamb = int(cfg[POP][LAMBDA])
         
         #These are specific to generations and needed by ops--- copy these
-        copyover = [ci.INIT, ci.PARENT_SEL, ci.MUTATE, ci.SURVIVAL_SEL, ci.TERMINATION, ci.MAIN]
+        copyover = [INIT, PARENT_SEL, MUTATE, SURVIVAL_SEL, TERMINATION, MAIN]
         self.cfg = {}
         for typ in copyover:
             self.cfg[typ] = cfg[typ]
         
         #Catches for ints and whatnot
-        self.cfg[ci.PARENT_SEL][ci.K] = int(self.cfg[ci.PARENT_SEL][ci.K])
-        self.cfg[ci.SURVIVAL_SEL][ci.K] = int(self.cfg[ci.SURVIVAL_SEL][ci.K])
-        self.cfg[ci.MUTATE][ci.SIGMA] = int(self.cfg[ci.MUTATE][ci.SIGMA])
-        self.cfg[ci.MUTATE][ci.MU] = int(self.cfg[ci.MUTATE][ci.MU])
+        self.cfg[PARENT_SEL][K] = int(self.cfg[PARENT_SEL][K])
+        self.cfg[SURVIVAL_SEL][K] = int(self.cfg[SURVIVAL_SEL][K])
+        self.cfg[MUTATE][SIGMA] = int(self.cfg[MUTATE][SIGMA])
+        self.cfg[MUTATE][MU] = int(self.cfg[MUTATE][MU])
 
         # Termination Counters
         self.fitEvals = 0
@@ -100,7 +100,7 @@ class gen:
             delprn( ''.join([perStr((self.mu+i)/(self.mu+self.lamb))]), 3 )
             
         delprn( "Randomly Solving Pop\t" )
-        forcevalid = (self.cfg[ci.INIT][ci.TYPE] == opp.VALIDITY_ENFORCED_PLUS_UNIFORM_RANDOM)
+        forcevalid = (self.cfg[INIT][TYPE] == VALIDITY_ENFORCED_PLUS_UNIFORM_RANDOM)
         for i in range(0,self.mu):
             citz[i].rng( forcevalid )
             citz[i].fitness( )
@@ -138,7 +138,7 @@ class gen:
     
     # drops the worst individuals down to µ
     def truncate( self ):
-        if self.strat == opp.COMMA:
+        if self.strat == COMMA:
             left = self.lamb - self.mu
         else:
             left = self.lamb
@@ -154,15 +154,15 @@ class gen:
         newkids = []
         parents = []
         
-        if self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.TOURNAMENT_WITH_REPLACEMENT:
+        if self.cfg[PARENT_SEL][TYPE] == TOURNAMENT_WITH_REPLACEMENT:
             for i in range(0,self.lamb):
                 pair = []
-                pair.append( self.tournament(True, self.cfg[ci.PARENT_SEL][ci.K], i*2-1, self.lamb*2) )
-                pair.append( self.tournament(True, self.cfg[ci.PARENT_SEL][ci.K], i*2, self.lamb*2, [pair[0]]) )
+                pair.append( self.tournament(True, self.cfg[PARENT_SEL][K], i*2-1, self.lamb*2) )
+                pair.append( self.tournament(True, self.cfg[PARENT_SEL][K], i*2, self.lamb*2, [pair[0]]) )
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )
-        elif self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
+        elif self.cfg[PARENT_SEL][TYPE] == FITNESS_PROPORTIONAL:
             for i in range(self.lamb):
                 delprn(perStr(i/self.lamb), 3)
                 pair = []
@@ -170,7 +170,7 @@ class gen:
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )    
-        elif self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
+        elif self.cfg[PARENT_SEL][TYPE] == UNIFORM_RANDOM:
             for i in range(self.lamb):
                 delprn(perStr(i/self.lamb), 3)
                 pair = random.sample( self.ind, 2 )
@@ -199,14 +199,14 @@ class gen:
         delprn( "Integrating New Kids\t" )
         # (µ+λ)-EA, Default, tried and true. Merge kids with parents then go through hell.
         i = 0
-        if self.strat == opp.PLUS:
+        if self.strat == PLUS:
             for solu in newkids:
                 delprn(perStr(i/len(newkids)), 3)
                 solu.fitness( )
                 self.ind.append(solu)
                 i += 1
         # (µ,λ)-EA, Drop all parents and start with our kids. Status quo after that.
-        elif self.strat == opp.COMMA:
+        elif self.strat == COMMA:
             starting = len(self.ind)
             while len(self.ind) != 0:
                 # This is the only way I know of to deal with this if set size changes.
@@ -229,7 +229,7 @@ class gen:
         i = 0
         #print( "\n\n" )
         for sol in babbies: 
-            squares = mutateSq( self.cfg[ci.MUTATE][ci.MU], self.cfg[ci.MUTATE][ci.SIGMA] )
+            squares = mutateSq( self.cfg[MUTATE][MU], self.cfg[MUTATE][SIGMA] )
             if squares > 0:
                 places = []
                 places.extend(sol.graph.sqgt[gt.LIT])
@@ -251,13 +251,13 @@ class gen:
         delprn( "Selecting Survivors\t" )
         i = 0
         
-        if self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.TOURNAMENT_WITHOUT_REPLACEMENT:
+        if self.cfg[SURVIVAL_SEL][TYPE] == TOURNAMENT_WITHOUT_REPLACEMENT:
             while len(self.ind) > self.mu:
                 # Neg tournament
-                loser = self.tournament(False, self.cfg[ci.SURVIVAL_SEL][ci.K], i, self.mu)
+                loser = self.tournament(False, self.cfg[SURVIVAL_SEL][K], i, self.mu)
                 loser.trash( )
                 i += 1
-        elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
+        elif self.cfg[SURVIVAL_SEL][TYPE] == FITNESS_PROPORTIONAL:
             save = probSel( self.ind, self.mu, True)
             trash = []
             for solu in self.ind:
@@ -265,13 +265,13 @@ class gen:
                     trash.append(solu)
             for i in range(len(trash)):
                 trash.pop( ).trash( )            
-        elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.UNIFORM_RANDOM:
+        elif self.cfg[SURVIVAL_SEL][TYPE] == UNIFORM_RANDOM:
             i = 0
             max = len(self.ind)-self.mu
             while len(self.ind) > self.mu:
                 delprn(perStr(i/max), 3)
                 random.sample(self.ind, 1)[0].trash( )
-        elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.TRUNCATION:
+        elif self.cfg[SURVIVAL_SEL][TYPE] == TRUNCATION:
             self.truncate( )
             
     # Returns our best solution. Returns the oldest if there's several
