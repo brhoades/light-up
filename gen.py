@@ -228,22 +228,23 @@ class gen:
     #   Uses alpha and a special distribution (documentation in default.cfg)
     def mutate( self, babbies ):
         i = 0
+        #print( "\n\n" )
         for sol in babbies: 
             squares = mutateSq( self.cfg[ci.MUTATE][ci.MU], self.cfg[ci.MUTATE][ci.SIGMA] )
-            j = squares
-            if j > 0:
+            if squares > 0:
                 places = []
                 places.extend(sol.graph.sqgt[gt.LIT])
                 places.extend(sol.graph.sqgt[gt.UNLIT])
                 places.extend(sol.graph.sqgt[gt.BULB])
-                while j > 0:
-                    delprn( perStr((i+j)/(len(babbies)+squares)), 3 )
-                    sqr = random.sample( places, 1 )
-                    if sqr[0].type == gt.BULB:
-                        sqr[0].rmLight( )
+                #print( squares, "===>", len(places) )
+                
+                tomutate = random.sample( places, squares )
+                for sqr in tomutate:
+                    #delprn( perStr((i+j)/(len(babbies)+squares)), 3 )
+                    if sqr.type == gt.BULB:
+                        sqr.rmLight( )
                     else:
-                        sqr[0].addLight( )
-                    j -= 1
+                        sqr.addLight( )
             i += 1
             
     # Deletes those who don't survive natural selection
