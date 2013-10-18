@@ -9,6 +9,7 @@ import math
 import graph, sol
 from util import *
 from const import *
+from nsga2 import *
 
 class gen:
 
@@ -20,10 +21,18 @@ class gen:
         #Store recycled graphs here
         self.trash = []
         
+        #NSGA-II Heirarchy
+        #0 => best
+        #...
+        #5000 => worst (ex)
+        #Each level contains references to a solution
+        self.fitTable = nsga2( self )
+        
         #Store for the clean, master puzzle
         self.puz = args['puz']
-                
-        self.num=args['genNum']+1
+        
+        #our generation number, rarely used
+        self.num = args['genNum']+1
         
         cfg = args['conf']
         
@@ -50,13 +59,6 @@ class gen:
         self.lastBestAvg = 0
         self.sameTurns = 0
         
-        # Fitness denominator, static
-        #   When we spit out a human-readable fitness we divide by this
-        self.fitDenom = 0
-        if not self.puz.ignoreBlacks:
-            self.fitDenom += self.puz.blacksSb( )
-        self.fitDenom += self.puz.posLitsq( )
-
         self.generate( )
         
     def __str__(self):
@@ -69,6 +71,8 @@ class gen:
         return ret
     # Remove references recursively so that we can be cleaned up by the gc
     def delete( self, expt=None ):
+        self.fitTable.delete( )
+        
         for sol in self.ind:
             if sol is not expt:
                 sol.delete( )
@@ -106,6 +110,8 @@ class gen:
             citz[i].fitness( )
             self.ind.append(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
+            
+        self.fitTable.reRank( )
             
     # Creates a random tournament and returns a single individual
     #   Disqualified peeps in ineg.
@@ -299,14 +305,8 @@ class gen:
         return worst
   
     # Average everything out.
-    # NOT HUMAN-READABLE FITNESS, which is between [0,1]
     def average( self ):
         fits = 0
         for sol in self.ind:
             fits += sol.fit
         return fits/len(self.ind)
-    
-    # A human readable average: [0,1]
-    def hAverage( self ):
-        return self.average( )/self.fitDenom
-        

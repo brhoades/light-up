@@ -143,7 +143,7 @@ class log:
             evals = tgen.fitEvals
         else:
             evals = tgen.mu
-        self.res.write( ''.join( [ str(evals), '\t', str(round(tgen.hAverage( ), 5)), '\t', str(round(tgen.best( ).getFit(),5)), '\n'] ) )
+        self.res.write( ''.join( [ str(evals), '\t', str(round(tgen.average( ), 5)), '\t', str(round(tgen.best( ).fit,5)), '\n'] ) )
         
     # Serializes and logs the soulution to solution-log.txt
     def best( self, solu ):
@@ -269,7 +269,7 @@ def renderHead( cfg ):
     if cfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT:
         print(''.join(["Gen #/", cfg[TERMINATION][GENERATION_LIMIT], '\t', "Fit"]), end='')
     elif cfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT:
-        print(''.join(["Gen", '\t', "Fit #/", cfg[TERMINATION][EVALUATION_LIMIT]]), end='')
+        print(''.join(["Gen", '\t', "F9it #/", cfg[TERMINATION][EVALUATION_LIMIT]]), end='')
     else:
         print(''.join(["Gen", '\t', "Fit"]), end='')
     print("\tAvg Fit\tStatus\t", end='' )

@@ -44,6 +44,7 @@ class sym:
     tb[gt.BLACK4] = "4"
     tb[gt.BLACK] = "X"
 
+#OPERATOR CONSTRAINTS AND OPTIONS
 #Survival Strategy Types
 COMMA = "0"
 PLUS = "1"
@@ -71,6 +72,17 @@ FITNESS_EVALUATION_LIMIT = "0"
 GENERATIONAL_LIMIT = "1"
 CONVERGENCE = "2"
 
+#MOEA OPTIONS
+#See tauritz document, pg9 last sentence for order
+LITSQ = 0
+BULBCONFLICT = 1
+BLACKVIO = 2
+#Future fourth
+BULBNUM = 3
+
+moeacon = [LITSQ, BULBCONFLICT, BLACKVIO]
+
+
 #######MULTIPLE OPERATORS#######
 FITNESS_PROPORTIONAL = "1"
 UNIFORM_RANDOM = "2"
@@ -79,6 +91,7 @@ UNIFORM_RANDOM = "2"
 REMOVAL = "0"
 IGNORE = "1"
 
+#CONFIGRATION TREES
 GRAPH = 'graph'
 #####Graph Parameters#####
 GENERATE = 'gen'

@@ -48,8 +48,9 @@ def manSeq( puz, cfg, lg, run ):
 #   Takes our basic configuration and the generation to test.
 def runCriteria( tcfg, gen ):
     
-    if gen.best( ).getFit( ) == 1 and tcfg[STOP_ON_BEST] == "True":
-        return False
+    #FIXME: Not sure how to reimplement this
+    #if gen.best( ).getFit( ) == 1 and tcfg[STOP_ON_BEST] == "True":
+        #return False
     if tcfg[TYPE] == GENERATIONAL_LIMIT:
         return gen.num < int(cfg[GENERATION_LIMIT])
     elif tcfg[TYPE] == FITNESS_EVALUATION_LIMIT:
@@ -71,7 +72,7 @@ def prnBase( cfg, gen=False ):
     avg=0
     genn=0
     if gen != False:
-        avg = round( gen.hAverage( ), 4 )
+        avg = round( gen.average( ), 4 )
         genn = gen.num
         evals = gen.fitEvals
     

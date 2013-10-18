@@ -16,16 +16,16 @@ class sol:
         self.graph = graph.graph( )
         self.graph.copy( gen.puz )
         
-        # Fitness
+        # This will be our level in the fitness table
         self.fit=-1
         
-        # Cached human-readable fitness array
-        self.hfit = []
-        ## First entry == human fitness
-        self.hfit.append( 0 )
-        ## Second entry == fitness when calculated
-        self.hfit.append( self.fit )
-        
+        #We store our metrics in here for easy usage
+        #these are our MOEA constraints
+        self.moeaf = []
+
+        #Whom we dominate goes here, references to them
+        self.dominates = []
+
         # Birth Generation
         self.birth=gen.num
         
@@ -41,6 +41,8 @@ class sol:
     # Removes references to our graph and to our gen so we can be collected by the gc
     def delete( self ):
         self.gen = None
+        self.moeaf = []
+        self.dominates = []
         self.graph.delete( )
     
     # Random graph solver
@@ -76,33 +78,38 @@ class sol:
             tx = math.floor(random.uniform(0, x))
             ty = math.floor(random.uniform(0, y))
             if not self.graph.data[tx][ty].isBlack( ) and self.graph.data[tx][ty].type != gt.BULB:
-                self.graph.addLight(tx, ty, forceValid )
+                self.graph.addLight(tx, ty)
 
-    # Returns a human-readable fitness. Does not evaluate, just calculates and caches.
-    def getFit( self ):
-        if self.hfit[1] != self.fit:            
-            #Cache was out of date, so calculate
-            self.hfit[1] = self.fit
-            self.hfit[0] = self.fit/self.gen.fitDenom
-            
-            if self.hfit[0] < 0:
-                self.hfit[0] = 0
-        
-        return self.hfit[0]
-
-    # Quick and lame fitness
-    # Denomintor for fitness is ignored as it only adds floats into the mess.
-    #   We're going to give everyone a rating based on their black tiles satisfied + 
-    #   their lit squares.
+    #FIXME: DESCRIBE
     def fitness( self ):
-        # numerator: number of lit tiles + black tiles satisfied
-        self.fit = self.graph.litsq( )
-        if not self.graph.ignoreBlacks:
-            self.fit += self.graph.blackSats( )
+        for i in moeacon:
+            #MAXIMIZE LIT SQUARES
+            if i == LITSQ:
+                self.moeaf.append(self.graph.litsq( ))
+            #MINIMIZE BULBS SHINING ON EACH OTHER
+            #Each bulb shining on another one gets 1
+            #3 bulbs in a line, for example, get a total of 6 off
+            elif i == BULBCONFLICT:
+                violations = 0
+                for sqr in self.graph.sqgt[gt.BULB]:
+                    violations += len(sqr.owner)
+                self.moeaf.append(violations)
+            #MINIMIZE BLACK TILE SATISFICATION VIOLATIONS
+            #Each missing light adds an additional 1
+            #Each light over adds an additional 1
+            #4 bulbs around a zero, for example, gets a 4
+            #or a 4 bulb requirement with 0 bulbs around it gets 4
+            elif i == BLACKVIO:
+                violations = 0
+                for sqr in self.graph.sqgt[gt.BLACK_THRESHOLD]:
+                    violations += maxLights(sqr.type)-len(sqr.lights)
+                self.moeaf.append(violations)
+                
+        print(self.moeaf)
+        ##FIXME: We shouldn't completely rebuild each time
+        #self.gen.fitTable.reCheck( )
         
-        # denom: static and predefined self.parent.fitDenom, called when humans need it
-        self.gen.fitEvals += 1
-        return self.fit
+        #return self.level
 
     # Trash things and use them again later. Save a crapton of time not allocating memory and recursively
     #   destroying / creating things.

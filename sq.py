@@ -127,7 +127,9 @@ class sq:
     
     # Called by another function to light us up, and subsequently, claim ownership.
     def light( self, other ):
-        self.newType( gt.LIT )
+        #We change black tiles or bulbs to lights
+        if self.type == gt.UNLIT:
+            self.newType( gt.LIT )
         self.owner.append( other )
 
     # Switch our types and update our parent's list
