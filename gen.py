@@ -163,11 +163,10 @@ class gen:
                 #Store them up and get ready for babby makin'
                 parents.append( pair )
         elif self.cfg[ci.PARENT_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
-            landscape = probDist( self.ind )
             for i in range(self.lamb):
                 delprn(perStr(i/self.lamb), 3)
                 pair = []
-                pair.extend( landscape.get( 2 ) )
+                pair.extend( probSel( self.ind, 2 ) )
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )    
@@ -259,8 +258,7 @@ class gen:
                 loser.trash( )
                 i += 1
         elif self.cfg[ci.SURVIVAL_SEL][ci.TYPE] == opp.FITNESS_PROPORTIONAL:
-            landscape = probDist( self.ind, self.cfg[ci.SURVIVAL_SEL][ci.FITNESS_PROPORTIONAL_TYPE] == opp.REMOVAL, True )
-            save = landscape.get( self.mu )
+            save = probSel( self.ind, self.mu, True)
             trash = []
             for solu in self.ind:
                 if solu not in save:

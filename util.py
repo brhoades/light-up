@@ -284,91 +284,28 @@ def pad(num, pad):
     inum = str(num)
     return inum.rjust(math.floor(math.log(int(pad), 10)+1), '0')
 
-# Distribution of probabilities. Uses arrays to simulate a number line, where we then
-#   play something like roulette. If an element is removed we have to rebuild this.
-class probDist:
-    def __init__( self, ind, remove=True, prn=False ):
-        delprn("Initilizing", 3)
-        self.cumFit = 0
-        self.prn = prn
-        self.sols = ind.copy( )
-        self.remove = remove
-        self.line = []
-        self.lookup = []
+#Got to get, from our line a random element, throw it into a list, remove it from our probDist,
+#  reDistribute, then grab the next, etc, then at the end throw them all back on and redistribute again
+def probSel( ogen, num, prn=False ):
+    gen = []
+    cumfit = 0
+    for solu in ogen:
+        gen.append(solu)
+        cumfit += solu.fit
         
-        self.reDistribute( )
-    
-    #What we're going to do is create a cumulative fitness and add points on the line along the way.
-    # Pretty simple, just adding an index as we scoot alone and append references to ourself
-    def reDistribute( self ):
-        self.cumFit = 0
-        self.line = []
+    rets = []
+    while len(rets) < num:
+        if prn:
+            delprn(''.join(perStr(len(rets)/num)), 3)
+        pnt = random.randint( 0, cumfit )
         
-        for sol in self.sols:
-            self.line.append([self.cumFit, sol])
-            if sol.fit > 0:
-                self.cumFit += sol.fit
-
-    #Remove a point from our line, decrement our cumulative fitness and decrement everyone's
-    #  point after us.
-    def rm( self, strt ):
-        amt = self.line[strt][1].fit
-        self.line.remove(self.line[strt])
-        for i in range(strt,len(self.line)):
-            self.line[i][0] -= amt
-        self.cumFit -= amt
-    
-    #Got to get, from our line a random element, throw it into a list, remove it from our probDist,
-    #  reDistribute, then grab the next, etc, then at the end throw them all back on and redistribute again
-    def get( self, num ):
-        rets = []
-        while len(rets) < num:
-            if self.prn:
-                delprn(''.join(perStr(len(rets)/num)), 3)
-            pnt = random.randint( 0, self.cumFit )
-            #print("NEW")
-            i = self.binSearch( pnt, 0, len(self.line)-1 )
-            #print(i,"!")
-            sol = self.line[i][1]
-            if not self.remove:
-                if sol in rets:
-                    continue
-                else:
-                    rets.append(sol)
-            else:
+        tfit = 0
+        for sol in gen:
+            if pnt < tfit:
+                gen.remove(sol)
                 rets.append(sol)
-                self.rm(i)
-        
-        if self.remove:
-            for sol in rets:
-                if not sol in self.sols:
-                    self.sols.add(sol)
-            self.reDistribute( )
-        return rets
+                cumfit -= sol.fit
+                break
+            tfit += sol.fit
+    return rets
     
-    #points [0, &sol.fit==2], [2, &sol.fit==6], [8, &sol.fit==3], [11, &sol.fit==4]
-    #[0, 2), [2, 8), [8, 11), [11, 15]
-    #Their respective ranges are below. If a point falls on that range, they get
-    #  chosen.
-    def binSearch( self, i, imin, imax ):
-        mp = math.floor((imin+imax)/2)
-        #print( mp, "[", imin, ",", imax, "]" )
-        thispoint = self.line[mp]
-
-        if mp == imax and mp == imin:
-            return mp
-            
-        if i > self.line[mp][0]:
-            return self.binSearch( i, mp+1, imax )
-        elif i < self.line[mp][0]:
-            if mp == 0:
-                return mp
-            if i > self.line[mp-1][0]:
-                return mp-1
-            else:
-                return self.binSearch( i, imin, mp-1 )
-        else:
-            if mp < len(self.line):
-                return mp+1
-            else:
-                return mp
