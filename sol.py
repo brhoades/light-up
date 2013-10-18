@@ -105,7 +105,6 @@ class sol:
                     violations += maxLights(sqr.type)-len(sqr.lights)
                 self.moeaf.append(violations)
                 
-        print(self.moeaf)
         ##FIXME: We shouldn't completely rebuild each time
         #self.gen.fitTable.reCheck( )
         
