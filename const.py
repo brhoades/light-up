@@ -73,10 +73,6 @@ class opp:
     GENERATIONAL_LIMIT = "1"
     CONVERGENCE = "2"
     
-    #Fitness Type
-    PENALTY_FUNCTION = "1"
-    VALIDITY_ENFORCED = "0"
-    
     #######MULTIPLE OPERATORS#######
     FITNESS_PROPORTIONAL = "1"
     UNIFORM_RANDOM = "2"
@@ -147,12 +143,6 @@ class ci:
     SURVIVAL_STRATEGY = 'strat'
     TOTAL_RUNS = 'runs'
     IGNORE_BLACK_TILES = 'ignoreblack'
-    
-    FITNESS_TYPE = 'fittype'
-    
-    BAD_LIGHT_PENALTY = 'blight'
-    OVERSAT_BLACK_PENALTY = 'osatb'
-    UNDERSAT_BLACK_PENALTY = 'usatb'
     
     #####Shared Indicies#####
     TYPE = 'type'

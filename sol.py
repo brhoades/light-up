@@ -71,7 +71,7 @@ class sol:
         maxbulbs += self.graph.blacks( )
         
         #Place a random number of bulbs
-        for i in range(0,random.randint(0,maxbulbs)):
+        for i in range(random.randint(0,maxbulbs)):
             #(last arg) is only true when we're doing forceValid
             tx = math.floor(random.uniform(0, x))
             ty = math.floor(random.uniform(0, y))
@@ -93,45 +93,17 @@ class sol:
     # Quick and lame fitness
     # Denomintor for fitness is ignored as it only adds floats into the mess.
     #   We're going to give everyone a rating based on their black tiles satisfied + 
-    #   their lit squares. Penalties applied if need be.
+    #   their lit squares.
     def fitness( self ):
         # numerator: number of lit tiles + black tiles satisfied
         self.fit = self.graph.litsq( )
         if not self.graph.ignoreBlacks:
             self.fit += self.graph.blackSats( )
-                
-        if self.gen.penalty:
-            self.penalize( )
         
         # denom: static and predefined self.parent.fitDenom, called when humans need it
         self.gen.fitEvals += 1
         return self.fit
-    
-    # Penalty Function
-    #   We penalize base on how many violations we've got.
-    #   * bad light => fitDenom*cfgval ea (ciel) (0.025 as we're taking a hit for EACH light being shined on, so 2 each, so .05)
-    #   * over satisfied black tile => blackSb*cfgval, per extra light, ea (ciel)
-    #   * undersatisfied black tile => blackSb*cfgval, per missing light, ea (ciel)
-    def penalize( self ):
-        penalty = 0
-        blight = math.ceil(self.gen.fitDenom*float(self.gen.cfg[ci.MAIN][ci.BAD_LIGHT_PENALTY]))
-        osatb = math.ceil(self.gen.fitDenom*float(self.gen.cfg[ci.MAIN][ci.OVERSAT_BLACK_PENALTY]))
-        usatb = math.ceil(self.gen.fitDenom*float(self.gen.cfg[ci.MAIN][ci.UNDERSAT_BLACK_PENALTY]))
 
-        for i in range(self.graph.x):
-            for j in range(self.graph.y):
-                sqr = self.graph.data[i][j]
-                #BULB PENALTY
-                if sqr.type == gt.BULB and len(sqr.owner) > 0:
-                    penalty += blight
-                elif sqr.isBlack( ) and sqr.atCapacity( ) and not self.graph.ignoreBlacks and len(sqr.lights) > maxLights(sqr.type):
-                    penalty += osatb*(len(sqr.lights)-maxLights(sqr.type))
-                elif sqr.isBlack( ) and not sqr.atCapacity( ) and not sqr.type == gt.BLACK and not self.graph.ignoreBlacks:
-                    penalty += usatb*(maxLights(sqr.type)-len(sqr.lights))
-        
-        self.fit -= penalty
-        return
-  
     # Trash things and use them again later. Save a crapton of time not allocating memory and recursively
     #   destroying / creating things.
     def trash( self ):
@@ -143,7 +115,7 @@ class sol:
         self.gen.ind.remove(self)
         self.gen.trash.append(self)
   
-    # Combine two objects with something akin to crossover. If we're using a penalty function it gets less
+    # Combine two objects with something akin to crossover.
     #   ideal and is completely random.
     def breed( self, p1, p2 ):
         unlitsq = list( self.graph.sqgt[gt.UNLIT] )
@@ -152,7 +124,7 @@ class sol:
         
         while len(unlitsq) > 0:
             sqr = unlitsq.pop( )
-            if sqr.type != gt.UNLIT and not self.gen.penalty:
+            if sqr.isBlack( ):
                 continue
             if flip( ):
                 if p1.graph.data[sqr.x][sqr.y].type == gt.BULB:

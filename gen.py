@@ -32,9 +32,6 @@ class gen:
         self.mu = int(cfg[ci.POP][ci.MU])
         self.lamb = int(cfg[ci.POP][ci.LAMBDA])
         
-        #Penalty control
-        self.penalty = (cfg[ci.MAIN][ci.FITNESS_TYPE] == opp.PENALTY_FUNCTION)
-        
         #These are specific to generations and needed by ops--- copy these
         copyover = [ci.INIT, ci.PARENT_SEL, ci.MUTATE, ci.SURVIVAL_SEL, ci.TERMINATION, ci.MAIN]
         self.cfg = {}
@@ -241,27 +238,11 @@ class gen:
                 places.extend(sol.graph.sqgt[gt.BULB])
                 while j > 0:
                     delprn( perStr((i+j)/(len(babbies)+squares)), 3 )
-                    #Look through unlit squares first
-                    if not self.penalty:
-                        if len(sol.graph.sqgt[gt.UNLIT]) > 0:
-                            unlit = random.sample( sol.graph.sqgt[gt.UNLIT], 1 )
-                            #Move a random light here if we have one
-                            if flip( ) and len(sol.graph.sqgt[gt.BULB]) > 0:
-                                bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
-                                bulb[0].rmLight( )
-                                sol.graph.addLight( unlit[0].x, unlit[0].y, True )
-                            else:
-                                sol.graph.addLight( unlit[0].x, unlit[0].y, True )
-                        #Otherwise look through bulbs and delete one
-                        else:
-                            bulb = random.sample( sol.graph.sqgt[gt.BULB], 1 )
-                            bulb[0].rmLight( )
+                    sqr = random.sample( places, 1 )
+                    if sqr[0].type == gt.BULB:
+                        sqr[0].rmLight( )
                     else:
-                        sqr = random.sample( places, 1 )
-                        if sqr[0].type == gt.BULB:
-                            sqr[0].rmLight( )
-                        else:
-                            sqr[0].addLight( )
+                        sqr[0].addLight( )
                     j -= 1
             i += 1
             
