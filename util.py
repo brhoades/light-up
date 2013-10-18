@@ -284,8 +284,7 @@ def pad(num, pad):
     inum = str(num)
     return inum.rjust(math.floor(math.log(int(pad), 10)+1), '0')
 
-#Got to get, from our line a random element, throw it into a list, remove it from our probDist,
-#  reDistribute, then grab the next, etc, then at the end throw them all back on and redistribute again
+#Find our cumulative fitness. Next compare a random number to all of our generation's fitness.
 def probSel( ogen, num, prn=False ):
     gen = []
     cumfit = 0
