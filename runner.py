@@ -24,7 +24,8 @@ def manSeq( puz, cfg, lg, run ):
         runs += '\t' 
     util.delprn( ''.join([str(run+1), "\t"]), 0 )
     prnBase( cfg, False )
-    thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )        
+    thisgen = gen.gen( conf=cfg, genNum=run, puz=puz )    
+    thisgen.statistics( )
     lg.gen( thisgen )
 
     while runCriteria(cfg[TERMINATION], thisgen):
@@ -34,6 +35,7 @@ def manSeq( puz, cfg, lg, run ):
         thisgen.reproduce( )
         thisgen.natSelection( )
         thisgen.num += 1
+        thisgen.statistics( )
         lg.gen( thisgen )
     prnBase( cfg, thisgen )
     best = thisgen.best( )
@@ -68,16 +70,21 @@ def runCriteria( tcfg, gen ):
         
 # Prints our basic status string
 def prnBase( cfg, gen=False ):
-    evals=0
-    avg=0
-    genn=0
+    evals="~"
+    avg="~"
+    std="~"
+    skew="~"
+    best="~"
+    genn="~"
     diversity=0
     if gen != False:
         avg = round( gen.average( ), 4 )
         genn = gen.num
         evals = gen.fitEvals
         diversity = len(gen.fitTable.data)
-    
+        std=round( gen.stdev( ), 4 )
+        skew=round( gen.skew( ), 1 )
+        best=round( gen.max( ), 4 )
     out = ""
     if int(cfg[MAIN][TOTAL_RUNS]) >= 10:
         out += "\t"
@@ -92,6 +99,12 @@ def prnBase( cfg, gen=False ):
         out += "\t"
     out += "\t"
     out += str(avg)
+    out += "\t"
+    out += str(skew)
+    out += "\t"
+    out += str(std)
+    out += "\t"
+    out += str(best)
     out += "\t"
     out += str(diversity)
     out += "\t"

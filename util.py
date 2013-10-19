@@ -153,7 +153,7 @@ class log:
     # Our generational best
     def genBest( self, solu, thisgen ):
         self.res.write( ''.join([ "Run best: \n", str(solu.graph), "Fitness: ", str(solu.oldFitness( )), " (", str(solu.fit),
-                                 "/", str(thisgen.fitDenom), ") ", " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
+                                 "/", ") ", " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
         self.res.write( ''.join([ "Bulbs: ", str(solu.graph.lights( )), " Sats Black Tiles: ", str(solu.graph.blackSats( )), "\n"]) )
         
     # Just prints this simple string to mark a new best
@@ -272,7 +272,7 @@ def renderHead( cfg ):
         print(''.join(["Gen", '\t', "F9it #/", cfg[TERMINATION][EVALUATION_LIMIT]]), end='')
     else:
         print(''.join(["Gen", '\t', "Fit"]), end='')
-    print("\tAvg Fit\tDiver.\tStatus\t", end='' )
+    print("\tAvg Fit\tSkew\tStdDiv\tBest\tLevels\tStatus\t", end='' )
     if cfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT or \
             cfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT:
         print("\t", end='')
@@ -285,12 +285,13 @@ def pad(num, pad):
     return inum.rjust(math.floor(math.log(int(pad), 10)+1), '0')
 
 #Find our cumulative fitness. Next compare a random number to all of our generation's fitness.
-def probSel( ogen, num, prn=False ):
+#We use a sort of inverse fitness function to get the "correct" fitness numbers
+def probSel( ogen, num, adj, prn=False ):
     gen = []
     cumfit = 0
     for solu in ogen:
         gen.append(solu)
-        cumfit += solu.fit
+        cumfit += adj-solu.fit+1
         
     rets = []
     while len(rets) < num:
@@ -303,8 +304,8 @@ def probSel( ogen, num, prn=False ):
             if pnt < tfit:
                 gen.remove(sol)
                 rets.append(sol)
-                cumfit -= sol.fit
+                cumfit -= adj-sol.fit+1
                 break
-            tfit += sol.fit
+            tfit += adj-sol.fit+1
     return rets
     

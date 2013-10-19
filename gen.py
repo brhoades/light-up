@@ -10,6 +10,7 @@ import graph, sol
 from util import *
 from const import *
 from nsga2 import *
+import pandas as pd
 
 class gen:
 
@@ -20,6 +21,9 @@ class gen:
         
         #Store recycled graphs here
         self.trash = []
+        
+        #Dataframe for satistics
+        self.dataframe = 0
         
         #NSGA-II Heirarchy
         #0 => best
@@ -145,7 +149,6 @@ class gen:
                         parents.remove( p1 )
                     else:
                         parents.remove( p2 )
-        #print( "\n", parents[0].fit )
         return parents.pop( )
     
     # drops the worst individuals down to µ
@@ -178,7 +181,7 @@ class gen:
             for i in range(self.lamb):
                 delprn(perStr(i/self.lamb), 3)
                 pair = []
-                pair.extend( probSel( self.ind, 2 ) )
+                pair.extend( probSel( self.ind, 2, len(self.fitTable.data), False ) )
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )    
@@ -272,7 +275,7 @@ class gen:
                 loser.trash( )
                 #print(self.fitTable)
         elif self.cfg[SURVIVAL_SEL][TYPE] == FITNESS_PROPORTIONAL:
-            save = probSel( self.ind, self.mu, True )
+            save = probSel( self.ind, self.mu, len(self.fitTable.data), True )
             trash = []
             for solu in self.ind:
                 if solu not in save:
@@ -312,9 +315,22 @@ class gen:
         
         return worst
   
+    # Setup our dataframe
+    def statistics( self ):
+        self.dataframe = pd.DataFrame( [sol.oldFitness( ) for sol in self.ind] )
+  
     # Average everything out.
     def average( self ):
-        fits = 0
-        for sol in self.ind:
-            fits += sol.oldFitness( )
-        return fits/len(self.ind)
+        return float(self.dataframe.mean( ))
+    
+    # Stddev
+    def stdev( self ):
+        return float(self.dataframe.std( ))
+    
+    # Skew, how far to the right (1, +) or left (0, -) the population is
+    def skew( self ):
+        return float(self.dataframe.skew( ))
+    
+    def max( self ):
+        return float(self.dataframe.max( ))
+        
