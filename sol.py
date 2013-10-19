@@ -139,9 +139,10 @@ class sol:
 
     # Trash things and use them again later. Save a crapton of time not allocating memory and recursively
     #   destroying / creating things.
-    def trash( self ):        
+    def trash( self, table=True ):        
         self.gen.ind.remove(self)
-        self.gen.fitTable.rm(self)
+        if table:
+            self.gen.fitTable.rm(self)
         self.gen.trash.append(self)
         
         self.graph.clear( )

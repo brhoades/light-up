@@ -227,17 +227,19 @@ class gen:
                 # This is the only way I know of to deal with this if set size changes.
                 # THIS WORKS
                 for solu in self.ind:
-                    delprn(perStr(i/starting*.5), 3)
-                    solu.trash( )
+                    delprn(perStr(i/starting*.3), 3)
+                    solu.trash( False )
                     i += 1
                     break
             i = 0
+            self.fitTable.delete( )
             for solu in newkids:
-                delprn(perStr(i/len(newkids)*.5+.5), 3)
+                delprn(perStr(i/len(newkids)*.3+.3), 3)
                 solu.fitness( )
                 self.ind.append( solu )
-                self.fitTable.add(solu)
                 i += 1
+            self.fitTable = nsga2(self)
+            self.fitTable.rank(.4, .6)
                 
     # Mutates some individuals randomly, whatever is passed in
     def mutate( self, babbies ):
@@ -265,10 +267,15 @@ class gen:
         delprn( "Selecting Survivors\t" )
         
         if self.cfg[SURVIVAL_SEL][TYPE] == TOURNAMENT_WITHOUT_REPLACEMENT:
-            for i in range(self.lamb):
+            i = 0
+            while len(self.ind) > self.mu:
                 # Neg tournament
-                loser = self.tournament(False, self.cfg[SURVIVAL_SEL][K], i, self.lamb )
+                if self.strat == PLUS:
+                    loser = self.tournament(False, self.cfg[SURVIVAL_SEL][K], i, self.mu )
+                else:
+                    loser = self.tournament(False, self.cfg[SURVIVAL_SEL][K], i, self.lamb )
                 loser.trash( )
+                i += 1
                 #print(self.fitTable)
         elif self.cfg[SURVIVAL_SEL][TYPE] == FITNESS_PROPORTIONAL:
             save = probSel( self.ind, self.mu, len(self.fitTable.data), True )

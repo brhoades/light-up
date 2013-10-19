@@ -1,7 +1,7 @@
 import graph, sol
 from util import *
 from const import *
-import pprint
+#import pprint
 
 class nsga2:
     def __init__( self, population ):
@@ -14,19 +14,19 @@ class nsga2:
         #Who is present
         self.here = []
     
-    def __str__( self ):
-        pdata = []
-        for rank in self.data:
-            pdata.append([])
-            pdata[len(pdata)-1].append(''.join(["LEVEL ", str(self.data.index(rank))]))
-            for sol in rank:
-                pdata[len(pdata)-1].append(''.join([str(sol.moeaf[0]), " and ", str(sol.moeaf[1]), " and ", str(sol.moeaf[2])]))
-        print("\n\n");
-        pp = pprint.PrettyPrinter(indent=4, depth=5)
-        pp.pprint(pdata)
-        print(len(self.data))
-        print("\n\n")
-        return( '' )
+    #def __str__( self ):
+        #pdata = []
+        #for rank in self.data:
+            #pdata.append([])
+            #pdata[len(pdata)-1].append(''.join(["LEVEL ", str(self.data.index(rank))]))
+            #for sol in rank:
+                #pdata[len(pdata)-1].append(''.join([str(sol.moeaf[0]), " and ", str(sol.moeaf[1]), " and ", str(sol.moeaf[2])]))
+        #print("\n\n");
+        #pp = pprint.PrettyPrinter(indent=4, depth=5)
+        #pp.pprint(pdata)
+        #print(len(self.data))
+        #print("\n\n")
+        #return( '' )
 
     def delete( self ):
         for rank in self.data:
@@ -49,7 +49,7 @@ class nsga2:
                 if newSol not in cmp2.dominates:
                     cmp2.dominates.append( newSol )
 
-    def rank( self ):
+    def rank( self, mod1=1, mod2=0 ):
         self.data = []
         self.here = []
 
@@ -60,7 +60,7 @@ class nsga2:
         
         i = 0
         for sol in self.gen.ind:
-            delprn( ''.join([(perStr(i/len(self.gen.ind)))]), 3 )
+            delprn( ''.join([(perStr(i/len(self.gen.ind)*mod1+mod2))]), 3 )
             self.add( sol )
             i += 1
            
