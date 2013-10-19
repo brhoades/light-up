@@ -226,7 +226,6 @@ class gen:
             while len(self.ind) != 0:
                 # This is the only way I know of to deal with this if set size changes.
                 # THIS WORKS
-                #FIXME: Trash needs special delete without rebuilding
                 for solu in self.ind:
                     delprn(perStr(i/starting*.5), 3)
                     solu.trash( )

@@ -156,22 +156,29 @@ class log:
         newstr += "\n"
             
         self.res.write( newstr )
-        
+    
     # Serializes and logs the soulution to solution-log.txt
-    def best( self, solu ):
-        self.sol.write( ''.join( [ str(solu.graph.litsq( )), '\n', solu.graph.serialize( ) ] ) )
+    def best( self, gen ):
+        
+        pfront = gen.fitTable.data[0]
+        
+        for sol in pfront:
+            out = [sol.getFit(LITSQ), sol.getFit(BULBCONFLICT), sol.getFit(BLACKVIO), len(pfront)]
+            newstr = ""
+            for num in out:
+                newstr += str(num)
+                newstr += "\t"
+            newstr += "\n"        
+            self.sol.write( newstr )
+            
+            self.sol.write( sol.graph.serialize( ) )
+            
         self.sol.flush( )
     
     # Our generational best
-    def genBest( self, solu, thisgen ):
-        self.res.write( ''.join([ "Run best: \n", str(solu.graph), "Fitness: ", str(solu.oldFitness( )), " (", str(solu.fit),
-                                 "/", ") ", " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
-        self.res.write( ''.join([ "Bulbs: ", str(solu.graph.lights( )), " Sats Black Tiles: ", str(solu.graph.blackSats( )), "\n"]) )
+    def spacer( self ):
+        self.res.write( "=SPACER=\n\n" )
         
-    # Just prints this simple string to mark a new best
-    def newBest( self, solu ):
-        self.res.write( ''.join([ "This is our new global best!\n"]) )
-    
     # Do our initial variable sub
     def processDirs( self ):
         for i in range(len(self.rfn)):
@@ -210,7 +217,7 @@ class log:
         #ccfg = re.sub( r'\.cfg', '', self.cfgf )
         #dir = re.sub( r'\%cfg', ccfg, dir )
         if best != None:
-            dir = re.sub(r'\%bf', str(round(best.oldFitness(),3)), dir )
+            dir = re.sub(r'\%bf', str(round(best.fitTable.data[0][0].oldFitness(),3)), dir )
         return dir
     
     # Create directories and do substutitions on variabes (currently only %c)
@@ -321,3 +328,24 @@ def probSel( ogen, num, adj, prn=False ):
             tfit += solu.fit
     return rets
     
+def nsgabetter( tnsga, cmp2 ):
+    p1 = tnsga.fitTable.data[0]
+    p2 = cmp2.fitTable.data[0]
+    wedom = 0
+    tdom = 0
+    for sol in p1:
+        for scmp2 in p2:
+            if tnsga.fitTable.dominates(sol, scmp2):
+                wedom += 1
+                break
+    for sol in p2:
+        for scmp2 in p1:
+            if tnsga.fitTable.dominates(sol, scmp2):
+                tdom += 1
+                break
+    
+    if wedom >= tdom:
+        return True
+    else:
+        return False
+                

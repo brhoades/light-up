@@ -25,9 +25,13 @@ def main():
         if i == 0:
             renderHead(cfg)
         nbest = runner.manSeq( puz, cfg, lg, i )
-        if best == False or nbest.fit > best.fit:
-            lg.newBest( nbest )
+        if best == False or nsgabetter(nbest, best):
+            #lg.newBest( nbest )
+            if best != False:
+                best.delete( )
             best = nbest
+        else:
+            nbest.delete( )
     print( "" )
     
     lg.best(best)

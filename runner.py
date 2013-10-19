@@ -38,13 +38,9 @@ def manSeq( puz, cfg, lg, run ):
         thisgen.statistics( )
         lg.gen( thisgen )
     prnBase( cfg, thisgen )
-    best = thisgen.best( )
-    lg.genBest( best, thisgen )
+    lg.spacer( )
     # Clear best's reference so we can die when our other stuff is done and when best loses its reference.
-    best.gen = None
-    thisgen.ind.remove(best)
-    thisgen.delete( )
-    return best
+    return thisgen
   
 # This is the logic behind the termination critera described in default.cfg under [main]
 #   Takes our basic configuration and the generation to test.
