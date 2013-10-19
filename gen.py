@@ -111,7 +111,8 @@ class gen:
             self.ind.append(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
             
-        self.fitTable.reRank( )
+        delprn( "Ranking our Pop.\t" )
+        self.fitTable.rank( )
             
     # Creates a random tournament and returns a single individual
     #   Disqualified peeps in ineg.
@@ -210,6 +211,7 @@ class gen:
                 delprn(perStr(i/len(newkids)), 3)
                 solu.fitness( )
                 self.ind.append(solu)
+                self.fitTable.add(solu)
                 i += 1
         # (µ,λ)-EA, Drop all parents and start with our kids. Status quo after that.
         elif self.strat == COMMA:
@@ -227,6 +229,7 @@ class gen:
                 delprn(perStr(i/len(newkids)*.5+.5), 3)
                 solu.fitness( )
                 self.ind.append( solu )
+                self.fitTable.add(solu)
                 i += 1
                 
     # Mutates some individuals randomly, whatever is passed in

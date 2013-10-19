@@ -23,8 +23,11 @@ class sol:
         #these are our MOEA constraints
         self.moeaf = []
 
-        #Whom we dominate goes here, references to them
+        #Who we dominate goes here, references to them
         self.dominates = []
+        
+        #Who dominates us goes here, references
+        self.domee = []
 
         # Birth Generation
         self.birth=gen.num
@@ -112,14 +115,15 @@ class sol:
 
     # Trash things and use them again later. Save a crapton of time not allocating memory and recursively
     #   destroying / creating things.
-    def trash( self ):
+    def trash( self ):        
+        self.gen.ind.remove(self)
+        self.gen.fitTable.rm(self)
+        self.gen.trash.append(self)
+  
         self.graph.clear( )
         self.birth = -1
         self.bad = False
         self.fit = 0
-        
-        self.gen.ind.remove(self)
-        self.gen.trash.append(self)
   
     # Combine two objects with something akin to crossover.
     #   ideal and is completely random.

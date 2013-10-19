@@ -10,6 +10,9 @@ class nsga2:
         
         #Parent generation ref
         self.gen = population
+        
+        #Who is present
+        self.here = []
     
     def __str__( self ):
         pdata = []
@@ -25,51 +28,47 @@ class nsga2:
         print("\n\n")
         return( '' )
 
-    def reRank( self ):
-        #Clear our data for now, later we'll intelligently do this.
+    def rank( self ):
         self.data = []
+        self.here = []
 
         #Clear solutions dominating tables
         for sol in self.gen.ind:
             sol.dominates = []
-
+            sol.domee = []
+        
+        #Initialize who dominates whom
         for sol in self.gen.ind:
-            self.add( sol )
+            for cmp2 in self.gen.ind:
+                if self.dominates( sol, cmp2 ):
+                    if sol in cmp2.dominates:
+                        raise TypeError("Circular Domination")
+                    sol.dominates.append( cmp2 )
+                    cmp2.domee.append( sol )
+        
+        i = 0
+        for sol in self.gen.ind:
+            delprn( ''.join([(perStr(i/len(self.gen.ind)))]), 3 )
+            self.add( sol, False )
+            i += 1
            
-            
-    def add( self, sol ):
+    def add( self, sol, new=True ):
         #Who do we dominate?
         redist = []
         if len(self.data) == 0:
             self.data.append([])
             self.data[0].append(sol)
+            self.here.append( sol )
             return
 
-        for rank in self.data:
-            dominates = []
-            dominated = []
-            #print("COMPARING: ", len(self.data), self.data.index(rank))
-            #For each rank compare ourselves to all of them
-            for cmp2 in rank:
-                res = self.dominates(sol, cmp2)
-                if res == 1:
-                    sol.dominates.append(cmp2)
-                    dominates.append(cmp2)
-                #If zero, we don't dominate each other
-            
-            if len(dominates) > 0:
-                #Take any of them we dominate down with us
-                for worse in dominates:
-                    rank.remove(worse)
-                redist.extend(dominates)
-            
+        for rank in self.data:             
             doesDom = False
             for cmp2 in rank:
-                res = self.dominates(cmp2, sol)
-                #does anyone dominate us?
-                if res == 1:
+                if cmp2 in sol.dominates:
+                    rank.remove(cmp2)
+                    redist.append(cmp2)
+                elif cmp2 in sol.domee:
                     doesDom = True
-                    break
             
             if doesDom:
                 #We're at the bottom, so make a home for ourselves
@@ -89,13 +88,18 @@ class nsga2:
                 
         #Set our new fitness
         sol.fit = self.data.index(rank)
+        self.here.append( sol )
                 
     def rm( self, sol ):
-        self.data[sol.fit].remove(sol)
+        if sol in self.data[sol.fit]:
+            self.data[sol.fit].remove(sol)
+        else:
+            #print("TRIED TO DELETE OURSELVES, ALREADY GONE", sol.fit, len(sol.dominates))
+            return
         for domee in sol.dominates:
             self.rm( domee )
         for domee in sol.dominates:
-            self.add( sol.dominates )
+            self.add( domee )
         
         for rank in self.data:
             for ind in rank:
@@ -109,7 +113,7 @@ class nsga2:
             if i == LITSQ:
                 if sol.moeaf[i] < comprd2.moeaf[i]:
                     #print( sol.moeaf[i], "<", comprd2.moeaf[i] )
-                    return -1
+                    return False
                 elif sol.moeaf[i] == comprd2.moeaf[i]:
                     eq += 1
             #MINIMIZE BULBS SHINING ON EACH OTHER
@@ -117,13 +121,13 @@ class nsga2:
             else:
                 if sol.moeaf[i] > comprd2.moeaf[i]:
                     #print( sol.moeaf[i], ">", comprd2.moeaf[i] )
-                    return -1
+                    return False
                 elif sol.moeaf[i] == comprd2.moeaf[i]:
                     eq += 1
         #if we're equal we don't dominate them
         if eq == len(sol.moeaf):
             #print("EQUAL")
-            return 0
+            return False
         else:
             #print("DOMINATES")
-            return 1
+            return True
