@@ -118,9 +118,13 @@ class gen:
     #   Disqualified peeps in ineg.
     def tournament( self, pos=True, size=5, curnum=1, totnum=1, ineg=[] ):
         parents = random.sample(self.ind, size)
-        for sqr in ineg:
-            if sqr in parents:
-                parents.remove( sqr )
+        once = True
+        while once or len(parents) < size:
+            parents.extend( random.sample(self.ind,size-len(parents)) )
+            for sqr in ineg:
+                if sqr in parents:
+                    parents.remove( sqr )
+            once = False
             
         while len(parents) > 1:
             random.shuffle( parents )
@@ -131,7 +135,7 @@ class gen:
                 p1 = plist.pop( )
                 p2 = plist.pop( )
 
-                if p1.fit > p2.fit:
+                if p1.fit < p2.fit:
                     if pos:
                         parents.remove( p2 )
                     else:
@@ -141,6 +145,7 @@ class gen:
                         parents.remove( p1 )
                     else:
                         parents.remove( p2 )
+        print( "\n", parents[0].fit )
         return parents.pop( )
     
     # drops the worst individuals down to µ
@@ -161,12 +166,13 @@ class gen:
         newkids = []
         parents = []
         
+        print("\n", self.fitTable)
         if self.cfg[PARENT_SEL][TYPE] == TOURNAMENT_WITH_REPLACEMENT:
             for i in range(0,self.lamb):
                 pair = []
                 pair.append( self.tournament(True, self.cfg[PARENT_SEL][K], i*2-1, self.lamb*2) )
                 pair.append( self.tournament(True, self.cfg[PARENT_SEL][K], i*2, self.lamb*2, [pair[0]]) )
-                
+                                
                 #Store them up and get ready for babby makin'
                 parents.append( pair )
         elif self.cfg[PARENT_SEL][TYPE] == FITNESS_PROPORTIONAL:
@@ -219,9 +225,9 @@ class gen:
             while len(self.ind) != 0:
                 # This is the only way I know of to deal with this if set size changes.
                 # THIS WORKS
-                for sol in self.ind:
+                for solu in self.ind:
                     delprn(perStr(i/starting*.5), 3)
-                    sol.trash( )
+                    solu.trash( )
                     i += 1
                     break
             i = 0
@@ -258,16 +264,15 @@ class gen:
     # Deletes those who don't survive natural selection
     def natSelection( self ):
         delprn( "Selecting Survivors\t" )
-        i = 0
         
         if self.cfg[SURVIVAL_SEL][TYPE] == TOURNAMENT_WITHOUT_REPLACEMENT:
-            while len(self.ind) > self.mu:
+            for i in range(self.lamb):
                 # Neg tournament
-                loser = self.tournament(False, self.cfg[SURVIVAL_SEL][K], i, self.mu)
+                loser = self.tournament(False, self.cfg[SURVIVAL_SEL][K], i, self.lamb )
                 loser.trash( )
-                i += 1
+                #print(self.fitTable)
         elif self.cfg[SURVIVAL_SEL][TYPE] == FITNESS_PROPORTIONAL:
-            save = probSel( self.ind, self.mu, True)
+            save = probSel( self.ind, self.mu, True )
             trash = []
             for solu in self.ind:
                 if solu not in save:
@@ -311,5 +316,5 @@ class gen:
     def average( self ):
         fits = 0
         for sol in self.ind:
-            fits += sol.fit
+            fits += sol.oldFitness( )
         return fits/len(self.ind)

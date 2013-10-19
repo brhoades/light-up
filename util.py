@@ -152,7 +152,7 @@ class log:
     
     # Our generational best
     def genBest( self, solu, thisgen ):
-        self.res.write( ''.join([ "Run best: \n", str(solu.graph), "Fitness: ", str(solu.getFit( )), " (", str(solu.fit),
+        self.res.write( ''.join([ "Run best: \n", str(solu.graph), "Fitness: ", str(solu.oldFitness( )), " (", str(solu.fit),
                                  "/", str(thisgen.fitDenom), ") ", " Birth Gen: ", str(solu.birth), "/", str(thisgen.num), "\n"]) )
         self.res.write( ''.join([ "Bulbs: ", str(solu.graph.lights( )), " Sats Black Tiles: ", str(solu.graph.blackSats( )), "\n"]) )
         
@@ -272,7 +272,7 @@ def renderHead( cfg ):
         print(''.join(["Gen", '\t', "F9it #/", cfg[TERMINATION][EVALUATION_LIMIT]]), end='')
     else:
         print(''.join(["Gen", '\t', "Fit"]), end='')
-    print("\tAvg Fit\tStatus\t", end='' )
+    print("\tAvg Fit\tDiver.\tStatus\t", end='' )
     if cfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT or \
             cfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT:
         print("\t", end='')

@@ -16,8 +16,13 @@ class sol:
         self.graph = graph.graph( )
         self.graph.copy( gen.puz )
         
-        # This will be our level in the fitness table
+        # This will be our the inverse of our level on the table
         self.fit=-1
+        
+        # Our level
+        
+        #our old fit for caching
+        self.oldFit = -1
         
         #We store our metrics in here for easy usage
         #these are our MOEA constraints
@@ -85,6 +90,8 @@ class sol:
 
     #FIXME: DESCRIBE
     def fitness( self ):
+        self.moeaf = []
+        
         for i in moeacon:
             #MAXIMIZE LIT SQUARES
             if i == LITSQ:
@@ -108,10 +115,14 @@ class sol:
                     violations += maxLights(sqr.type)-len(sqr.lights)
                 self.moeaf.append(violations)
                 
-        ##FIXME: We shouldn't completely rebuild each time
-        #self.gen.fitTable.reCheck( )
+        self.gen.fitEvals += 1
         
         #return self.level
+        
+    def oldFitness( self ):
+        if self.oldFit < 0:
+            self.oldFit = ( self.graph.litsq( ) + self.graph.blackSats( ) ) / ( self.graph.posLitsq( ) + self.graph.blacksSb( ) )
+        return self.oldFit
 
     # Trash things and use them again later. Save a crapton of time not allocating memory and recursively
     #   destroying / creating things.
@@ -119,11 +130,13 @@ class sol:
         self.gen.ind.remove(self)
         self.gen.fitTable.rm(self)
         self.gen.trash.append(self)
-  
+        
         self.graph.clear( )
         self.birth = -1
         self.bad = False
         self.fit = 0
+        self.moeaf = []
+        self.oldFit = -1
   
     # Combine two objects with something akin to crossover.
     #   ideal and is completely random.

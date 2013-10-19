@@ -49,10 +49,10 @@ class nsga2:
         i = 0
         for sol in self.gen.ind:
             delprn( ''.join([(perStr(i/len(self.gen.ind)))]), 3 )
-            self.add( sol, False )
+            self.add( sol )
             i += 1
            
-    def add( self, sol, new=True ):
+    def add( self, sol ):
         #Who do we dominate?
         redist = []
         if len(self.data) == 0:
@@ -89,23 +89,61 @@ class nsga2:
         #Set our new fitness
         sol.fit = self.data.index(rank)
         self.here.append( sol )
-                
+
+    def whereAmI( self, sol ):
+        for i in range(len(self.data)):
+            if sol in self.data[i]:
+                return i
+
+    def refreshFit( self ):
+        for i in range(len(self.data)):
+            for sol in self.data[i]:
+                if sol.fit != i:
+                    sol.fit = i
+
     def rm( self, sol ):
         if sol in self.data[sol.fit]:
             self.data[sol.fit].remove(sol)
+            if len(self.data[sol.fit]) == 0:
+                self.data.remove(self.data[sol.fit])
+                self.refreshFit( )
+            self.here.remove(sol)
         else:
-            #print("TRIED TO DELETE OURSELVES, ALREADY GONE", sol.fit, len(sol.dominates))
+            print("TRIED TO DELETE OURSELVES, ALREADY GONE", sol.fit, len(sol.dominates))
             return
-        for domee in sol.dominates:
-            self.rm( domee )
-        for domee in sol.dominates:
-            self.add( domee )
         
-        for rank in self.data:
-            for ind in rank:
-                if sol in ind.dominates:
-                    ind.dominates.remove( sol )
-            
+        for solu in sol.dominates:
+            remove = True
+            for tsolu in solu.domee:
+                if tsolu != sol and tsolu.fit == sol.fit:
+                    remove = False
+            if remove:
+                self.move( solu )
+
+        for solu in sol.domee:
+            if sol in solu.dominates:
+                solu.dominates.remove(sol)
+        for solu in sol.dominates:
+            if sol in solu.domee:
+                solu.domee.remove(sol)
+        sol.domee = []
+        sol.dominates = []
+    
+    def move( self, sol ):
+        #FIXME: WHY IS THIS HAPPENING
+        if not sol in self.data[sol.fit]:
+            self.refreshFit( )
+            #for i in range(len(self.data)):
+                #if sol in self.data[i]:
+                    #print("Actually in:", i, "w/", sol.fit)
+                    #print(sol in self.gen.ind)
+        self.data[sol.fit].remove(sol)
+        if len(self.data[sol.fit]) == 0:
+                self.data.remove(self.data[sol.fit])
+                self.refreshFit( )
+        self.here.remove(sol)
+        self.add(sol) #add takes care of updating any domees we displace
+    
     def dominates( self, sol, comprd2 ):
         eq = 0
         for i in range(len(sol.moeaf)):

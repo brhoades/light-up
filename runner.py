@@ -71,10 +71,12 @@ def prnBase( cfg, gen=False ):
     evals=0
     avg=0
     genn=0
+    diversity=0
     if gen != False:
         avg = round( gen.average( ), 4 )
         genn = gen.num
         evals = gen.fitEvals
+        diversity = len(gen.fitTable.data)
     
     out = ""
     if int(cfg[MAIN][TOTAL_RUNS]) >= 10:
@@ -90,6 +92,8 @@ def prnBase( cfg, gen=False ):
         out += "\t"
     out += "\t"
     out += str(avg)
+    out += "\t"
+    out += str(diversity)
     out += "\t"
     
     util.delprn(out, 1)
