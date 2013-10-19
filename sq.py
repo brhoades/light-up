@@ -104,11 +104,11 @@ class sq:
         for sqr in other.shine:
             self.shine.append( self.parent.data[sqr.x][sqr.y] )
     
-    # Removes a light then recursively removes its lit cells in "shine". Sometimes
+    # Removes a light then removes its lit cells in "shine". Sometimes
     #   we make bad placements, to notice this we'll know if a bulb has an owner.
     def rmLight( self ):
         puz = self.parent
-        if len(self.owner) <= 0:
+        if len(self.owner) == 0:
             self.newType( gt.UNLIT )
         else:
             self.newType( gt.LIT )
@@ -130,7 +130,9 @@ class sq:
         #We change black tiles or bulbs to lights
         if self.type == gt.UNLIT:
             self.newType( gt.LIT )
-        self.owner.append( other )
+            
+        if not other in self.owner:
+            self.owner.append( other )
 
     # Switch our types and update our parent's list
     def newType( self, type ):
@@ -147,7 +149,7 @@ class sq:
     def rmLit( self, other ):
         self.owner.remove( other )
         
-        if len(self.owner) == 0:
+        if len(self.owner) == 0 and self.type != gt.BULB:
             self.newType( gt.UNLIT )
     
     # Returns whether or not owner is (one of) our owner(s).

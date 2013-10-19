@@ -114,6 +114,7 @@ class gen:
             citz[i].fitness( )
             self.ind.append(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
+            print(citz[i].graph, citz[i].oldFitness( ))
             
         delprn( "Ranking our Pop.\t" )
         self.fitTable.rank( )
@@ -168,7 +169,7 @@ class gen:
         delprn( "Choosing Parents\t" )
         newkids = []
         parents = []
-        
+
         if self.cfg[PARENT_SEL][TYPE] == TOURNAMENT_WITH_REPLACEMENT:
             for i in range(0,self.lamb):
                 pair = []
@@ -205,12 +206,11 @@ class gen:
                 newkid = sol.sol( self, mate=pair )
                 newkids.append( newkid )
             i += 1
-            
+
         delprn( "Mutating\t\t" )
         #Mutate them
         self.mutate( newkids )
-        
-        
+
         delprn( "Integrating New Kids\t" )
         # (µ+λ)-EA, Default, tried and true. Merge kids with parents then go through hell.
         i = 0
@@ -220,6 +220,7 @@ class gen:
                 solu.fitness( )
                 self.ind.append(solu)
                 self.fitTable.add(solu)
+                print(solu.graph, solu.oldFitness( ) )
                 i += 1
         # (µ,λ)-EA, Drop all parents and start with our kids. Status quo after that.
         elif self.strat == COMMA:
@@ -242,7 +243,6 @@ class gen:
                 i += 1
                 
     # Mutates some individuals randomly, whatever is passed in
-    #   Uses alpha and a special distribution (documentation in default.cfg)
     def mutate( self, babbies ):
         i = 0
         #print( "\n\n" )
@@ -254,7 +254,6 @@ class gen:
                 places.extend(sol.graph.sqgt[gt.UNLIT])
                 places.extend(sol.graph.sqgt[gt.BULB])
                 #print( squares, "===>", len(places) )
-                
                 tomutate = random.sample( places, squares )
                 for sqr in tomutate:
                     #delprn( perStr((i+j)/(len(babbies)+squares)), 3 )

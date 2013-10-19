@@ -125,7 +125,6 @@ class graph:
                         
         # This shit isn't static, it always needs to be copied
         self.invalid=other.invalid
-        self.fit=other.fit
         
     ######################################
     ### Graph Generators
@@ -181,7 +180,6 @@ class graph:
     #   Optimization is lost and must be done after again.
     def blank( self ):        
         self.invalid=False
-        self.fit=-1
         self.delete( )
         
         for typ in range(0,gt.MAX):
@@ -196,20 +194,21 @@ class graph:
     
     # Clears a graph of all bulbs, quicker for graphs that don't need to be
     #   actually reinitilized as it allows optimization to stay and reuses squares.
-    def clear( self ):
-        self.fit=-1
-                
+    def clear( self ):     
         if len(self.sqgt) == 0:
             raise OSError("Clear called before graph initilized.")
         
-        if len(self.sqgt[gt.BULB]) == 0:
+        if len(self.sqgt[gt.BULB]) == 0:  
             return
         
         while len(self.sqgt[gt.BULB]) != 0:
             for sqr in self.sqgt[gt.BULB]:
                 sqr.rmLight( )
                 break
-            
+                
+        if len(self.sqgt[gt.LIT]) > 0:
+            print( self )
+            raise TypeError("Couldn't clear lights!")        
     ######################################
     ### Graph Generator Sub Functions
     ######################################

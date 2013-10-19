@@ -146,14 +146,14 @@ class sol:
         self.graph.clear( )
         self.birth = -1
         self.bad = False
-        self.fit = 0
+        self.fit = -1
         self.moeaf = []
         self.oldFit = -1
-  
+        
     # Combine two objects with something akin to crossover.
     #   ideal and is completely random.
     def breed( self, p1, p2 ):
-        unlitsq = list( self.graph.sqgt[gt.UNLIT] )
+        unlitsq = self.graph.sqgt[gt.UNLIT].copy( )
         random.shuffle( unlitsq )
         self.birth=self.gen.num
         
@@ -163,6 +163,10 @@ class sol:
                 continue
             if flip( ):
                 if p1.graph.data[sqr.x][sqr.y].type == gt.BULB:
-                    self.graph.addLight( sqr.x, sqr.y, True )
+                    self.graph.addLight( sqr.x, sqr.y, False )
+                    if self.graph.data[sqr.x][sqr.y].type != gt.BULB:
+                        raise TypeError("NOT A BULB!")
             elif p2.graph.data[sqr.x][sqr.y].type == gt.BULB:
-                self.graph.addLight( sqr.x, sqr.y, True )            
+                self.graph.addLight( sqr.x, sqr.y, False )            
+                if self.graph.data[sqr.x][sqr.y].type != gt.BULB:
+                    raise TypeError("NOT A BULB!")
