@@ -35,6 +35,7 @@ class nsga2:
 
         for sol in self.gen.ind:
             self.add( sol )
+           
             
     def add( self, sol ):
         #Who do we dominate?
@@ -82,9 +83,12 @@ class nsga2:
                 rank.append(sol)
                 break
         
-            #Readd those whom we displaced
-            for worse in redist:
-                self.add(worse)
+        #Readd those whom we displaced
+        for worse in redist:
+            self.add(worse)
+                
+        #Set our new fitness
+        sol.fit = self.data.index(rank)
                 
     def rm( self, sol ):
         self.data[sol.fit].remove(sol)
