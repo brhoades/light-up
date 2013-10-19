@@ -282,6 +282,8 @@ class gen:
                     trash.append(solu)
             for i in range(len(trash)):
                 trash.pop( ).trash( )            
+                
+            print( self.fitTable, len(self.ind))
         elif self.cfg[SURVIVAL_SEL][TYPE] == UNIFORM_RANDOM:
             i = 0
             max = len(self.ind)-self.mu

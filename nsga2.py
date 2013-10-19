@@ -28,6 +28,14 @@ class nsga2:
         print("\n\n")
         return( '' )
 
+    def delete( self ):
+        for rank in self.data:
+            rank = []
+        
+        self.data = []
+        self.gen = None
+        self.here = []
+
     def domCheck( self, newSol ):
         newSol.dominates = []
         newSol.domee = []
@@ -120,8 +128,8 @@ class nsga2:
         self.here.remove(sol)
         
         for solu in sol.dominates:
-            move = True
-            self.move( solu, sol )
+            if solu.fit == sol.fit-1:
+                self.move( solu, sol )
 
         for solu in sol.domee:
             if sol in solu.dominates:

@@ -198,7 +198,7 @@ class log:
         #ccfg = re.sub( r'\.cfg', '', self.cfgf )
         #dir = re.sub( r'\%cfg', ccfg, dir )
         if best != None:
-            dir = re.sub(r'\%bf', str(round(best.getFit( ),3)), dir )
+            dir = re.sub(r'\%bf', str(round(best.oldFitness(),3)), dir )
         return dir
     
     # Create directories and do substutitions on variabes (currently only %c)
@@ -269,7 +269,7 @@ def renderHead( cfg ):
     if cfg[TERMINATION][TYPE] == GENERATIONAL_LIMIT:
         print(''.join(["Gen #/", cfg[TERMINATION][GENERATION_LIMIT], '\t', "Fit"]), end='')
     elif cfg[TERMINATION][TYPE] == FITNESS_EVALUATION_LIMIT:
-        print(''.join(["Gen", '\t', "F9it #/", cfg[TERMINATION][EVALUATION_LIMIT]]), end='')
+        print(''.join(["Gen", '\t', "Fit #/", cfg[TERMINATION][EVALUATION_LIMIT]]), end='')
     else:
         print(''.join(["Gen", '\t', "Fit"]), end='')
     print("\tAvg Fit\tSkew\tStdDiv\tBest\tLevels\tStatus\t", end='' )
