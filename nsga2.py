@@ -85,6 +85,18 @@ class nsga2:
             #Readd those whom we displaced
             for worse in redist:
                 self.add(worse)
+                
+    def rm( self, sol ):
+        self.data[sol.fit].remove(sol)
+        for domee in sol.dominates:
+            self.rm( domee )
+        for domee in sol.dominates:
+            self.add( sol.dominates )
+        
+        for rank in self.data:
+            for ind in rank:
+                if sol in ind.dominates:
+                    ind.dominates.remove( sol )
             
     def dominates( self, sol, comprd2 ):
         eq = 0
