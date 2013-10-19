@@ -145,7 +145,7 @@ class gen:
                         parents.remove( p1 )
                     else:
                         parents.remove( p2 )
-        print( "\n", parents[0].fit )
+        #print( "\n", parents[0].fit )
         return parents.pop( )
     
     # drops the worst individuals down to µ
@@ -166,7 +166,6 @@ class gen:
         newkids = []
         parents = []
         
-        print("\n", self.fitTable)
         if self.cfg[PARENT_SEL][TYPE] == TOURNAMENT_WITH_REPLACEMENT:
             for i in range(0,self.lamb):
                 pair = []
@@ -225,6 +224,7 @@ class gen:
             while len(self.ind) != 0:
                 # This is the only way I know of to deal with this if set size changes.
                 # THIS WORKS
+                #FIXME: Trash needs special delete without rebuilding
                 for solu in self.ind:
                     delprn(perStr(i/starting*.5), 3)
                     solu.trash( )
