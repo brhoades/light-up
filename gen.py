@@ -114,7 +114,6 @@ class gen:
             citz[i].fitness( )
             self.ind.append(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
-            print(citz[i].graph, citz[i].oldFitness( ))
             
         delprn( "Ranking our Pop.\t" )
         self.fitTable.rank( )
@@ -220,7 +219,6 @@ class gen:
                 solu.fitness( )
                 self.ind.append(solu)
                 self.fitTable.add(solu)
-                print(solu.graph, solu.oldFitness( ) )
                 i += 1
         # (µ,λ)-EA, Drop all parents and start with our kids. Status quo after that.
         elif self.strat == COMMA:
