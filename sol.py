@@ -20,6 +20,7 @@ class sol:
         self.fit=-1
         
         # Our level
+        self.level=-1
         
         #our old fit for caching
         self.oldFit = -1

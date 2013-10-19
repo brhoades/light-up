@@ -139,7 +139,7 @@ class gen:
                 p1 = plist.pop( )
                 p2 = plist.pop( )
 
-                if p1.fit < p2.fit:
+                if p1.fit > p2.fit:
                     if pos:
                         parents.remove( p2 )
                     else:

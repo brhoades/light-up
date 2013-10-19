@@ -291,7 +291,7 @@ def probSel( ogen, num, adj, prn=False ):
     cumfit = 0
     for solu in ogen:
         gen.append(solu)
-        cumfit += adj-solu.fit+1
+        cumfit += solu.fit
         
     rets = []
     while len(rets) < num:
@@ -300,12 +300,12 @@ def probSel( ogen, num, adj, prn=False ):
         pnt = random.randint( 0, cumfit )
         
         tfit = 0
-        for sol in gen:
+        for solu in gen:
             if pnt < tfit:
-                gen.remove(sol)
-                rets.append(sol)
-                cumfit -= adj-sol.fit+1
+                gen.remove(solu)
+                rets.append(solu)
+                cumfit -= solu.fit
                 break
-            tfit += adj-sol.fit+1
+            tfit += solu.fit
     return rets
     

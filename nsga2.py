@@ -72,7 +72,8 @@ class nsga2:
         if len(self.data) == 0:
             self.data.append([])
             self.data[0].append(sol)
-            sol.fit = 0
+            sol.level = 0
+            sol.fit = 1
             self.here.append( sol )
             return
 
@@ -92,6 +93,7 @@ class nsga2:
                     #print("APPENDING OURSELVES")
                     self.data.append([])
                     self.data[len(self.data)-1].append(sol)
+                    self.refreshFit( )
                     break
                 continue
             else:
@@ -104,7 +106,8 @@ class nsga2:
                 
         #Set our new fitness
         #Index on rank here messed up royally
-        sol.fit = self.whereAmI( sol )
+        sol.level = self.whereAmI( sol )
+        sol.fit = len(self.data)-sol.level+1
         self.here.append( sol )
 
     def whereAmI( self, sol ):
@@ -114,21 +117,22 @@ class nsga2:
 
     def refreshFit( self ):
         for sol in self.here:
-            sol.fit = -1
+            sol.level = -1
         for i in range(0,len(self.data)):
             for sol in self.data[i]:
-                sol.fit = i
+                sol.level = i
+                sol.fit = len(self.data)-sol.level
 
     def rm( self, sol ):
-        #print( sol.fit, self.whereAmI( sol ), len(self.data))
-        self.data[sol.fit].remove(sol)
-        if len(self.data[sol.fit]) == 0:
-            del self.data[sol.fit]
+        #print( sol.level, self.whereAmI( sol ), len(self.data))
+        self.data[sol.level].remove(sol)
+        if len(self.data[sol.level]) == 0:
+            del self.data[sol.level]
             self.refreshFit( )
         self.here.remove(sol)
         
         for solu in sol.dominates:
-            if solu.fit == sol.fit-1:
+            if solu.level == sol.level-1:
                 self.move( solu, sol )
 
         for solu in sol.domee:
@@ -141,31 +145,31 @@ class nsga2:
         sol.dominates = []
     
     def move( self, sol, tsol ):
-        #if not sol in self.data[sol.fit]:
-            #print( sol.fit, self.whereAmI( sol ), len(self.data) )
+        #if not sol in self.data[sol.level]:
+            #print( sol.level, self.whereAmI( sol ), len(self.data) )
             #for i in range(len(self.data)):
                 #if sol in self.data[i]:
-                    #print("Actually in:", i, "w/", sol.fit)
+                    #print("Actually in:", i, "w/", sol.level)
                     #print(sol in self.gen.ind)
                     
         #Is it worth moving ourselves?
         move = True
         for osol in sol.domee:
-            if ( osol != tsol and osol.fit == tsol.fit ) or osol.fit == sol.fit+1:
+            if ( osol != tsol and osol.level == tsol.level ) or osol.level == sol.level+1:
                 move = False
         if move:
-            oldfit = sol.fit
-            self.data[sol.fit].remove(sol)
-            if len(self.data[sol.fit]) == 0:
-                    del self.data[sol.fit]
+            oldfit = sol.level
+            self.data[sol.level].remove(sol)
+            if len(self.data[sol.level]) == 0:
+                    del self.data[sol.level]
                     self.refreshFit( )
             self.here.remove(sol)
             self.add(sol)
             
-            if oldfit != sol.fit:
+            if oldfit != sol.level:
                 #we now have to recursively call move to our domees
                 for domee in sol.domee:
-                    if domee.fit == oldfit-1:
+                    if domee.level == oldfit-1:
                         self.move(domee, sol)
         
     def dominates( self, sol, comprd2 ):
