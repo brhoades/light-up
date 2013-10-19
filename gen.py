@@ -279,11 +279,9 @@ class gen:
             trash = []
             for solu in self.ind:
                 if solu not in save:
-                    trash.append(solu)
-            for i in range(len(trash)):
-                trash.pop( ).trash( )            
-                
-            print( self.fitTable, len(self.ind))
+                    #print( solu.fit )
+                    solu.trash( )
+            #print( self.fitTable, len(self.ind))
         elif self.cfg[SURVIVAL_SEL][TYPE] == UNIFORM_RANDOM:
             i = 0
             max = len(self.ind)-self.mu
@@ -319,20 +317,25 @@ class gen:
   
     # Setup our dataframe
     def statistics( self ):
-        self.dataframe = pd.DataFrame( [sol.oldFitness( ) for sol in self.ind] )
+        dframe = {}
+        dframe["LitSq"] = [sol.getFit(LITSQ) for sol in self.ind]
+        dframe["BulbConflict"] = [sol.getFit(BULBCONFLICT) for sol in self.ind]
+        dframe["BlackSat"] = [sol.getFit(BLACKVIO) for sol in self.ind]
+        dframe["Average"] = [sol.oldFitness( ) for sol in self.ind]
+        self.dataframe = pd.DataFrame( dframe )
   
     # Average everything out.
-    def average( self ):
-        return float(self.dataframe.mean( ))
+    def average( self, type="Average" ):
+        return float(self.dataframe[type].mean())
     
     # Stddev
-    def stdev( self ):
-        return float(self.dataframe.std( ))
+    def stdev( self, type="Average" ):
+        return float(self.dataframe[type].std())
     
     # Skew, how far to the right (1, +) or left (0, -) the population is
-    def skew( self ):
-        return float(self.dataframe.skew( ))
+    def skew( self, type="Average" ):
+        return float(self.dataframe[type].skew())
     
-    def max( self ):
-        return float(self.dataframe.max( ))
+    def max( self, type="Average" ):
+        return float(self.dataframe[type].max())
         

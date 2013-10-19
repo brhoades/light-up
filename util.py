@@ -143,7 +143,7 @@ class log:
             evals = tgen.fitEvals
         else:
             evals = tgen.mu
-        self.res.write( ''.join( [ str(evals), '\t', str(round(tgen.average( ), 5)), '\t', str(round(tgen.best( ).fit,5)), '\n'] ) )
+        self.res.write( ''.join( [ str(evals), '\t', str(tgen.average( )), '\t', str(tgen.max( )), '\n'] ) )
         
     # Serializes and logs the soulution to solution-log.txt
     def best( self, solu ):

@@ -97,31 +97,43 @@ class sol:
             if i == LITSQ:
                 self.moeaf.append(self.graph.litsq( ))
             #MINIMIZE BULBS SHINING ON EACH OTHER
-            #Each bulb shining on another one gets 1
-            #3 bulbs in a line, for example, get a total of 6 off
             elif i == BULBCONFLICT:
                 violations = 0
                 for sqr in self.graph.sqgt[gt.BULB]:
-                    violations += len(sqr.owner)
+                    if len(sqr.owner) > 0 :
+                        violations += 1
                 self.moeaf.append(violations)
             #MINIMIZE BLACK TILE SATISFICATION VIOLATIONS
-            #Each missing light adds an additional 1
-            #Each light over adds an additional 1
-            #4 bulbs around a zero, for example, gets a 4
-            #or a 4 bulb requirement with 0 bulbs around it gets 4
             elif i == BLACKVIO:
                 violations = 0
                 for sqr in self.graph.sqgt[gt.BLACK_THRESHOLD]:
-                    violations += maxLights(sqr.type)-len(sqr.lights)
+                    if maxLights(sqr.type)-len(sqr.lights) > 0:
+                        violations += 1
                 self.moeaf.append(violations)
                 
         self.gen.fitEvals += 1
         
         #return self.level
-        
+    
+    def getFit( self, type ):
+        if type == LITSQ:
+            return self.moeaf[LITSQ]/self.graph.posLitsq( )
+        elif type == BULBCONFLICT:
+            if self.graph.lights( ) != 0:
+                return 1-self.moeaf[BULBCONFLICT]/self.graph.lights( )
+            else:
+                return 1
+        elif type == BLACKVIO:
+            if self.graph.blacks( ) != 0:
+                return 1-self.moeaf[BLACKVIO]/self.graph.blacks( )
+            else:
+                return 1
+    
+    #Not really old fitness, but this is very similar to our previous function that now
+    #  takes into account the bulb conflicts
     def oldFitness( self ):
         if self.oldFit < 0:
-            self.oldFit = ( self.graph.litsq( ) + self.graph.blackSats( ) ) / ( self.graph.posLitsq( ) + self.graph.blacksSb( ) )
+            self.oldFit = (self.getFit(LITSQ) + (self.getFit(BULBCONFLICT)) + (self.getFit(BLACKVIO)))/3
         return self.oldFit
 
     # Trash things and use them again later. Save a crapton of time not allocating memory and recursively
