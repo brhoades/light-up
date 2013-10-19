@@ -143,7 +143,19 @@ class log:
             evals = tgen.fitEvals
         else:
             evals = tgen.mu
-        self.res.write( ''.join( [ str(evals), '\t', str(tgen.average( )), '\t', str(tgen.max( )), '\n'] ) )
+                    
+        #<evals><tab><average first objective subfitness><tab><best first objective subfitness><average second
+        #objective subfitness><best second objective fitness><average third objective subfitness><best third objec-
+        #tive fitness> (not including the < and > symbols) with <evals> indicating the number of evals executed so
+        out = [evals, tgen.average("LitSq"), tgen.max("LitSq"), tgen.average("BulbConflict"), tgen.max("BulbConflict"),
+               tgen.average("BlackSat"), tgen.max("BlackSat")]
+        newstr = ""
+        for num in out:
+            newstr += str(num)
+            newstr += "\t"
+        newstr += "\n"
+            
+        self.res.write( newstr )
         
     # Serializes and logs the soulution to solution-log.txt
     def best( self, solu ):
