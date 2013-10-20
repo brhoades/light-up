@@ -70,9 +70,10 @@ class nsga2:
             self.add( sol )
             i += 1
            
-    def add( self, sol ):
+    def add( self, sol, new=True ):
         #Who do we dominate?
-        self.domCheck( sol )
+        if new:
+            self.domCheck( sol )
         
         redist = []
         if len(self.data) == 0:
@@ -108,7 +109,7 @@ class nsga2:
         
         #Readd those whom we displaced
         for worse in redist:
-            self.add(worse)
+            self.add(worse, False)
                 
         #Set our new fitness
         #Index on rank here messed up royally
@@ -170,7 +171,7 @@ class nsga2:
                     del self.data[sol.level]
                     self.refreshFit( )
             self.here.remove(sol)
-            self.add(sol)
+            self.add(sol, False)
             
             if oldfit != sol.level:
                 #we now have to recursively call move to our domees
@@ -184,7 +185,6 @@ class nsga2:
             #MAXIMIZE LIT SQUARES
             if i == LITSQ:
                 if sol.moeaf[i] < comprd2.moeaf[i]:
-                    #print( sol.moeaf[i], "<", comprd2.moeaf[i] )
                     return False
                 elif sol.moeaf[i] == comprd2.moeaf[i]:
                     eq += 1
@@ -192,14 +192,12 @@ class nsga2:
             #MINIMIZE BLACK TILE SATISFICATION VIOLATIONS
             else:
                 if sol.moeaf[i] > comprd2.moeaf[i]:
-                    #print( sol.moeaf[i], ">", comprd2.moeaf[i] )
                     return False
                 elif sol.moeaf[i] == comprd2.moeaf[i]:
                     eq += 1
+                    
         #if we're equal we don't dominate them
         if eq == len(sol.moeaf):
-            #print("EQUAL")
             return False
         else:
-            #print("DOMINATES")
             return True
