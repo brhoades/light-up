@@ -74,7 +74,6 @@ class sol:
                     for hsqr in sqr.neighbors:
                         if hsqr.type == gt.LIT or hsqr.type == gt.UNLIT:
                             hsqr.addLight( )
-                            print("dropped")
         
         # Bulbs used are related to # of black tiles and size of board.
         # This is a rough approximation. Overshooting it causes the board to be solved very quickly and

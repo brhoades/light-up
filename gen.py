@@ -111,7 +111,6 @@ class gen:
         forcevalid = (self.cfg[INIT][TYPE] == VALIDITY_ENFORCED_PLUS_UNIFORM_RANDOM)
         for i in range(0,self.mu):
             citz[i].rng( forcevalid )
-            print( "\n\n", forcevalid )
             citz[i].fitness( )
             self.ind.append(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
@@ -245,7 +244,6 @@ class gen:
     # Mutates some individuals randomly, whatever is passed in
     def mutate( self, babbies ):
         i = 0
-        #print( "\n\n" )
         for sol in babbies: 
             squares = mutateSq( self.cfg[MUTATE][MU], self.cfg[MUTATE][SIGMA] )
             if squares > 0:
@@ -253,17 +251,14 @@ class gen:
                 places.extend(sol.graph.sqgt[gt.LIT])
                 places.extend(sol.graph.sqgt[gt.UNLIT])
                 places.extend(sol.graph.sqgt[gt.BULB])
-                #print( squares, "===>", len(places) )
                 tomutate = random.sample( places, squares )
                 for sqr in tomutate:
-                    #delprn( perStr((i+j)/(len(babbies)+squares)), 3 )
                     if sqr.type == gt.BULB:
                         sqr.rmLight( )
                     else:
                         sqr.addLight( )
             i += 1
             
-    # Deletes those who don't survive natural selection
     def natSelection( self ):
         delprn( "Selecting Survivors\t" )
         
@@ -277,12 +272,10 @@ class gen:
                     loser = self.tournament(False, self.cfg[SURVIVAL_SEL][K], i, self.lamb )
                 loser.trash( )
                 i += 1
-                #print(self.fitTable)
         elif self.cfg[SURVIVAL_SEL][TYPE] == FITNESS_PROPORTIONAL:
             for solu in self.ind:
                 die = probSel( self.ind, 1, len(self.fitTable.data), True, True )
                 die[0].trash( )
-            #print( self.fitTable, len(self.ind))
         elif self.cfg[SURVIVAL_SEL][TYPE] == UNIFORM_RANDOM:
             i = 0
             max = len(self.ind)-self.mu
