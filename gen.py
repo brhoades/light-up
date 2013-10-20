@@ -278,12 +278,9 @@ class gen:
                 i += 1
                 #print(self.fitTable)
         elif self.cfg[SURVIVAL_SEL][TYPE] == FITNESS_PROPORTIONAL:
-            save = probSel( self.ind, self.mu, len(self.fitTable.data), True )
-            trash = []
             for solu in self.ind:
-                if solu not in save:
-                    #print( solu.fit )
-                    solu.trash( )
+                die = probSel( self.ind, 1, len(self.fitTable.data), True, True )
+                die[0].trash( )
             #print( self.fitTable, len(self.ind))
         elif self.cfg[SURVIVAL_SEL][TYPE] == UNIFORM_RANDOM:
             i = 0

@@ -305,12 +305,15 @@ def pad(num, pad):
 
 #Find our cumulative fitness. Next compare a random number to all of our generation's fitness.
 #We use a sort of inverse fitness function to get the "correct" fitness numbers
-def probSel( ogen, num, adj, prn=False ):
+def probSel( ogen, num, adj, neg=False, prn=False ):
     gen = []
     cumfit = 0
     for solu in ogen:
         gen.append(solu)
-        cumfit += solu.fit
+        if not neg:
+            cumfit += solu.fit+1
+        else:
+            cumfit += adj-solu.fit+1
         
     rets = []
     while len(rets) < num:
@@ -323,10 +326,23 @@ def probSel( ogen, num, adj, prn=False ):
             if pnt < tfit:
                 gen.remove(solu)
                 rets.append(solu)
-                cumfit -= solu.fit
+                if not neg:
+                    cumfit -= solu.fit+1
+                else:
+                    cumfit -= adj-solu.fit+1
                 break
-            tfit += solu.fit
-    return rets
+            if not neg:
+                tfit += solu.fit+1
+            else:
+                tfit -= adj-solu.fit+1
+        else:
+            rets.append(solu)
+            gen.remove(solu)
+            if not neg:
+                cumfit -= solu.fit+1
+            else:
+                cumfit -= adj-solu.fit+1
+        return rets
     
 def nsgabetter( tnsga, cmp2 ):
     p1 = tnsga.fitTable.data[0]
