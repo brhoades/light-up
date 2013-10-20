@@ -111,6 +111,7 @@ class gen:
         forcevalid = (self.cfg[INIT][TYPE] == VALIDITY_ENFORCED_PLUS_UNIFORM_RANDOM)
         for i in range(0,self.mu):
             citz[i].rng( forcevalid )
+            print( "\n\n", forcevalid )
             citz[i].fitness( )
             self.ind.append(citz[i])
             delprn( ''.join([perStr(i/self.mu)]), 3 )
@@ -181,7 +182,7 @@ class gen:
             for i in range(self.lamb):
                 delprn(perStr(i/self.lamb), 3)
                 pair = []
-                pair.extend( probSel( self.ind, 2, len(self.fitTable.data), False ) )
+                pair.extend( probSel( self.ind, 2, len(self.fitTable.data), False, False ) )
                 
                 #Store them up and get ready for babby makin'
                 parents.append( pair )    

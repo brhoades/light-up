@@ -342,7 +342,7 @@ def probSel( ogen, num, adj, neg=False, prn=False ):
                 cumfit -= solu.fit+1
             else:
                 cumfit -= adj-solu.fit+1
-        return rets
+    return rets
     
 def nsgabetter( tnsga, cmp2 ):
     p1 = tnsga.fitTable.data[0]

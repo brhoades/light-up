@@ -60,20 +60,21 @@ class sol:
         y = self.graph.y
         if forceValid:
             blacktiles = []
-            blacktiles.extend(list(self.graph.sqgt[gt.BLACK1]))
-            blacktiles.extend(list(self.graph.sqgt[gt.BLACK2]))
-            blacktiles.extend(list(self.graph.sqgt[gt.BLACK3]))
-            blacktiles.extend(list(self.graph.sqgt[gt.BLACK4]))
+            blacktiles += self.graph.sqgt[gt.BLACK1]
+            blacktiles += self.graph.sqgt[gt.BLACK2]
+            blacktiles += self.graph.sqgt[gt.BLACK3]
+            blacktiles += self.graph.sqgt[gt.BLACK4]
             
             random.shuffle(blacktiles)
             
             #go through all satisifiable black tile's neighbors
             #if they have #neighbors = requirement, add bulbs
             for sqr in blacktiles:
-                if len(sqr.neighbors) == sqr.type-gt.TRANSFORM:
+                if len(sqr.lights) < sqr.type-gt.TRANSFORM:
                     for hsqr in sqr.neighbors:
                         if hsqr.type == gt.LIT or hsqr.type == gt.UNLIT:
                             hsqr.addLight( )
+                            print("dropped")
         
         # Bulbs used are related to # of black tiles and size of board.
         # This is a rough approximation. Overshooting it causes the board to be solved very quickly and
