@@ -1,8 +1,9 @@
 Billy Rhoades (12352623) <bjrq48@mst.edu>
 Evolutionary Computation
-CS348 FS2013 Assignment 1C
+Class: CS348 Assignment 1D
 
 This program has been throughly tested on Linux on both Python 3.2 and Python 3.3.
+
 You will require the pandas module for whichever version of python you attempt to run
 this on.
 

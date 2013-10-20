@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1C
+#Class: CS348 Assignment 1D
 #Square Class File
 #  This file houses the functions and class for the square (sq) type, which holds tile info.
 

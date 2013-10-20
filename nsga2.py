@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+#Author: Billy J Rhoades <bjrq48@mst.edu>
+#Class: CS348 Assignment 1D
+# NSGA-I class file
+#  This isn't really a NSGAII
+
 import graph, sol
 from util import *
 from const import *

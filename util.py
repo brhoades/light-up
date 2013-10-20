@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1C
+#Class: CS348 Assignment 1D
 #Utility Functions
 #  This file houses most of the functions that don't belong anywhere else or are used in several classes
 

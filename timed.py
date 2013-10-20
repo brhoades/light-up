@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #Author: Billy J Rhoades <bjrq48@mst.edu>
-#Class: CS348 Assignment 1C
+#Class: CS348 Assignment 1D
 #Test Unit Functions
 #  This program is called to compare speeds quickly.
 
